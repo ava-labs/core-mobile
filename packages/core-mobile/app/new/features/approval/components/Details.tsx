@@ -13,6 +13,7 @@ import {
 import {
   AddressItem,
   AddressListItem,
+  CollapsibleGroupItem,
   CurrencyItem,
   DataItem,
   DateItem,
@@ -23,7 +24,8 @@ import {
   LinkItem,
   NetworkItem,
   NodeIDItem,
-  TextItem
+  TextItem,
+  TransferListItem
 } from '@avalabs/vm-module-types'
 import {
   bigIntToString,
@@ -41,13 +43,17 @@ import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import { toSentenceCase } from 'common/utils/toSentenceCase'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { FlatList } from 'react-native'
+import { getTransferDetailItems } from '../utils/getTransferDetailItems'
+import { CollapsibleDetailGroup } from './CollapsibleDetailGroup'
 
 export const Details = ({
   detailSection,
-  symbol
+  symbol,
+  title
 }: {
   detailSection: DetailSection
   symbol?: string
+  title?: string
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -227,8 +233,21 @@ export const Details = ({
   )
 
   const renderCurrencyValue = useCallback(
-    (value: bigint, decimals: number, s: string): JSX.Element => {
-      const marketToken = getMarketTokenBySymbol(s)
+    ({
+      value,
+      decimals,
+      symbol: s,
+      showCurrencyValue = true
+    }: {
+      value: bigint
+      decimals: number
+      symbol: string
+      showCurrencyValue?: boolean
+    }): JSX.Element => {
+      const marketToken = showCurrencyValue
+        ? getMarketTokenBySymbol(s)
+        : undefined
+
       return (
         <View sx={{ alignItems: 'flex-end' }}>
           <Text
@@ -254,7 +273,8 @@ export const Details = ({
               {`${formatTokenInCurrency({
                 amount:
                   Number(bigIntToString(value, decimals)) *
-                  marketToken.currentPrice
+                  marketToken.currentPrice,
+                withoutCurrencySuffix: true
               })} ${selectedCurrency}`}
             </Text>
           )}
@@ -406,9 +426,18 @@ export const Details = ({
           {getDateInMmmDdYyyyHhMmA(parseInt(item.value))}
         </Text>
       ) : item.type === DetailItemType.CURRENCY ? (
-        renderCurrencyValue(item.value, item.maxDecimals, item.symbol)
+        renderCurrencyValue({
+          value: item.value,
+          decimals: item.maxDecimals,
+          symbol: item.symbol,
+          showCurrencyValue: item.isNativeToken !== false
+        })
       ) : item.type === DetailItemType.FUNDS_RECIPIENT ? (
-        renderCurrencyValue(item.amount, item.maxDecimals, item.symbol)
+        renderCurrencyValue({
+          value: item.amount,
+          decimals: item.maxDecimals,
+          symbol: item.symbol
+        })
       ) : item.type === DetailItemType.NETWORK ? (
         renderNetworkValue(item)
       ) : null
@@ -448,15 +477,19 @@ export const Details = ({
         </View>
         {renderSeparator()}
         <View sx={{ paddingTop: VERTICAL_PADDING }}>
-          {renderCurrencyValue(item.amount, item.maxDecimals, item.symbol)}
+          {renderCurrencyValue({
+            value: item.amount,
+            decimals: item.maxDecimals,
+            symbol: item.symbol
+          })}
         </View>
       </View>
     ),
     [renderSeparator, renderCurrencyValue, renderAddress]
   )
 
-  const renderItem = useCallback(
-    (item: DetailItem, index: number) => {
+  const renderItemContent = useCallback(
+    (item: RowItem, index: number): JSX.Element => {
       let content
 
       if (typeof item === 'string') {
@@ -507,11 +540,7 @@ export const Details = ({
         )
       }
 
-      return (
-        <View>
-          <View sx={{ paddingVertical: VERTICAL_PADDING }}>{content}</View>
-        </View>
-      )
+      return content
     },
     [
       renderPlainText,
@@ -521,6 +550,133 @@ export const Details = ({
       renderFundReceipientItem,
       renderAddressListItem
     ]
+  )
+
+  const renderTransferList = useCallback(
+    (item: TransferListItem): JSX.Element => {
+      const nowInSeconds = Date.now() / 1000
+
+      return (
+        <View>
+          {item.value.map((transfer, transferIndex) => (
+            <View key={transferIndex}>
+              {transferIndex > 0 && (
+                <View sx={{ paddingVertical: TRANSFER_ROW_PADDING }}>
+                  {renderSeparator()}
+                </View>
+              )}
+              {getTransferDetailItems(transfer, nowInSeconds).map(
+                (transferItem, index) => (
+                  <View
+                    key={index}
+                    sx={{ paddingVertical: TRANSFER_ROW_PADDING }}>
+                    {renderItemContent(transferItem, index)}
+                  </View>
+                )
+              )}
+            </View>
+          ))}
+        </View>
+      )
+    },
+    [renderItemContent, renderSeparator]
+  )
+
+  const renderLeafItem = useCallback(
+    (item: LeafItem, index: number): JSX.Element => {
+      if (
+        typeof item !== 'string' &&
+        item.type === DetailItemType.TRANSFER_LIST
+      ) {
+        return (
+          <View
+            sx={{ paddingVertical: VERTICAL_PADDING - TRANSFER_ROW_PADDING }}>
+            {renderTransferList(item)}
+          </View>
+        )
+      }
+
+      return (
+        <View sx={{ paddingVertical: VERTICAL_PADDING }}>
+          {renderItemContent(item, index)}
+        </View>
+      )
+    },
+    [renderItemContent, renderTransferList]
+  )
+
+  const renderNestedSection = useCallback(
+    (section: DetailSection, sectionIndex: number): JSX.Element => (
+      <View key={sectionIndex}>
+        {renderSeparator()}
+        {section.title?.trim() ? (
+          <Text
+            variant="buttonMedium"
+            sx={{
+              fontSize: 14,
+              lineHeight: 20,
+              color: '$textSecondary',
+              paddingTop: VERTICAL_PADDING
+            }}>
+            {section.title}
+          </Text>
+        ) : null}
+        {section.items.map((item, index) => {
+          // never nest groups
+          if (
+            typeof item !== 'string' &&
+            item.type === DetailItemType.COLLAPSIBLE_GROUP
+          ) {
+            return null
+          }
+
+          return (
+            <View key={index}>
+              {index > 0 && renderSeparator()}
+              {renderLeafItem(item, index)}
+            </View>
+          )
+        })}
+      </View>
+    ),
+    [renderSeparator, renderLeafItem]
+  )
+
+  const renderItem = useCallback(
+    (item: DetailItem, index: number): JSX.Element => {
+      if (
+        typeof item !== 'string' &&
+        item.type === DetailItemType.COLLAPSIBLE_GROUP
+      ) {
+        return (
+          <CollapsibleDetailGroup
+            label={item.label}
+            verticalPadding={VERTICAL_PADDING}
+            renderContent={() => item.value.map(renderNestedSection)}
+          />
+        )
+      }
+
+      return renderLeafItem(item, index)
+    },
+    [renderLeafItem, renderNestedSection]
+  )
+
+  const renderTitle = useCallback(
+    (): JSX.Element | null =>
+      title?.trim() ? (
+        <Text
+          variant="buttonMedium"
+          sx={{
+            fontSize: 16,
+            lineHeight: 22,
+            color: '$textPrimary',
+            paddingTop: VERTICAL_PADDING
+          }}>
+          {title}
+        </Text>
+      ) : null,
+    [title]
   )
 
   return (
@@ -536,9 +692,14 @@ export const Details = ({
         renderItem={({ item, index }) => renderItem(item, index)}
         keyExtractor={(_item, index) => index.toString()}
         ItemSeparatorComponent={renderSeparator}
+        ListHeaderComponent={renderTitle}
       />
     </View>
   )
 }
 
+type LeafItem = Exclude<DetailItem, CollapsibleGroupItem>
+type RowItem = Exclude<LeafItem, TransferListItem>
+
 const VERTICAL_PADDING = 13
+const TRANSFER_ROW_PADDING = 5

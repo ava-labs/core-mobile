@@ -309,7 +309,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - ExpoModulesJSI (56.0.10):
+  - ExpoModulesJSI (56.0.14):
     - React-Core
     - ReactCommon
   - ExpoModulesWorklets (56.0.17):
@@ -3986,7 +3986,7 @@ SPEC CHECKSUMS:
   ExpoLocalization: cf50efc436b2ec313510131c1ee0e778366d64b0
   ExpoLogBox: 63977cf56b04547c713535d2d4e9bbf2f012e3c6
   ExpoModulesCore: 8f247b586be27ee3445df7acb11dd1badcf7b89e
-  ExpoModulesJSI: abc606cf32f6eeb4e2ad44ec3fc4b24143abd8f6
+  ExpoModulesJSI: be5366379de5036c554db5f6478fc994da8f5ece
   ExpoModulesWorklets: 25d712f4e0a4eb37397d46c0ff5b450eca897fd1
   ExpoModulesWorkletsAdapter: c141a7854ac985cda989175ae6944c1bfe3ff91b
   ExpoRouter: 5539806fcab8d38c639c9c255a6d73caa839436a
@@ -4011,7 +4011,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 4f2618a4a1e762a1ee134a1e2323bba9843e06da
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
-  hermes-engine: 1a6773ac78ff5479e2c5fd3fc0bb519fb66ba742
+  hermes-engine: 3a7725cd684f91b393f81e5c004542882f16d182
   jail-monkey: 1846061ac12e861ac5a8ec7197b0daa775b83733
   libavif: 5f8e715bea24debec477006f21ef9e95432e254d
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
@@ -4122,7 +4122,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 25c9c516839be2c5e3d3344f95dc7da5f7e63fc2
   ReactCodegen: 22f5ee7ee1e6410da1332d1ef8e9cf1cb4aa7b7d
   ReactCommon: 14a0287b7145ef29530c15bcd7aca4154a3cb353
-  ReactNativeDependencies: a42e4a7f00ee68621800888c0ec1c97003502e16
+  ReactNativeDependencies: b2db9add464db1de397fff28dc16eb1f5808a4ce
   ReactNativePerformance: fa4952a58739e1a1f6b90a4e9777657d463499a3
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   RNAppleAuthentication: 8d313d93fe2238d6b7ff0a39c67ebcf298d96653
@@ -4163,6 +4163,6 @@ SPEC CHECKSUMS:
   Yoga: 2fe23f676416a73cb4be2c15929e352c9395b9cf
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 6a22be3f5274da9dcd947bd6c0144eec6998b77d
+PODFILE CHECKSUM: 14b9d0ed671138dcab23b31785df4ef83c9920bb
 
 COCOAPODS: 1.16.2

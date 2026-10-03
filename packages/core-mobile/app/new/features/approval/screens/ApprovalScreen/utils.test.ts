@@ -2,7 +2,8 @@ import {
   RpcRequest,
   DetailItem,
   RpcMethod,
-  DetailItemType
+  DetailItemType,
+  SigningData
 } from '@avalabs/vm-module-types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
@@ -14,7 +15,8 @@ import {
   getAccountSelector,
   getDisplayAccountAddress,
   isRequestedAccountUnavailable,
-  getAccountUnavailableMessage
+  getAccountUnavailableMessage,
+  isAvalancheTransaction
 } from './utils'
 
 // Mock the isInAppRequest function for controlled testing
@@ -407,5 +409,22 @@ describe('getAccountUnavailableMessage', () => {
     ]) {
       expect(message).not.toContain('transaction')
     }
+  })
+})
+
+describe('isAvalancheTransaction', () => {
+  it.each([
+    RpcMethod.AVALANCHE_SEND_TRANSACTION,
+    RpcMethod.AVALANCHE_SIGN_TRANSACTION
+  ])('returns true for %s', type => {
+    expect(isAvalancheTransaction({ type } as SigningData)).toBe(true)
+  })
+
+  it.each([
+    RpcMethod.AVALANCHE_SIGN_MESSAGE,
+    RpcMethod.ETH_SEND_TRANSACTION,
+    RpcMethod.SOLANA_SIGN_TRANSACTION
+  ])('returns false for %s', type => {
+    expect(isAvalancheTransaction({ type } as SigningData)).toBe(false)
   })
 })
