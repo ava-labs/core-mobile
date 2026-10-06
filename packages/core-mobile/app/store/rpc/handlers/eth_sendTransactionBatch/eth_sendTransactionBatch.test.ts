@@ -190,6 +190,7 @@ describe('ethSendTransactionBatchHandler', () => {
       expect(sdkRequest?.context?.walletType).toBe('mnemonic')
       expect(sdkRequest?.context?.accountIndex).toBe(0)
       expect(sdkRequest?.context?.network).toBeDefined()
+      expect(sdkRequest?.context?.fromAddress).toBe('0x123')
       expect(network).toEqual({ chainId: 43114, vmName: 'EVM' })
     })
 
@@ -240,6 +241,38 @@ describe('ethSendTransactionBatchHandler', () => {
         listenerApi
       )
       expect(result.success).toBe(false)
+    })
+
+    it('produces a context that signBatchRequests accepts (B1 seam)', async () => {
+      // Pull the real bypass signer; mock only the wallet signer it calls.
+
+      const WalletService = require('services/wallet/WalletService').default
+      const signSpy = jest
+        .spyOn(WalletService, 'sign')
+        .mockResolvedValue('0xsigned')
+
+      const {
+        signBatchRequests
+      } = require('vmModule/ApprovalController/quickSwapsBypass')
+
+      mockOnRpcRequest.mockResolvedValue({ result: ['0xa', '0xb'] })
+      await ethSendTransactionBatchHandler.handle(makeRequest(), listenerApi)
+      const sdkRequest = mockOnRpcRequest.mock.calls[0]?.[0]
+
+      const result = await signBatchRequests(
+        sdkRequest,
+        [{ to: '0xtoken' }, { to: '0xrouter' }] as never,
+        'eth_sendTransactionBatch'
+      )
+
+      expect(result).toEqual({
+        signedTxs: [{ signedData: '0xsigned' }, { signedData: '0xsigned' }]
+      })
+      expect(signSpy).toHaveBeenCalledTimes(2)
+      expect(signSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ fromAddress: '0x123', accountIndex: 0 })
+      )
+      signSpy.mockRestore()
     })
   })
 
