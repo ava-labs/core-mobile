@@ -707,7 +707,7 @@ __metadata:
     react-native-toast-notifications: 3.4.0
     react-native-url-polyfill: 2.0.0
     react-native-view-shot: 5.1.0
-    react-native-webview: ava-labs/react-native-webview
+    react-native-webview: "ava-labs/react-native-webview#f4fdcc9bea42b0cf366f321f7dbb339e68db7309"
     react-native-webview-crypto: 0.0.27
     react-native-worklets: 0.10.1
     react-redux: 9.1.2
@@ -35975,16 +35975,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-react-native-webview@ava-labs/react-native-webview:
+"react-native-webview@ava-labs/react-native-webview#f4fdcc9bea42b0cf366f321f7dbb339e68db7309":
   version: 13.15.0
-  resolution: "react-native-webview@https://github.com/ava-labs/react-native-webview.git#commit=15480b1312661eebd4d872f523f0f91d950a452f"
+  resolution: "react-native-webview@https://github.com/ava-labs/react-native-webview.git#commit=f4fdcc9bea42b0cf366f321f7dbb339e68db7309"
   dependencies:
     escape-string-regexp: ^4.0.0
     invariant: 2.2.4
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e44e1c39abe8a43494c84368f86154ec0508f1064320150393e3594ee3ffc00148c4a4ff61663f9cca0674667d450b3e100d899ff4b63e9abacab779c0a1cc55
+  checksum: 23f6340fbc0e9d6c2f59271aea780576e774af61b4f50715bc24ab46771ab3d1f91300500bdd6fbd264b0ca7b777185816a054c603d4a1f98b0bf3a5cb206068
   languageName: node
   linkType: hard
 

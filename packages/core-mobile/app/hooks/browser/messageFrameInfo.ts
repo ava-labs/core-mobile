@@ -18,8 +18,8 @@ let hasReportedMissingProvenance = false
  */
 export const getMessageFrameInfo = (
   // Deliberately `Pick` of the real event type rather than a hand-written shape:
-  // both fields exist only because of patches/react-native-webview+13.15.0.patch,
-  // so if that patch ever stops applying this fails to compile instead of
+  // both fields come from the ava-labs/react-native-webview fork (pinned in
+  // package.json), so a fork regression fails to compile here instead of
   // quietly returning `undefined` and downgrading the frame gate.
   nativeEvent: Pick<
     WebViewMessageEvent['nativeEvent'],
