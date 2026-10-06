@@ -109,26 +109,77 @@ export const isVerifiedCoreDomain = (
 
   const { validation, origin } = verifyContext.verified
 
-  try {
-    const urlObj = new URL(origin)
-    if (urlObj.protocol === 'chrome-extension:') {
-      // INVALID means the browser's actual origin didn't match the claimed chrome-extension URL.
-      // UNKNOWN is expected for the real Core Extension (chrome-extension:// can't host the WC verify frame).
-      return (
-        validation !== 'INVALID' && CORE_EXT_HOSTNAMES.includes(urlObj.hostname)
-      )
-    }
-  } catch {
-    return false
-  }
-
   // UNKNOWN = domain not registered with WC Verify (or Verify API unavailable).
   // INVALID = origin does not match registered domain — likely spoofed.
+  // chrome-extension:// origins can never be VALID (no verify frame), so they
+  // fall through to false here; see getExtensionImportMethods for the narrow
+  // capability they do get (CP-15105 R2-3).
   if (validation !== 'VALID') {
     return false
   }
 
+  // isCoreDomain also accepts extension ids, but a VALID chrome-extension
+  // origin is never legitimate, so exclude the protocol explicitly.
+  try {
+    if (new URL(origin).protocol === 'chrome-extension:') return false
+  } catch {
+    return false
+  }
+
   return isCoreDomain(origin)
+}
+
+const EXTENSION_IMPORT_METHODS: readonly RpcMethod[] = [
+  RpcMethod.AVALANCHE_GET_ACCOUNTS,
+  RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY
+]
+
+/**
+ * The Core browser extension cannot host the WalletConnect Verify frame, so its
+ * identity is only ever self-reported (metadata.url echoed as origin with
+ * validation UNKNOWN). Its one legitimate use is "import account from Core
+ * Mobile", which needs exactly these two read methods. Grant those and nothing
+ * else, and never the verified treatment. (CP-15105 R2-3)
+ */
+export const getExtensionImportMethods = (
+  verifyContext: VerifyContext | undefined
+): RpcMethod[] => {
+  if (!verifyContext) return []
+  const { validation, origin } = verifyContext.verified
+  if (validation === 'INVALID') return []
+  try {
+    const { protocol, hostname } = new URL(origin)
+    if (protocol !== 'chrome-extension:') return []
+    if (!CORE_EXT_HOSTNAMES.includes(hostname)) return []
+  } catch {
+    return []
+  }
+  return [...EXTENSION_IMPORT_METHODS]
+}
+
+/**
+ * Returns a copy of `namespaces` with every Core method removed from every
+ * namespace, except methods listed in `allowed`. Used for non-Core peers so an
+ * optional Core method is dropped instead of failing the whole proposal.
+ * (CP-15105 B6)
+ */
+export const stripCoreMethods = <
+  T extends Record<string, { methods?: string[] }>
+>(
+  namespaces: T,
+  allowed: readonly string[]
+): T => {
+  const out = {} as T
+  for (const key of Object.keys(namespaces) as (keyof T)[]) {
+    const ns = namespaces[key] as T[keyof T]
+    out[key] = {
+      ...ns,
+      methods: (ns.methods ?? []).filter(
+        m => !isCoreMethod(m) || allowed.includes(m)
+      )
+    }
+  }
+  return out
 }
 
 /**
@@ -366,7 +417,9 @@ export const assessDappTrust = ({
   // --- MALICIOUS: definitive scam verdicts -------------------------------
   const maliciousReasons: string[] = []
   if (isScam) {
-    maliciousReasons.push('WalletConnect has flagged this dApp as a known scam.')
+    maliciousReasons.push(
+      'WalletConnect has flagged this dApp as a known scam.'
+    )
   }
   if (scanResponse && isSiteScanResponseMalicious(scanResponse)) {
     maliciousReasons.push('This application has been flagged as malicious.')

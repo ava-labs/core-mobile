@@ -880,3 +880,233 @@ describe('session_request handler', () => {
     })
   })
 })
+
+const ev = ['chainChanged', 'accountsChanged']
+/* eslint-disable max-params */
+const mkProposal = (
+  req: Record<string, unknown>,
+  opt: Record<string, unknown>,
+  url: string,
+  validation: 'VALID' | 'UNKNOWN' | 'INVALID',
+  origin = url
+): WCSessionProposal =>
+  ({
+    provider: RpcProvider.WALLET_CONNECT,
+    method: 'wc_sessionRequest',
+    data: {
+      id: 1,
+      params: {
+        id: 1,
+        expiryTimestamp: 1,
+        pairingTopic: 'x',
+        expiry: 1,
+        requiredNamespaces: req,
+        optionalNamespaces: opt,
+        relays: [{ protocol: 'irn' }],
+        proposer: {
+          publicKey: 'p',
+          metadata: { url, name: 'd', description: '', icons: [] }
+        }
+      },
+      verifyContext: { verified: { origin, validation, verifyUrl: '' } }
+    }
+  } as never)
+/* eslint-enable max-params */
+const reqEvm = {
+  eip155: {
+    chains: ['eip155:43114'],
+    methods: ['eth_sendTransaction', 'personal_sign'],
+    events: ev
+  }
+}
+const optAvax = {
+  avax: {
+    chains: ['avax:imji8papUf2EhV3le337w1vgFauqkJg-'],
+    methods: ['avalanche_sendTransaction'],
+    events: ev
+  }
+}
+
+const capturedNamespaces = (): Record<
+  string,
+  { methods?: string[]; chains?: string[] }
+> => {
+  const calls = (utils.navigateToSessionProposal as jest.Mock).mock.calls
+  return calls[calls.length - 1][0].namespaces
+}
+
+describe('B6 optional Core methods', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    // earlier tests leave the scan flag false; navigate directly so namespaces are capturable
+    mockIsBlockaidDappScanBlocked.mockReturnValue(true)
+  })
+
+  it.each([
+    [
+      'optional eip155 avalanche_getAccounts',
+      reqEvm,
+      {
+        eip155: {
+          chains: ['eip155:43114'],
+          methods: ['eth_sendTransaction', 'avalanche_getAccounts'],
+          events: ev
+        }
+      }
+    ],
+    [
+      'optional wallet_getNetworkState',
+      reqEvm,
+      {
+        eip155: {
+          chains: ['eip155:43114'],
+          methods: ['wallet_getNetworkState'],
+          events: ev
+        }
+      }
+    ],
+    ['optional avax avalanche_sendTransaction', reqEvm, optAvax],
+    [
+      'optional bip122 bitcoin_sendTransaction',
+      reqEvm,
+      {
+        bip122: {
+          chains: ['bip122:000000000019d6689c085ae165831e93'],
+          methods: ['bitcoin_sendTransaction'],
+          events: ev
+        }
+      }
+    ]
+  ])(
+    'non-Core dApp with %s is accepted (methods stripped, not rejected)',
+    async (_n, req, opt) => {
+      const r = await handler.handle(
+        mkProposal(req, opt, 'https://app.example.xyz', 'VALID'),
+        mockListenerApi
+      )
+      expect(r.success).toBe(true)
+      const namespaces = capturedNamespaces()
+      Object.values(namespaces).forEach(ns =>
+        expect((ns.methods ?? []).some(utils.isCoreMethod)).toBe(false)
+      )
+      if (_n.includes('bip122')) {
+        // namespace emptied by the strip is dropped entirely
+        expect(namespaces).not.toHaveProperty('bip122')
+      }
+    }
+  )
+
+  it('non-Core dApp with a REQUIRED Core method is still rejected', async () => {
+    const r = await handler.handle(
+      mkProposal(
+        {
+          eip155: {
+            chains: ['eip155:43114'],
+            methods: ['avalanche_getAccounts'],
+            events: ev
+          }
+        },
+        {},
+        'https://app.example.xyz',
+        'VALID'
+      ),
+      mockListenerApi
+    )
+    expect(r.success).toBe(false)
+    if (!r.success)
+      expect(r.error.message).toBe('Requested method is not authorized')
+  })
+
+  it('non-Core dApp with a Core method in both required and optional is rejected', async () => {
+    const both = {
+      eip155: {
+        chains: ['eip155:43114'],
+        methods: ['avalanche_getAccounts'],
+        events: ev
+      }
+    }
+    const r = await handler.handle(
+      mkProposal(both, both, 'https://app.example.xyz', 'VALID'),
+      mockListenerApi
+    )
+    expect(r.success).toBe(false)
+  })
+
+  it('core.app VALID keeps its optional Core methods', async () => {
+    const r = await handler.handle(
+      mkProposal(reqEvm, optAvax, 'https://core.app', 'VALID'),
+      mockListenerApi
+    )
+    expect(r.success).toBe(true)
+    expect(capturedNamespaces().avax?.methods).toContain(
+      'avalanche_sendTransaction'
+    )
+  })
+})
+
+describe('R2-3 extension sessions', () => {
+  const EXT = 'chrome-extension://agoakfejjabomempkjlepdflaleeobhb'
+  const extOpt = {
+    eip155: {
+      chains: ['eip155:43114'],
+      methods: [
+        'avalanche_getAccounts',
+        'avalanche_getAccountPubKey',
+        'avalanche_setDeveloperMode',
+        'wallet_enableNetwork'
+      ],
+      events: ev
+    }
+  }
+  const approveData = {
+    selectedAccounts: [
+      {
+        addressC: '0x0000000000000000000000000000000000000001',
+        addressBTC: 'bc1q',
+        addressCoreEth: 'C-avax1'
+      }
+    ],
+    namespaces: {
+      eip155: {
+        chains: ['eip155:43114'],
+        methods: ['eth_sendTransaction'],
+        events: ev
+      }
+    }
+  }
+  const evmMethods = (
+    ap: Awaited<ReturnType<typeof handler.approve>>
+  ): string[] => {
+    if (!ap.success) throw new Error('approve failed')
+    return (ap.value as { eip155: { methods: string[] } }).eip155.methods
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('approves an extension proposal with only the two import methods added', async () => {
+    const req = mkProposal(reqEvm, extOpt, EXT, 'UNKNOWN')
+    const h = await handler.handle(req, mockListenerApi)
+    expect(h.success).toBe(true)
+    const methods = evmMethods(
+      await handler.approve({ request: req, data: approveData })
+    )
+    expect(methods).toEqual(
+      expect.arrayContaining([
+        'avalanche_getAccounts',
+        'avalanche_getAccountPubKey'
+      ])
+    )
+    expect(methods).not.toContain('avalanche_setDeveloperMode')
+    expect(methods).not.toContain('wallet_enableNetwork')
+  })
+
+  it('a web dApp echoing core.app with UNKNOWN gets no Core methods', async () => {
+    const req = mkProposal(reqEvm, extOpt, 'https://core.app', 'UNKNOWN')
+    const methods = evmMethods(
+      await handler.approve({ request: req, data: approveData })
+    )
+    expect(methods.some(utils.isCoreMethod)).toBe(false)
+  })
+})

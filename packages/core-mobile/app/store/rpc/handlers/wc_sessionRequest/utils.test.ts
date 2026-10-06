@@ -4,6 +4,7 @@ import {
   SolanaCaip2ChainId
 } from '@avalabs/core-chains-sdk'
 import { SiteScanResponse } from 'services/blockaid/types'
+import { RpcMethod } from 'store/rpc/types'
 import {
   isCoreMethod,
   isCoreDomain,
@@ -11,7 +12,10 @@ import {
   getScanUrl,
   assessDappTrust,
   DappTrustLevel,
-  VerifyContext
+  VerifyContext,
+  getExtensionImportMethods,
+  isVerifiedCoreDomain,
+  stripCoreMethods
 } from './utils'
 
 const mockAccount = {
@@ -359,5 +363,71 @@ describe('assessDappTrust', () => {
       scanResponse: maliciousScan
     })
     expect(result.level).toBe(DappTrustLevel.MALICIOUS)
+  })
+})
+
+const ctx = (
+  origin: string,
+  validation: 'VALID' | 'UNKNOWN' | 'INVALID'
+): VerifyContext =>
+  ({ verified: { origin, validation, verifyUrl: '' } } as never)
+
+describe('R2-3 extension handling', () => {
+  const EXT = 'chrome-extension://agoakfejjabomempkjlepdflaleeobhb'
+
+  it('never treats an extension origin as a verified Core domain', () => {
+    expect(isVerifiedCoreDomain(ctx(EXT, 'UNKNOWN'))).toBe(false)
+    expect(isVerifiedCoreDomain(ctx(EXT, 'VALID'))).toBe(false)
+  })
+
+  it('grants exactly the two import methods to a known extension id with non-INVALID validation', () => {
+    expect(getExtensionImportMethods(ctx(EXT, 'UNKNOWN'))).toEqual([
+      RpcMethod.AVALANCHE_GET_ACCOUNTS,
+      RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY
+    ])
+  })
+
+  it('grants nothing for INVALID, unknown extension ids, or web origins', () => {
+    expect(getExtensionImportMethods(ctx(EXT, 'INVALID'))).toEqual([])
+    expect(
+      getExtensionImportMethods(
+        ctx('chrome-extension://notcoreextension', 'UNKNOWN')
+      )
+    ).toEqual([])
+    expect(
+      getExtensionImportMethods(ctx('https://core.app', 'UNKNOWN'))
+    ).toEqual([])
+    expect(getExtensionImportMethods(undefined)).toEqual([])
+  })
+})
+
+describe('B6 stripCoreMethods', () => {
+  it('removes Core methods from every namespace but keeps allowed ones', () => {
+    const input = {
+      eip155: {
+        chains: ['eip155:43114'],
+        methods: [
+          'eth_sendTransaction',
+          'avalanche_getAccounts',
+          'avalanche_setDeveloperMode'
+        ],
+        events: []
+      },
+      bip122: {
+        chains: ['bip122:x'],
+        methods: ['bitcoin_sendTransaction'],
+        events: []
+      }
+    }
+    expect(stripCoreMethods(input, ['avalanche_getAccounts'])).toEqual({
+      eip155: {
+        chains: ['eip155:43114'],
+        methods: ['eth_sendTransaction', 'avalanche_getAccounts'],
+        events: []
+      },
+      bip122: { chains: ['bip122:x'], methods: [], events: [] }
+    })
+    // input untouched
+    expect(input.eip155.methods).toHaveLength(3)
   })
 })

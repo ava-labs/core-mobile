@@ -25,6 +25,7 @@ import {
 import {
   CoreAccountAddresses,
   getAddressForChainId,
+  getExtensionImportMethods,
   getScanUrl,
   isVerifiedCoreDomain,
   VerifyContext,
@@ -33,7 +34,8 @@ import {
   NamespaceToApprove,
   navigateToSessionProposal,
   parseApproveData,
-  scanAndNavigateToSessionProposal
+  scanAndNavigateToSessionProposal,
+  stripCoreMethods
 } from './utils'
 import { COMMON_EVENTS, NON_EVM_OPTIONAL_NAMESPACES } from './namespaces'
 
@@ -62,9 +64,15 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     // approve all methods that we support here to allow dApps
     // that use Wagmi to be able to send/access more rpc methods
     // by default, Wagmi only requests eth_sendTransaction and personal_sign
-    return isCoreApp
-      ? [...supportedEvmMethods, ...CORE_EVM_METHODS, ...CORE_WALLET_METHODS]
-      : supportedEvmMethods
+    if (isCoreApp) {
+      return [
+        ...supportedEvmMethods,
+        ...CORE_EVM_METHODS,
+        ...CORE_WALLET_METHODS
+      ]
+    }
+    // Core extension import flow: exactly the two read methods it needs.
+    return [...supportedEvmMethods, ...getExtensionImportMethods(verifyContext)]
   }
 
   private getApprovedEvents = (
@@ -234,20 +242,35 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     )
 
     try {
-      // make sure Core methods are only requested by either Core Web, Internal Playground or Localhost
-      const allRequestedMethods = [
-        ...Object.values(normalizedRequired).flatMap(ns => ns.methods ?? []),
-        ...Object.values(normalizedOptional).flatMap(ns => ns.methods ?? [])
-      ]
-      const hasCoreMethod = allRequestedMethods.some(isCoreMethod)
-
-      if (hasCoreMethod && !isCoreApp) {
+      // Core methods may only be REQUIRED by a verified Core peer. A non-Core
+      // peer that merely lists them as optional gets them stripped below
+      // instead of being rejected (CP-15105 B6).
+      const requiredMethods = Object.values(normalizedRequired).flatMap(
+        ns => ns.methods ?? []
+      )
+      if (!isCoreApp && requiredMethods.some(isCoreMethod)) {
         throw new Error('Requested method is not authorized')
       }
 
+      const extensionMethods = getExtensionImportMethods(
+        request.data.verifyContext
+      )
+      const strippedOptional = stripCoreMethods(
+        normalizedOptional,
+        extensionMethods
+      )
+      // drop optional namespaces left with no methods so we don't approve a chain the dApp can't use
+      const optionalForApproval = isCoreApp
+        ? normalizedOptional
+        : Object.fromEntries(
+            Object.entries(strippedOptional).filter(
+              ([, ns]) => (ns.methods ?? []).length > 0
+            )
+          )
+
       const namespaces = this.getNamespacesToApprove(
         normalizedRequired,
-        normalizedOptional,
+        optionalForApproval,
         listenerApi
       )
 
@@ -326,7 +349,10 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
             ? this.getApprovedEvmMethods(verifyContext)
             : isCoreApp
             ? namespaceToApprove.methods
-            : namespaceToApprove.methods.filter(m => !isCoreMethod(m))
+            : stripCoreMethods(
+                { ns: namespaceToApprove },
+                getExtensionImportMethods(verifyContext)
+              ).ns.methods ?? []
 
         const events = this.getApprovedEvents(requiredNamespaces, namespace)
 
