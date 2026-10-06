@@ -4,7 +4,7 @@ export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']
 
 export const TERMS_OF_USE_URL = 'https://core.app/terms/core'
 
-export const PRIVACY_POLICY_URL = 'https://www.avalabs.org/privacy-policy'
+export const PRIVACY_POLICY_URL = 'https://www.avalabs.org/legal/privacy-policy'
 
 export const HELP_URL = 'https://support.core.app/en/'
 
