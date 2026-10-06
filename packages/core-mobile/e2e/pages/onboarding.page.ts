@@ -1,313 +1,322 @@
+/* eslint-disable prettier/prettier */
+import { actions } from '../helpers/actions'
+import { selectors } from '../helpers/selectors'
 import onboardingLoc from '../locators/onboarding.loc'
-import Assert from '../helpers/assertions'
-import Action from '../helpers/actions'
-import delay from '../helpers/waits'
 import commonElsPage from './commonEls.page'
+import portfolioPage from './portfolio.page'
 
 class OnboardingPage {
   get continueWithGoogle() {
-    return by.id(onboardingLoc.continueWithGoogle)
+    return selectors.getById(onboardingLoc.continueWithGoogle)
   }
 
   get continueWithApple() {
-    return by.id(onboardingLoc.continueWithApple)
-  }
-
-  get manuallyCreateNewWallet() {
-    return by.id(onboardingLoc.manuallyCreateNewWallet)
+    return selectors.getById(onboardingLoc.continueWithApple)
   }
 
   get accessExistingWallet() {
-    return by.text(onboardingLoc.accessExistingWalletBtn)
-  }
-
-  get enterPinFirstScreenTitle() {
-    return by.text(onboardingLoc.enterPinFirstScreenTitle)
-  }
-
-  get enterPinFirstScreenDescription() {
-    return by.text(onboardingLoc.enterPinFirstScreenDescription)
-  }
-
-  get enterPinSecondScreenTitle() {
-    return by.text(onboardingLoc.enterPinSecondScreenTitle)
-  }
-
-  get walletName() {
-    return by.text(onboardingLoc.walletName)
-  }
-
-  get selectAvatarTitle() {
-    return by.text(onboardingLoc.selectAvatarTitle)
-  }
-
-  get selectAvatarDescription() {
-    return by.text(onboardingLoc.selectAvatarDescription)
-  }
-
-  get selectedAvatar() {
-    return by.id(onboardingLoc.selectedAvatar)
+    return selectors.getById(onboardingLoc.accessExistingWallet)
   }
 
   get chooseWalletTitle() {
-    return by.text(onboardingLoc.chooseWalletTitle)
+    return selectors.getByText(onboardingLoc.chooseWalletTitle)
   }
 
-  get typeRecoveryPhraseBtn() {
-    return by.text(onboardingLoc.typeRecoverPhase)
-  }
-
-  get createNewWalletBtn() {
-    return by.text(onboardingLoc.createNewWalletBtn)
-  }
-
-  get analysticsTitle() {
-    return by.text(onboardingLoc.analysticsTitle)
-  }
-
-  get analysticsContent() {
-    return by.id(onboardingLoc.analysticsContentId)
-  }
-
-  get noThanksBtn() {
-    return by.text(onboardingLoc.noThanksBtn)
-  }
-
-  get unlockBtn() {
-    return by.text(onboardingLoc.unlockBtn)
-  }
-
-  get termsAndCondition() {
-    return by.text(onboardingLoc.termsAndConditions)
-  }
-
-  get agreeAndContinue() {
-    return by.text(onboardingLoc.agreeAndContinue)
-  }
-
-  get enterYourRecoveryPhraseTitle() {
-    return by.text(onboardingLoc.enterYourRecoveryPhraseTitle)
-  }
-
-  get enterYourRecoveryPhraseDescription() {
-    return by.text(onboardingLoc.enterYourRecoveryPhraseDescription)
-  }
-
-  get import() {
-    return by.text(onboardingLoc.import)
+  get typeInRecoveryPhase() {
+    return selectors.getById(onboardingLoc.typeRecoverPhase)
   }
 
   get recoveryPhraseInput() {
-    return by.id(onboardingLoc.recoveryPhraseInput)
+    return selectors.getById(onboardingLoc.recoveryPhraseInput)
   }
 
-  get forgotPin() {
-    return by.text(onboardingLoc.forgotPin)
+  get enterRecoveryPhraseTitle() {
+    return selectors.getBySomeText(onboardingLoc.enterRecoveryPhraseTitle)
+  }
+
+  get letsGo() {
+    return selectors.getById(onboardingLoc.letsGo)
+  }
+
+  get unlockBtn() {
+    return selectors.getById(onboardingLoc.unlockBtn)
+  }
+
+  get skip() {
+    return selectors.getById(onboardingLoc.skip)
+  }
+
+  get agreeAndContinue() {
+    return selectors.getById(onboardingLoc.agreeAndContinue)
+  }
+
+  get import() {
+    return selectors.getById(onboardingLoc.import)
+  }
+
+  get enterPinSecondScreenTitle() {
+    return selectors.getBySomeText(onboardingLoc.enterPinSecondScreenTitle)
+  }
+
+  get enterPinFirstScreenTitle() {
+    return selectors.getBySomeText(onboardingLoc.enterPinFirstScreenTitle)
+  }
+
+  get pinInputField() {
+    return selectors.getById(onboardingLoc.pinInputField)
   }
 
   get nameWalletInput() {
-    return by.id(onboardingLoc.nameWalletInput)
+    return selectors.getById(onboardingLoc.nameWalletInput)
   }
 
-  get nameWalletTitle() {
-    return by.text(onboardingLoc.nameWalletTitle)
+  get nameWalletNextBtn() {
+    return selectors.getById(onboardingLoc.nameWalletNextBtn)
   }
 
-  get letsgo() {
-    return by.id(onboardingLoc.letsgo)
+  get nextBtnOnAvatarScreen() {
+    return selectors.getById(onboardingLoc.nextBtnOnAvatarScreen)
   }
 
-  get confirmationTitle() {
-    return by.text(onboardingLoc.confirmationTitle)
+  get selectAvatarTitle() {
+    return selectors.getBySomeText(onboardingLoc.selectAvatarTitle)
   }
 
-  get confirmationDescription() {
-    return by.text(onboardingLoc.confirmationDescription)
+  get forgotPin() {
+    return selectors.getByText(onboardingLoc.forgotPin)
+  }
+
+  get manuallyCreateNewWallet() {
+    return selectors.getById(onboardingLoc.manuallyCreateNewWallet)
+  }
+
+  get noThanksBtn() {
+    return selectors.getByText(onboardingLoc.noThanksBtn)
   }
 
   get newRecoveryPhraseTitle() {
-    return by.text(onboardingLoc.newRecoveryPhraseTitle)
+    return selectors.getByText(onboardingLoc.newRecoveryPhraseTitle)
   }
 
-  get newRecoveryPhraseDescription() {
-    return by.text(onboardingLoc.newRecoveryPhraseDescription)
+  get updateAppModalTitle() {
+    return selectors.getById(onboardingLoc.updateAppModalTitle)
   }
 
-  get newRecoveryPhraseAlert() {
-    return by.text(onboardingLoc.newRecoveryPhraseWarning)
-  }
-
-  get securityWarningTitle() {
-    return by.text(onboardingLoc.securityWarningTitle)
+  get solanaLaunchTitle() {
+    return selectors.getById(onboardingLoc.solanaLaunchTitle)
   }
 
   get securityWarningContent() {
-    return by.text(onboardingLoc.securityWarningContent)
+    return selectors.getByText(onboardingLoc.securityWarningContent)
   }
 
   get verifyYourRecoveryPhraseTitle() {
-    return by.text(onboardingLoc.verifyYourRecoveryPhraseTitle)
+    return selectors.getByText(onboardingLoc.verifyYourRecoveryPhraseTitle)
   }
-
-  get verifyYourRecoveryPhraseDescription() {
-    return by.text(onboardingLoc.verifyYourRecoveryPhraseDescription)
+  
+  get bottomSheet() {
+    return selectors.getById(onboardingLoc.bottomSheet)
   }
-
-  async verifyOnboardingPage() {
-    await Assert.isVisible(this.continueWithGoogle)
-    await Assert.isVisible(this.continueWithApple)
-    await Assert.isVisible(this.manuallyCreateNewWallet)
-    await Assert.isVisible(this.accessExistingWallet)
-  }
-
   async tapAccessExistingWallet() {
-    await Action.waitForElement(this.accessExistingWallet, 20000)
-    await Action.tap(this.accessExistingWallet)
-  }
-
-  async tapManuallyCreateNewWallet() {
-    await Action.tap(this.manuallyCreateNewWallet)
-  }
-
-  async verifyChooseYourExistingWalletPage() {
-    await Assert.isVisible(this.chooseWalletTitle)
-    await Assert.isVisible(this.typeRecoveryPhraseBtn)
-    await Assert.isVisible(this.createNewWalletBtn)
+    await actions.tap(this.accessExistingWallet, this.typeInRecoveryPhase)
   }
 
   async tapTypeInRecoveryPhase() {
-    await Action.tap(this.typeRecoveryPhraseBtn, true)
+    await actions.tap(this.typeInRecoveryPhase, this.agreeAndContinue)
   }
 
-  async tapCreateNewWalletBtn() {
-    await Action.tap(this.createNewWalletBtn)
-  }
+  async exitMetro() {
+    if (process.env.E2E === 'true') return
 
-  async tapNoThanksBtn() {
-    await delay(2000)
-    await Action.tapElementAtIndex(this.noThanksBtn, 0)
-  }
+    const isE2EBuild =
+      process.env.E2E === 'true' || !!process.env.E2E_LOCAL_PATH
+    const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
 
-  async tapUnlockBtn() {
-    await Action.tap(this.unlockBtn)
-  }
-
-  async verifyAnalysticsContentPage() {
-    await Action.waitForElement(this.noThanksBtn)
-    await Assert.isVisible(this.analysticsTitle)
-    await Assert.isVisible(this.analysticsContent)
-    await Assert.isVisible(this.unlockBtn)
-    await Assert.isVisible(this.noThanksBtn)
-  }
-
-  async verifyTermsAndConditionsPage() {
-    await Action.waitForElement(this.termsAndCondition)
-    await Assert.isVisible(this.agreeAndContinue)
-  }
-
-  async tapAgreeAndContinue() {
-    await Action.tap(this.agreeAndContinue)
-  }
-
-  async enterRecoveryPhrase(recoveryPhrase: string) {
-    await Action.setInputText(this.recoveryPhraseInput, recoveryPhrase, 0)
-    try {
-      await Action.dismissKeyboard(onboardingLoc.recoveryPhraseInput)
-    } catch (e) {
-      console.warn('the keyboard is not displayed')
+    if (isE2EBuild || isDeviceFarm) {
+      console.log('you are using the e2e build, skipping metro dev menu')
+    } else {
+      try {
+        console.log('you are using a dev build, skipping metro dev menu now...')
+        const precedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
+        const metroDevMenu = selectors.getByText(`http://${precedingHost}:8081`)
+        const dismissBtn = selectors.getByText('AvaxWallet')
+        await actions.waitFor(metroDevMenu)
+        await actions.tap(metroDevMenu, dismissBtn)
+        await actions.waitFor(dismissBtn, 30000)
+        await actions.dragAndDrop(dismissBtn, [0, 1500])
+        console.log('Dismissed Metro dev menu')
+      } catch (e) {
+        console.log('Metro dev menu not found or already dismissed')
+      }
     }
   }
 
-  async tapImport() {
-    await Action.tap(this.enterYourRecoveryPhraseTitle)
-    await Action.tap(this.import)
+  async exitMetroAfterLogin() {
+    if (process.env.E2E === 'true') return
+
+    const isE2EBuild =
+      process.env.E2E === 'true' || !!process.env.E2E_LOCAL_PATH
+    const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
+
+    if (!isE2EBuild && !isDeviceFarm) {
+      try {
+        const dismissBtn = selectors.getByText("AvaxWallet")
+        await actions.dragAndDrop(dismissBtn, [0, 1500])
+      } catch (e) {
+        console.log('Metro dev menu is not found...')
+      }
+    }
   }
 
-  async verifyEnterYourRecoveryPhrasePage() {
-    await Action.waitForElement(this.enterYourRecoveryPhraseTitle)
-    await Assert.isVisible(this.enterYourRecoveryPhraseDescription)
-    await Assert.isVisible(this.import)
+  async enterRecoveryPhrase(recoveryPhrase: string) {
+    await actions.type(this.recoveryPhraseInput, recoveryPhrase)
+    await actions.tap(this.enterRecoveryPhraseTitle)
   }
 
-  async verifyEnterPinPage() {
-    await Action.waitForElement(this.enterPinFirstScreenTitle)
-    await Assert.isVisible(this.enterPinFirstScreenDescription)
+  async enterWalletName(walletName: string | undefined = undefined) {
+    if (walletName) {
+      await actions.type(this.nameWalletInput, walletName)
+    }
+    await actions.dismissKeyboard()
   }
 
-  async enterWalletName(walletName: string) {
-    await Action.waitForElement(this.nameWalletInput)
-    await element(this.nameWalletInput).replaceText(walletName)
-    await Action.dismissKeyboard(onboardingLoc.nameWalletInput)
+  async tapNextBtnOnNameWallet() {
+    await actions.tap(this.nameWalletNextBtn)
   }
 
-  async verifyNameYourWalletPage() {
-    await Action.waitForElement(this.nameWalletTitle)
-    await Assert.isVisible(this.nameWalletInput)
-    await Assert.isVisible(commonElsPage.next)
-  }
-
-  async verifySelectAvatarPage() {
-    await Action.waitForElement(this.selectAvatarTitle)
-    await Assert.isVisible(this.selectAvatarDescription)
-    await Assert.isVisible(this.selectedAvatar)
-  }
-
-  async verifyConfirmationPage() {
-    await Action.waitForElement(this.confirmationTitle)
-    await Assert.isVisible(this.confirmationDescription)
-    await Assert.isVisible(this.selectedAvatar)
-    await Assert.isVisible(this.letsgo)
+  async tapNextBtnOnAvatarScreen() {
+    await actions.delay(2000)
+    await actions.tap(this.nextBtnOnAvatarScreen, this.letsGo)
   }
 
   async tapLetsGo() {
-    await Action.waitForElement(this.letsgo)
-    await Action.tap(this.letsgo)
+    await actions.tap(this.letsGo)
   }
 
-  async verifyNewRecoveryPhrasePage() {
-    await Action.waitForElement(this.newRecoveryPhraseTitle)
-    await Assert.isVisible(this.newRecoveryPhraseDescription)
-    await Assert.isVisible(this.newRecoveryPhraseAlert)
-    await Assert.isVisible(commonElsPage.copyPhrase)
-    await commonElsPage.tapCopyPhrase()
-    await Action.waitForElement(commonElsPage.copied)
+  async tapUnlockBtn(expectedEle = this.recoveryPhraseInput) {
+    await actions.tap(this.unlockBtn, expectedEle)
+  }
+
+  async tapSkip() {
+    await actions.tap(this.skip)
+  }
+
+  async tapContinueWithGoogle() {
+    await actions.tap(this.continueWithGoogle)
+  }
+
+  async tapAgreeAndContinue(expectedEle = this.unlockBtn) {
+    await actions.tap(this.agreeAndContinue, expectedEle)
+  }
+
+  async tapImport() {
+    await actions.tap(this.import, this.enterPinFirstScreenTitle)
+  }
+
+  async enterPin(pin = '000000') {
+    await actions.waitFor(this.enterPinFirstScreenTitle)
+    
+    // Disable biometrics toggle if it's enabled (to avoid biometric prompt during login)
+    const isToggleOn = await actions.isBiometricToggleOn(1500)
+    if (isToggleOn) {
+      const toggleOn = selectors.getById('toggle_biometrics_on')
+      await actions.tap(toggleOn)
+    }
+    
+    await this.tapZero(pin)
+    await actions.waitFor(this.enterPinSecondScreenTitle)
+    await this.tapZero(pin)
+  }
+
+  async tapZero(pin = '000000') {
+    if (driver.isIOS) {
+      await actions.typeSlowly(this.pinInputField, pin)
+    } else {
+      await this.pinInputField.click()
+      await driver.pause(300)
+      await actions.tapNumberPad(pin)
+    }
+  }
+
+  async dismissUpdateAppModal() {
+    while (await actions.getVisible(this.updateAppModalTitle)) {
+      await actions.delay(1000)
+      await actions.dragAndDrop(this.updateAppModalTitle, [0, 1000])
+      console.log('Dismissed update app modal')
+    }
+    await actions.delay(1000)
+  }
+
+  async dismissBottomSheet(element = this.bottomSheet) {
+    await actions.waitFor(element, 30000)
+    await actions.dragAndDrop(element, [0, 500])
+  }
+
+  async verifyLoggedIn() {
+    await actions.waitFor(commonElsPage.accountOne, 40000)
+    await actions.waitFor(portfolioPage.portfolioBalanceHeader, 40000)
+    await actions.waitForNotVisible(portfolioPage.noAssetsFound)
+    console.log('Verified you are logged in')
+  }
+
+  async tapManuallyCreateNewWallet() {
+    await actions.tap(this.manuallyCreateNewWallet, this.agreeAndContinue)
+  }
+
+  async tapNoThanksBtn() {
+    await actions.tap(this.noThanksBtn)
   }
 
   async getMnemonicWords() {
     const mnemonicWords: string[] = []
 
     for (let i = 1; i <= 24; i++) {
-      const word = (await Action.getElementText(
-        by.id(`mnemonic__${i}`)
+      const word = (await actions.getText(
+        selectors.getById(`mnemonic__${i}`)
       )) as string
       mnemonicWords.push(word)
     }
     return mnemonicWords
   }
 
-  async verifySecurityWarning() {
-    await Action.waitForElement(this.securityWarningTitle)
-    await Assert.isVisible(this.securityWarningContent)
-    await Action.tap(commonElsPage.dismiss)
-  }
-
-  async verifySelectPhrasePage() {
-    await Action.waitForElement(this.verifyYourRecoveryPhraseTitle)
-    await Assert.isVisible(this.verifyYourRecoveryPhraseDescription)
-    await Assert.isVisible(commonElsPage.next)
+  async dismissSecurityWarning() {
+    if (driver.isAndroid) {
+      await actions.waitForDisplayed(this.securityWarningContent)
+      try {
+        await actions.tap(commonElsPage.dismiss)
+      } catch (e) {
+        await actions.tap(commonElsPage.dismissAndroid)
+      }
+    }
   }
 
   async selectWord(words: string[], questionId: string) {
-    const title = await Action.getElementText(by.id(`${questionId}_title`))
+    const title = await actions.getText(selectors.getById(`${questionId}_title`))
     if (title) {
       const target = title.match(/"(.*?)"/)
       const targetIndex = target && target[1] ? words.indexOf(target[1]) : -1
       const isBefore = title.indexOf('before') > -1
       if (isBefore) {
-        await Action.tap(by.id(`${questionId}_${words[targetIndex - 1]}`))
+        await actions.click(selectors.getById(`${questionId}_${words[targetIndex - 1]}`))
       } else {
-        await Action.tap(by.id(`${questionId}_${words[targetIndex + 1]}`))
+        await actions.click(selectors.getById(`${questionId}_${words[targetIndex + 1]}`))
       }
+    }
+  }
+  
+  async tapKeypadUpButton() {
+    const upKeypad = await actions.getVisible(commonElsPage.keypadUpButton)
+    if (upKeypad) {
+      await actions.tap(commonElsPage.keypadUpButton)
+    }
+  }
+
+  async unlockEnterPin() {
+    try {
+      await this.tapZero()
+    } catch {
+      await this.tapKeypadUpButton()
+      await this.tapZero()
     }
   }
 }

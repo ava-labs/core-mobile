@@ -1,82 +1,71 @@
-import Actions from '../helpers/actions'
+import { actions } from '../helpers/actions'
+import { selectors } from '../helpers/selectors'
 import bottomTabsLoc from '../locators/bottomTabs.loc'
 
 class BottomsTabsPage {
   get watchlistIcon() {
-    return by.id(bottomTabsLoc.watchlistIcon)
+    return selectors.getById(bottomTabsLoc.watchlistIcon)
   }
 
   get activityTab() {
-    return by.id(bottomTabsLoc.activityTab)
+    return selectors.getById(bottomTabsLoc.activityTab)
   }
 
   get watchlistTab() {
-    return by.id(bottomTabsLoc.watchlistTab)
+    return selectors.getById(bottomTabsLoc.watchlistTab)
   }
 
   get plusIcon() {
-    return by.id(bottomTabsLoc.plusButton)
+    return selectors.getById(bottomTabsLoc.plusButton)
   }
 
   get portfolioTab() {
-    return by.id(bottomTabsLoc.portfolioTab)
+    return selectors.getById(bottomTabsLoc.portfolioTab)
   }
 
   get trackTab() {
-    return by.id(bottomTabsLoc.trackTab)
+    return selectors.getById(bottomTabsLoc.trackTab)
+  }
+
+  get earnTab() {
+    return selectors.getById(bottomTabsLoc.earnTab)
   }
 
   get stakeTab() {
-    return by.id(bottomTabsLoc.stakeTab)
+    return selectors.getById(bottomTabsLoc.stakeTab)
   }
 
   get browserTab() {
-    return by.id(bottomTabsLoc.browserTab)
+    return selectors.getById(bottomTabsLoc.browserTab)
   }
 
   get activityTabTitle() {
-    return by.text(bottomTabsLoc.activityTab)
+    return selectors.getByText(bottomTabsLoc.activityTab)
   }
 
   async tapBrowserTab() {
-    await Actions.tap(this.browserTab)
+    await actions.tap(this.browserTab)
   }
 
   async tapActivityTab() {
-    await Actions.waitAndTap(this.activityTab)
-    await Actions.waitAndTap(this.activityTab)
-  }
-
-  async tapPlusIcon() {
-    if (Actions.platform() === 'ios') {
-      try {
-        await Actions.tapElementAtIndex(this.plusIcon, 1)
-      } catch {
-        await Actions.tapElementAtIndex(this.plusIcon, 0)
-      }
-    } else {
-      try {
-        await Actions.tapElementAtIndex(this.plusIcon, 0)
-      } catch {
-        await Actions.tapElementAtIndex(this.plusIcon, 1)
-      }
-    }
+    await actions.longPress(this.activityTab)
   }
 
   async tapPortfolioTab() {
-    await Actions.tap(this.portfolioTab)
+    await actions.longPress(this.portfolioTab)
   }
 
   async tapTrackTab() {
-    await Actions.tap(this.trackTab)
+    await actions.longPress(this.trackTab)
+  }
+
+  async tapEarnTab() {
+    await actions.longPress(this.earnTab)
+    await actions.delay(1000)
   }
 
   async tapStakeTab() {
-    await Actions.tap(this.stakeTab)
-  }
-
-  async tapWatchlistTab() {
-    await Actions.tap(this.watchlistTab)
+    await actions.longPress(this.stakeTab)
   }
 }
 

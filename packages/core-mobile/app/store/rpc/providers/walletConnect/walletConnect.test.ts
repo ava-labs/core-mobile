@@ -95,13 +95,11 @@ describe('walletConnectProvider', () => {
           'eth_sendTransaction_success',
           {
             provider: 'walletConnect',
-            encrypted: {
-              dAppUrl: 'https://test.dapp.com',
-              // EVM address is lowercased to a canonical form (CP-13825)
-              address: mockActiveAccount.addressC.toLowerCase(),
-              chainId: 'eip155:1',
-              txHash: '0xdeadbeef'
-            }
+            dAppUrl: 'https://test.dapp.com',
+            // EVM address is lowercased to a canonical form (CP-13825)
+            address: mockActiveAccount.addressC.toLowerCase(),
+            chainId: 'eip155:1',
+            txHash: '0xdeadbeef'
           }
         )
       })
@@ -120,15 +118,13 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              dAppUrl: 'https://test.dapp.com',
-              // C-chain is EVM; address is lowercased to canonical form (CP-13825)
-              address: mockActiveAccount.addressC.toLowerCase(),
-              txHash: '0xcafebabe'
-            })
-          }
+            dAppUrl: 'https://test.dapp.com',
+            // C-chain is EVM; address is lowercased to canonical form (CP-13825)
+            address: mockActiveAccount.addressC.toLowerCase(),
+            txHash: '0xcafebabe'
+          })
         )
       })
 
@@ -146,12 +142,10 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              address: mockActiveAccount.addressPVM
-            })
-          }
+            address: mockActiveAccount.addressPVM
+          })
         )
       })
 
@@ -169,12 +163,10 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              address: mockActiveAccount.addressAVM
-            })
-          }
+            address: mockActiveAccount.addressAVM
+          })
         )
       })
 
@@ -192,14 +184,12 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'bitcoin_sendTransaction_success',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              dAppUrl: 'https://test.dapp.com',
-              address: mockActiveAccount.addressBTC,
-              txHash: 'btctxhash123'
-            })
-          }
+            dAppUrl: 'https://test.dapp.com',
+            address: mockActiveAccount.addressBTC,
+            txHash: 'btctxhash123'
+          })
         )
       })
 
@@ -217,14 +207,12 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'solana_signAndSendTransaction_success',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              dAppUrl: 'https://test.dapp.com',
-              address: mockActiveAccount.addressSVM,
-              txHash: 'solanatxhash456'
-            })
-          }
+            dAppUrl: 'https://test.dapp.com',
+            address: mockActiveAccount.addressSVM,
+            txHash: 'solanatxhash456'
+          })
         )
       })
 
@@ -275,11 +263,9 @@ describe('walletConnectProvider', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'solana_signTransaction_approved',
           {
-            encrypted: {
-              dAppUrl: 'https://test.dapp.com',
-              address: mockActiveAccount.addressSVM,
-              chainId: SolanaCaip2ChainId.MAINNET
-            }
+            dAppUrl: 'https://test.dapp.com',
+            address: mockActiveAccount.addressSVM,
+            chainId: SolanaCaip2ChainId.MAINNET
           }
         )
       })

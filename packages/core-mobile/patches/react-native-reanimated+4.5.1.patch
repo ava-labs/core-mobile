@@ -1,3 +1,45 @@
+diff --git a/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxyCommon.h b/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxyCommon.h
+index 8603591..3d43e94 100644
+--- a/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxyCommon.h
++++ b/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxyCommon.h
+@@ -22,6 +22,7 @@ struct LayoutAnimation {
+   Tag parentTag;
+   std::optional<double> opacity;
+   bool isViewAlreadyMounted = false;
++  bool isExitingWhenSettled = false;
+   int count = 1;
+   LayoutAnimation &operator=(const LayoutAnimation &other) = default;
+ 
+diff --git a/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxy_Legacy.cpp b/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxy_Legacy.cpp
+index 9402e3e..3d60fe6 100644
+--- a/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxy_Legacy.cpp
++++ b/node_modules/react-native-reanimated/Common/cpp/reanimated/LayoutAnimations/LayoutAnimationsProxy_Legacy.cpp
+@@ -119,6 +119,7 @@ std::optional<SurfaceId> LayoutAnimationsProxy_Legacy::endLayoutAnimation(int ta
+   if (--layoutAnimation.count > 0) {
+     return {};
+   }
++  layoutAnimation.isExitingWhenSettled = shouldRemove;
+   maybeSettledAnimationTags_.insert(tag);
+   auto surfaceId = layoutAnimation.finalView.surfaceId;
+ 
+@@ -414,12 +415,11 @@ void LayoutAnimationsProxy_Legacy::addOngoingAnimations(SurfaceId surfaceId, Sha
+     auto layoutAnimationIt = layoutAnimations_.find(tag);
+ 
+     if (layoutAnimationIt == layoutAnimations_.end() ||
+-        // A settled animation is normally cleaned up without applying further
+-        // updates. The exception is a flaky entering animation whose opacity was
+-        // never restored (the view wasn't mounted in time) - we still need to
+-        // apply that pending opacity, otherwise the view stays invisible. Only
+-        // entering animations carry an opacity value.
+-        (layoutAnimationIt->second.isSettled() && !layoutAnimationIt->second.opacity.has_value())) {
++        // A settled animation still needs its exact final update applied before
++        // cleanup, otherwise the view stops one keyframe short of its target
++        // (upstream #10395 / PR #10171, shipped in 4.6.0). Only an exiting view
++        // must not receive further updates.
++        (layoutAnimationIt->second.isSettled() && layoutAnimationIt->second.isExitingWhenSettled)) {
+       continue;
+     }
+ 
 diff --git a/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts b/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts
 index eada3eb..954c97f 100644
 --- a/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts

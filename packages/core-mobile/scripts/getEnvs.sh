@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 # Source the AWS utilities script
 source ./scripts/common/awsUtils.sh
 

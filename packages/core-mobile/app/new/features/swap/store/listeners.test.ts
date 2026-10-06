@@ -633,24 +633,21 @@ describe('Fusion listeners', () => {
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'SwapFailed',
         expect.objectContaining({
-          encrypted: expect.objectContaining({
-            sourceAddress: '0xfromAddress',
-            targetAddress: '0xtoAddress',
-            sourceChainId: 'eip155:43114',
-            targetChainId: 'eip155:43114',
-            sourceTxHash: '0xsourceHash',
-            errorCode: '5006',
-            errorReason: 'TRANSACTION_REVERTED',
-            userClickedMax: true,
-            sourceTokenSymbol: 'AVAX',
-            sourceTokenAddress: undefined,
-            sourceAmount: '1290000000000000000',
-            destinationTokenAddress:
-              '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
-            destinationTokenSymbol: 'USDC',
-            quoteAggregator: 'Odos',
-            quoteAggregatorId: 'agg-markr-odos'
-          })
+          sourceAddress: '0xfromAddress',
+          targetAddress: '0xtoAddress',
+          sourceChainId: 'eip155:43114',
+          targetChainId: 'eip155:43114',
+          sourceTxHash: '0xsourceHash',
+          errorCode: '5006',
+          errorReason: 'TRANSACTION_REVERTED',
+          userClickedMax: true,
+          sourceTokenSymbol: 'AVAX',
+          sourceTokenAddress: undefined,
+          sourceAmount: '1290000000000000000',
+          destinationTokenAddress: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+          destinationTokenSymbol: 'USDC',
+          quoteAggregator: 'Odos',
+          quoteAggregatorId: 'agg-markr-odos'
         })
       )
     })
@@ -670,12 +667,10 @@ describe('Fusion listeners', () => {
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'SwapFailed',
         expect.objectContaining({
-          encrypted: expect.objectContaining({
-            userClickedMax: false,
-            sourceTokenSymbol: 'USDC',
-            destinationTokenSymbol: 'AVAX',
-            quoteAggregator: 'Odos'
-          })
+          userClickedMax: false,
+          sourceTokenSymbol: 'USDC',
+          destinationTokenSymbol: 'AVAX',
+          quoteAggregator: 'Odos'
         })
       )
     })
@@ -699,11 +694,9 @@ describe('Fusion listeners', () => {
 
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'SwapSuccessful',
-        expect.objectContaining({
-          encrypted: expect.not.objectContaining({
-            userClickedMax: expect.anything(),
-            quoteAggregator: expect.anything()
-          })
+        expect.not.objectContaining({
+          userClickedMax: expect.anything(),
+          quoteAggregator: expect.anything()
         })
       )
     })

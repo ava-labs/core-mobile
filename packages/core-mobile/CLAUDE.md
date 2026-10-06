@@ -131,7 +131,7 @@ yarn appium:smoke
 
 Required for full functionality. Fetch with `yarn envs`:
 - Authentication: SEEDLESS_*, GOOGLE_OAUTH_*, APPLE_OAUTH_*
-- Analytics: POSTHOG_*, ANALYTICS_ENCRYPTION_KEY
+- Analytics: POSTHOG_*
 - Services: PROXY_URL, GLACIER_URL, GAS_STATION_URL
 - External APIs: COINBASE_APP_ID, WALLET_CONNECT_PROJECT_ID, SENTRY_DSN
 - Security: BLOCKAID via PROXY_URL
@@ -148,11 +148,11 @@ See `docs/features.md` for feature-specific env requirements.
 - MSW for API mocking
 
 **E2E Tests** (Appium/WebDriverIO)
-- Located in `e2e-appium/`
+- Located in `e2e/`
 - Smoke tests tagged with `[smoke]` or `[Smoke]`
 - Platform-specific runs: `yarn appium:android` / `yarn appium:ios` (set `APP_PATH` to your build)
-- Local device capabilities are resolved in `e2e-appium/helpers/resolve-local-device.ts` (`adb` / `simctl`; optional `ANDROID_SERIAL`, `IOS_UDID`, etc.)
-- AWS Device Farm packaging and env vars: `scripts/devicefarm/README.md`
+- Local device capabilities are resolved in `e2e/helpers/resolve-local-device.ts` (`adb` / `simctl`; optional `ANDROID_SERIAL`, `IOS_UDID`, etc.)
+- E2E env vars, wallet funding, and AWS Device Farm: `e2e/README.md` (packaging scripts in `scripts/devicefarm/`)
 
 ### Multi-Chain Support
 

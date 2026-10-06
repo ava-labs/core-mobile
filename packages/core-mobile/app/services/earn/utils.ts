@@ -13,7 +13,8 @@ import { runAfterInteractions } from 'utils/runAfterInteractions'
 import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
-export const maxTransactionStatusCheckRetries = 8 // ~ 4 minutes
+// 8 attempts with exponential backoff means 7 waits of 2^0..2^6 seconds
+export const maxTransactionStatusCheckRetries = 8 // ~ 2 minutes
 export const maxTransactionCreationRetries = 7 // ~ 2 minute
 export const maxBalanceCheckRetries = 10
 export const maxGetAtomicUTXOsRetries = 10
