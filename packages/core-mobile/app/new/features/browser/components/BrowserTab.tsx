@@ -83,6 +83,10 @@ const WC_BROWSER_ORIGIN_WHITELIST = ['http://*', 'https://*', 'wc:*']
 // old page. The timeout is long enough to allow a slow network to load a real
 // page, but short enough to avoid a malicious page that never renders and wedges the tab.
 const PROVISIONAL_NAVIGATION_TIMEOUT_MS = 10_000
+// Subframe-drop warning is rate-limited globally so a hostile iframe spamming
+// postMessage cannot flood logs.
+const FRAME_DROP_WARN_WINDOW_MS = 10_000
+let lastFrameDropWarnAt = 0
 
 export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
   // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -163,10 +167,6 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     // callbacks (onLoad) where the React state update from onNavigationStateChange
     // may not have committed yet.
     const isProvisionalNavigationRef = useRef(false)
-    // Set while we're waiting for the nav_response_verified message that
-    // confirms the cross-origin load was not a 204 No Content spoof.
-    const pendingVerificationUrlRef = useRef<string | null>(null)
-    const pendingVerificationTitleRef = useRef<string | undefined>(undefined)
     const backAttemptUrlRef = useRef<string | null>(null)
     const backAttemptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
       null
@@ -477,8 +477,18 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     const onMessageHandler = useCallback(
       (event: WebViewMessageEvent) => {
         const frame = getMessageFrameInfo(event.nativeEvent)
-        if (frame.isMainFrame === false) {
-          Logger.warn('[Browser] Ignored WebView message from a subframe')
+        // Fail closed: `undefined` means the platform could not attribute the
+        // message (legacy Android bridge). Treat it like a subframe (R2-5/B5).
+        if (frame.isMainFrame !== true) {
+          const now = Date.now()
+          if (now - lastFrameDropWarnAt >= FRAME_DROP_WARN_WINDOW_MS) {
+            lastFrameDropWarnAt = now
+            Logger.warn(
+              `[Browser] Ignored WebView message without proven main-frame provenance (isMainFrame=${String(
+                frame.isMainFrame
+              )})`
+            )
+          }
           return
         }
 
@@ -540,58 +550,6 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
               }
               break
             }
-            case 'nav_response_verified': {
-              // Result of the post-load JavaScript verification injected when
-              // onLoad fires after a provisional cross-origin navigation (see
-              // onLoad above). Detects HTTP 204 No Content responses that
-              // update window.location without replacing the document — the
-              // mechanism behind URL-bar spoofing (APPSEC address-bar spoof).
-              const pendingUrl = pendingVerificationUrlRef.current
-              const pendingTitle = pendingVerificationTitleRef.current
-              pendingVerificationUrlRef.current = null
-              pendingVerificationTitleRef.current = undefined
-
-              if (!pendingUrl) break
-
-              let status = -1
-              let originMismatch = false
-              try {
-                const verifiedData = JSON.parse(wrapper.payload) as {
-                  status: number
-                  originMismatch: boolean
-                }
-                status = verifiedData.status
-                originMismatch = verifiedData.originMismatch
-              } catch {
-                // Malformed payload — treat conservatively (accept navigation).
-              }
-
-              clearProvisionalNavigation()
-
-              // 204/205 means no content was loaded (confirmed via responseStatus API,
-              // Chrome 102+). originMismatch is the fallback for older Chrome: if the
-              // navigation timing entry still points at the previous page's origin
-              // while window.location has advanced to the spoofed domain, no new
-              // document was created.
-              const isSpoof =
-                status === 204 || status === 205 || originMismatch === true
-
-              if (isSpoof) {
-                Logger.warn(
-                  `[ProviderSecurity] Blocked 204 URL-bar spoof: ${pendingUrl} status=${status} originMismatch=${originMismatch}`
-                )
-                // Do NOT update the URL bar — keep the last committed origin.
-                // Navigate back away from the spoofed URL state.
-                if (lastNavStateRef.current.canGoBack) {
-                  webViewRef.current?.goBack()
-                } else {
-                  goToDiscover()
-                }
-              } else {
-                syncCommittedUrl(pendingUrl, pendingTitle)
-              }
-              break
-            }
             default:
               break
           }
@@ -609,10 +567,8 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         showWalletConnectDialog,
         handleProviderMessage,
         handleDomainMetadata,
-        urlToLoad,
-        goToDiscover,
-        syncCommittedUrl,
-        clearProvisionalNavigation
+        injectedProviderEnabled,
+        urlToLoad
       ]
     )
 
@@ -738,18 +694,15 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     }
 
     const onError = (event: WebViewErrorEvent): void => {
-      // Clear any in-flight 204-verification so the overlay doesn't get stuck.
-      pendingVerificationUrlRef.current = null
-      pendingVerificationTitleRef.current = undefined
       clearProvisionalNavigation()
 
       // Fallback: unknown schemes can sometimes reach `onError` without triggering
       // `onShouldStartLoadWithRequest` (depending on redirect/navigation type).
       const failedUrl = event.nativeEvent.url ?? ''
-      const description = event.nativeEvent.description ?? ''
+      const errorDescription = event.nativeEvent.description ?? ''
 
       if (
-        description.includes('ERR_UNKNOWN_URL_SCHEME') &&
+        errorDescription.includes('ERR_UNKNOWN_URL_SCHEME') &&
         isDeepLinkUrl(failedUrl)
       ) {
         // Only the active tab may turn a failed custom-scheme navigation into a
@@ -844,7 +797,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           ]
         })
       },
-      [disabled]
+      []
     )
 
     // Native backstop for window.open (react-native-webview `onOpenWindow`,

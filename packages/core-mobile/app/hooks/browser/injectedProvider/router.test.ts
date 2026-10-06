@@ -656,6 +656,62 @@ describe('createInjectedProviderRouter', () => {
       )
     })
 
+    describe('origin-unavailable warning (R2-12)', () => {
+      const sendRaw = (
+        router: ReturnType<typeof createInjectedProviderRouter>,
+        id: number,
+        method: string
+      ): void => {
+        router.handleProviderMessage(
+          JSON.stringify({ id, request: { method, params: [] } }),
+          MAIN_FRAME
+        )
+      }
+      const originWarnings = (): string[] =>
+        (
+          jest.requireMock('utils/Logger').default.warn.mock
+            .calls as unknown[][]
+        )
+          .map(([m]) => String(m))
+          .filter(m => m.includes('origin unavailable'))
+
+      beforeEach(() => {
+        jest.useFakeTimers()
+        jest.setSystemTime(new Date('2030-01-01T00:00:00Z'))
+        jest.requireMock('utils/Logger').default.warn.mockClear()
+      })
+      afterEach(() => {
+        jest.useRealTimers()
+      })
+
+      it('logs a rate-limited warning and reopens after the window', () => {
+        const { deps } = makeDeps({ nativeOrigin: undefined })
+        const router = createInjectedProviderRouter(deps)
+
+        sendRaw(router, 1, 'eth_requestAccounts')
+        sendRaw(router, 2, 'eth_requestAccounts')
+        expect(originWarnings()).toHaveLength(1)
+        expect(originWarnings()[0]).toContain('eth_requestAccounts')
+        expect(originWarnings()[0]).toContain('hasCommittedOrigin=false')
+
+        jest.advanceTimersByTime(10_001)
+        sendRaw(router, 3, 'eth_requestAccounts')
+        expect(originWarnings()).toHaveLength(2)
+      })
+
+      it('collapses unknown method names into one bounded, sanitised bucket', () => {
+        const { deps } = makeDeps({ nativeOrigin: undefined })
+        const router = createInjectedProviderRouter(deps)
+
+        sendRaw(router, 1, 'x_1\n<b>')
+        sendRaw(router, 2, 'x_2')
+        sendRaw(router, 3, 'x_3')
+
+        expect(originWarnings()).toHaveLength(1)
+        expect(originWarnings()[0]).toContain('Rejected x_1b (id 1)')
+      })
+    })
+
     it('rejects non-signing read-only methods when native origin is unavailable', () => {
       const { deps, sendResponse } = makeDeps({ nativeOrigin: undefined })
       const router = createInjectedProviderRouter(deps)

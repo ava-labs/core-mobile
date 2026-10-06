@@ -25,7 +25,6 @@ export type InjectedJsMessageWrapper = {
     | 'window_open'
     | 'provider_request'
     | 'domain_metadata'
-    | 'nav_response_verified'
   payload: string
 }
 

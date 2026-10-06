@@ -16,6 +16,41 @@ import { isFirstPartyOrigin } from './firstPartyDomains'
 import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
 import { isEvmSigningMethod, isAvalancheSigningMethod } from './approvalMethods'
 
+// R2-12: "Origin unavailable" rejections used to be silent, which hid B4/R2-1
+// from Sentry. Warn at most once per method per window so a busy page cannot
+// flood logs.
+const ORIGIN_WARN_WINDOW_MS = 10_000
+const OTHER_METHOD_KEY = '<other>'
+const KNOWN_METHODS: ReadonlySet<string> = new Set<string>([
+  ...Object.values(RpcMethod),
+  ...Object.values(AppRpcMethod)
+])
+// The method string is page-controlled. Key the limiter on a bounded set (known
+// methods plus one shared bucket) so unique names cannot bypass the window or
+// grow the map without bound, and sanitise what we print.
+const lastOriginWarnAt = new Map<string, number>()
+
+const warnOriginUnavailable = (
+  method: string,
+  id: number,
+  isMainFrame: boolean | undefined
+): void => {
+  const isKnown = KNOWN_METHODS.has(method)
+  const key = isKnown ? method : OTHER_METHOD_KEY
+  const now = Date.now()
+  const last = lastOriginWarnAt.get(key) ?? 0
+  if (now - last < ORIGIN_WARN_WINDOW_MS) return
+  lastOriginWarnAt.set(key, now)
+  const printed = isKnown
+    ? method
+    : method.replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 64)
+  Logger.warn(
+    `[InjectedProvider] Rejected ${printed} (id ${id}): origin unavailable (isMainFrame=${String(
+      isMainFrame
+    )}, hasCommittedOrigin=false)`
+  )
+}
+
 // avalanche_* methods (X/P account management + signing) are first-party-only.
 // A prefix classifies them: it conservatively covers every current and future
 // avalanche_* method, so a new one can't silently bypass the gate by not being
@@ -628,6 +663,7 @@ export function createInjectedProviderRouter(
   const handleRequestAccounts = async (id: number): Promise<void> => {
     const origin = getNativeOrigin()
     if (!origin) {
+      warnOriginUnavailable('eth_requestAccounts', id, undefined)
       sendResponse(
         id,
         providerErrors.unauthorized('Origin unavailable — cannot connect'),
@@ -700,6 +736,7 @@ export function createInjectedProviderRouter(
   const handleRequestPermissions = async (id: number): Promise<void> => {
     const origin = getNativeOrigin()
     if (!origin) {
+      warnOriginUnavailable('wallet_requestPermissions', id, undefined)
       sendResponse(
         id,
         providerErrors.unauthorized('Origin unavailable — cannot connect'),
@@ -946,6 +983,7 @@ export function createInjectedProviderRouter(
     // about:blank context, have no authoritative origin to gate on — reject
     // rather than silently treat them as unscoped.
     if (!nativeOrigin) {
+      warnOriginUnavailable(method, id, isMainFrame)
       sendResponse(
         id,
         providerErrors.unauthorized('Origin unavailable'),
