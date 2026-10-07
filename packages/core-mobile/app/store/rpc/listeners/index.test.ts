@@ -743,7 +743,6 @@ describe('rpc - listeners', () => {
           )
         })
 
-        
         describe('peer identity reconciliation', () => {
           const verified = (
             origin: string,

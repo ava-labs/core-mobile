@@ -27,7 +27,8 @@ export function validateSiweOrigin(
       type: AlertType.DANGER,
       details: {
         title: 'Sign-In Request Mismatch',
-        description: 'Unable to verify the dApp origin. This could be a phishing attempt.',
+        description:
+          'Unable to verify the dApp origin. This could be a phishing attempt.',
         body: ['The dApp did not provide a valid URL for origin verification.']
       }
     }

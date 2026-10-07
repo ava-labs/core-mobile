@@ -140,7 +140,7 @@ describe('getAddressWithCaip2ChainId', () => {
   })
 })
 
-// Check that the session's approved account set is not widened by a network switch or active-account change 
+// Check that the session's approved account set is not widened by a network switch or active-account change
 describe('isAddressApprovedInNamespace', () => {
   const approved = [
     'eip155:1:0x241b0073b66bfc19FCB54308861f604F5Eb8f51b',

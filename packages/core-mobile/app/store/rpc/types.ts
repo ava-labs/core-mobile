@@ -182,7 +182,7 @@ export enum RequestContext {
   // If we set an address for this key, the approval screen will show “To” instead of “Contract” along with the address.
   NON_CONTRACT_RECIPIENT_ADDRESS = 'nonContractRecipient',
 
-  // used to show a warning on the per-request approval sheet when the peer's attested identity is actively suspicious, 
+  // used to show a warning on the per-request approval sheet when the peer's attested identity is actively suspicious,
   // or when the peer's attested origin contradicts its self-declared metadata.url. See getPeerTrustWarning.
   PEER_TRUST_WARNING = 'peerTrustWarning',
 

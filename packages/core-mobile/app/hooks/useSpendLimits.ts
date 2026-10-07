@@ -122,7 +122,7 @@ export const useSpendLimits = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenApprovals])
 
-  // Ensure that the user can only edit the approval if there is exactly one approval and it is editable. 
+  // Ensure that the user can only edit the approval if there is exactly one approval and it is editable.
   // This prevents confusion when multiple approvals are present.
   const canEdit =
     tokenApprovals !== undefined &&

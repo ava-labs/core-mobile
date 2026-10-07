@@ -15,7 +15,7 @@ import { SpendLimitOptions } from './SpendLimitOptions'
 import { MenuId } from './types'
 import { getDefaultSpendLimitValue, getSpendLimitAmounts } from './utils'
 
-// Render all of the spend limits in order, with the first one optionally showing the amount card. 
+// Render all of the spend limits in order, with the first one optionally showing the amount card.
 export const SpendLimits = ({
   spendLimits,
   onSelect,

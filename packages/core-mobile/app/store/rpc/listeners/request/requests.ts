@@ -53,7 +53,7 @@ export const processRequest = async (
   } catch (error) {
     Logger.error('rpc request is invalid', error)
 
-    // A failed validation must ALWAYS stop the request. 
+    // A failed validation must ALWAYS stop the request.
     rpcProvider.onError({
       request,
       error:
