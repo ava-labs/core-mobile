@@ -16,7 +16,7 @@ import {
   getDisplayAccountAddress,
   isRequestedAccountUnavailable,
   getAccountUnavailableMessage,
-  isAvalancheTransaction,
+  isAvalancheSigningData,
   isAvalancheBaseTx
 } from './utils'
 
@@ -413,12 +413,12 @@ describe('getAccountUnavailableMessage', () => {
   })
 })
 
-describe('isAvalancheTransaction', () => {
+describe('isAvalancheSigningData', () => {
   it.each([
     RpcMethod.AVALANCHE_SEND_TRANSACTION,
     RpcMethod.AVALANCHE_SIGN_TRANSACTION
   ])('returns true for %s', type => {
-    expect(isAvalancheTransaction({ type } as SigningData)).toBe(true)
+    expect(isAvalancheSigningData({ type } as SigningData)).toBe(true)
   })
 
   it.each([
@@ -426,7 +426,7 @@ describe('isAvalancheTransaction', () => {
     RpcMethod.ETH_SEND_TRANSACTION,
     RpcMethod.SOLANA_SIGN_TRANSACTION
   ])('returns false for %s', type => {
-    expect(isAvalancheTransaction({ type } as SigningData)).toBe(false)
+    expect(isAvalancheSigningData({ type } as SigningData)).toBe(false)
   })
 })
 

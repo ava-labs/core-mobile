@@ -47,7 +47,7 @@ import {
   isRequestedAccountUnavailable,
   overrideContractItem,
   removeWebsiteItemIfNecessary,
-  isAvalancheTransaction,
+  isAvalancheSigningData,
   isAvalancheBaseTx
 } from './utils'
 
@@ -187,7 +187,7 @@ const ApprovalScreenInner = ({
     })
   }, [displayData.details, request])
 
-  const isAvalancheTx = isAvalancheTransaction(signingData)
+  const isAvalancheTx = isAvalancheSigningData(signingData)
   const isBaseTx = isAvalancheBaseTx(signingData)
   const balanceChange = displayData.balanceChange
   const hasBalanceChange = getHasBalanceChange(balanceChange)

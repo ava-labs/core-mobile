@@ -198,7 +198,7 @@ export const getEthSendTxValidationError = ({
 }
 
 // avalanche tx signing screens show section titles and skip the alert body
-export const isAvalancheTransaction = (signingData: SigningData): boolean =>
+export const isAvalancheSigningData = (signingData: SigningData): boolean =>
   signingData.type === RpcMethod.AVALANCHE_SEND_TRANSACTION ||
   signingData.type === RpcMethod.AVALANCHE_SIGN_TRANSACTION
 
