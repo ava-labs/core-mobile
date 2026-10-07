@@ -131,7 +131,7 @@ yarn appium:smoke
 
 Required for full functionality. Fetch with `yarn envs`:
 - Authentication: SEEDLESS_*, GOOGLE_OAUTH_*, APPLE_OAUTH_*
-- Analytics: POSTHOG_*, ANALYTICS_ENCRYPTION_KEY
+- Analytics: POSTHOG_*
 - Services: PROXY_URL, GLACIER_URL, GAS_STATION_URL
 - External APIs: COINBASE_APP_ID, WALLET_CONNECT_PROJECT_ID, SENTRY_DSN
 - Security: BLOCKAID via PROXY_URL

@@ -277,17 +277,15 @@ export async function submitRecurringSwap(
 
   AnalyticsService.capture('RecurringSwapScheduled', {
     chainId: quote.chainId,
-    encrypted: {
-      scheduleUuid: quote.uuid,
-      fromTokenSymbol,
-      toTokenSymbol,
-      amountPerOrder: amountPerOrder.toString(),
-      // Wire value Markr signs — the unlimited sentinel (-1) or a finite
-      // count. Downstream dashboards filter on `numberOfOrders === -1`
-      // for the unlimited cohort; no separate boolean is emitted.
-      numberOfOrders: quote.numberOfOrders,
-      intervalSeconds: deriveIntervalSeconds(frequency)
-    }
+    scheduleUuid: quote.uuid,
+    fromTokenSymbol,
+    toTokenSymbol,
+    amountPerOrder: amountPerOrder.toString(),
+    // Wire value Markr signs — the unlimited sentinel (-1) or a finite
+    // count. Downstream dashboards filter on `numberOfOrders === -1`
+    // for the unlimited cohort; no separate boolean is emitted.
+    numberOfOrders: quote.numberOfOrders,
+    intervalSeconds: deriveIntervalSeconds(frequency)
   })
 
   showSnackbar('Recurring swap scheduled')
