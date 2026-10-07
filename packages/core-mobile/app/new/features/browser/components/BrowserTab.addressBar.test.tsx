@@ -19,16 +19,15 @@ const TRUSTED = 'https://metamask.io/'
 const TAB_ID = 'tab-1'
 
 // ---------------------------------------------------------------- capture seam
-// Mocking ./Webview captures the navigation callbacks BrowserTab installs, so
-// the test can fire native events at the real handlers.
-let webViewProps: Record<string, (arg: unknown) => void> = {}
-
-jest.mock('./Webview', () => ({
-  WebView: (props: Record<string, (arg: unknown) => void>) => {
-    webViewProps = props
-    return null
-  }
-}))
+// The react-native-webview mock (below) records the props the real ./Webview
+// wrapper forwards to it, so the test fires native events through the same
+// path production uses: a prop BrowserTab fails to pass is undefined here.
+const getWebViewProps = (): Record<string, (arg: unknown) => void> =>
+  (
+    globalThis as {
+      __webViewProps?: Record<string, (arg: unknown) => void>
+    }
+  ).__webViewProps ?? {}
 
 // ------------------------------------------------------------------- app mocks
 const mockSetUrlEntry = jest.fn()
@@ -152,12 +151,17 @@ jest.mock('utils/Logger', () => ({
   __esModule: true,
   default: { warn: jest.fn(), trace: jest.fn(), error: jest.fn() }
 }))
-jest.mock('react-native-webview', () => ({
-  __esModule: true,
-  default: () => null
-}))
+jest.mock('react-native-webview', () => {
+  const ReactActual = require('react')
+  const WebView = ReactActual.forwardRef(
+    (props: Record<string, unknown>, _ref: unknown) => {
+      ;(globalThis as { __webViewProps?: unknown }).__webViewProps = props
+      return null
+    }
+  )
+  return { __esModule: true, default: WebView, WebView }
+})
 
-// eslint-disable-next-line import/first
 import { BrowserTab } from './BrowserTab'
 
 // ---------------------------------------------------------------- event helpers
@@ -178,21 +182,21 @@ const navEvent = (
 /** Android onPageCommitVisible / iOS didCommitNavigation. */
 const fireCommit = (url: string): void => {
   act(() => {
-    webViewProps.onCommit?.(navEvent(url))
+    getWebViewProps().onCommit?.(navEvent(url))
   })
 }
 
 /** Android onPageFinished / iOS didFinishNavigation. */
 const fireLoad = (url: string): void => {
   act(() => {
-    webViewProps.onLoad?.(navEvent(url))
+    getWebViewProps().onLoad?.(navEvent(url))
   })
 }
 
 /** iOS provisional navigation / Android doUpdateVisitedHistory. */
 const fireNavStateChange = (url: string): void => {
   act(() => {
-    webViewProps.onNavigationStateChange?.({
+    getWebViewProps().onNavigationStateChange?.({
       url,
       title: url,
       loading: true,
@@ -220,7 +224,7 @@ describe('BrowserTab address-bar binding', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    webViewProps = {}
+    delete (globalThis as { __webViewProps?: unknown }).__webViewProps
     act(() => {
       create(<BrowserTab tabId={TAB_ID} />)
     })
