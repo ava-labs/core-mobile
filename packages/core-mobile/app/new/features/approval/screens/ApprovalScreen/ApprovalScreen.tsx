@@ -47,7 +47,8 @@ import {
   isRequestedAccountUnavailable,
   overrideContractItem,
   removeWebsiteItemIfNecessary,
-  isAvalancheTransaction
+  isAvalancheTransaction,
+  isAvalancheBaseTx
 } from './utils'
 
 // Tiny outer gate that hosts the malformed-RECURRING_SWAP short-circuit.
@@ -187,6 +188,7 @@ const ApprovalScreenInner = ({
   }, [displayData.details, request])
 
   const isAvalancheTx = isAvalancheTransaction(signingData)
+  const isBaseTx = isAvalancheBaseTx(signingData)
   const balanceChange = displayData.balanceChange
   const hasBalanceChange = getHasBalanceChange(balanceChange)
 
@@ -470,12 +472,13 @@ const ApprovalScreenInner = ({
               detailSection={detailSection}
               symbol={symbol}
               title={isAvalancheTx ? detailSection.title : undefined}
+              areGroupsOpenByDefault={isBaseTx}
             />
           </View>
         ))}
       </View>
     )
-  }, [filteredSections, symbol, isAvalancheTx])
+  }, [filteredSections, symbol, isAvalancheTx, isBaseTx])
 
   const renderBalanceChange = useCallback((): JSX.Element | null => {
     if (!hasBalanceChange || !balanceChange) return null

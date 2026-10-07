@@ -23,7 +23,8 @@ import { CollapsibleDetailGroup } from './CollapsibleDetailGroup'
 const LABEL = 'Transfer details'
 
 const renderGroup = async (
-  renderContent: () => React.ReactNode
+  renderContent: () => React.ReactNode,
+  isOpenByDefault?: boolean
 ): Promise<renderer.ReactTestRenderer> => {
   let instance!: renderer.ReactTestRenderer
   await act(async () => {
@@ -32,6 +33,7 @@ const renderGroup = async (
         label={LABEL}
         verticalPadding={13}
         renderContent={renderContent}
+        isOpenByDefault={isOpenByDefault}
       />
     )
   })
@@ -79,6 +81,27 @@ describe('<CollapsibleDetailGroup />', () => {
     expect(header(instance).props.accessibilityState).toEqual({
       expanded: true
     })
+  })
+
+  it('is open from the start when open by default', async () => {
+    const instance = await renderGroup(content, true)
+
+    expect(
+      instance.root.findAllByProps({ testID: 'group_content' }).length
+    ).toBeGreaterThan(0)
+    expect(header(instance).props.accessibilityState).toEqual({
+      expanded: true
+    })
+  })
+
+  it('closes on press when open by default', async () => {
+    const instance = await renderGroup(content, true)
+
+    await toggle(instance)
+
+    expect(
+      instance.root.findAllByProps({ testID: 'group_content' })
+    ).toHaveLength(0)
   })
 
   it('closes again on a second press', async () => {

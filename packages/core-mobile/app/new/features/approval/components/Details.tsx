@@ -50,11 +50,13 @@ import { CollapsibleDetailGroup } from './CollapsibleDetailGroup'
 export const Details = ({
   detailSection,
   symbol,
-  title
+  title,
+  areGroupsOpenByDefault = false
 }: {
   detailSection: DetailSection
   symbol?: string
   title?: string
+  areGroupsOpenByDefault?: boolean
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -654,13 +656,14 @@ export const Details = ({
             label={item.label}
             verticalPadding={VERTICAL_PADDING}
             renderContent={() => item.value.map(renderNestedSection)}
+            isOpenByDefault={areGroupsOpenByDefault}
           />
         )
       }
 
       return renderLeafItem(item, index)
     },
-    [renderLeafItem, renderNestedSection]
+    [renderLeafItem, renderNestedSection, areGroupsOpenByDefault]
   )
 
   const renderTitle = useCallback(

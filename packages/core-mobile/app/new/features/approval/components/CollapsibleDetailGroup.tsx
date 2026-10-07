@@ -11,13 +11,15 @@ import Animated, {
 export const CollapsibleDetailGroup = ({
   label,
   verticalPadding,
-  renderContent
+  renderContent,
+  isOpenByDefault = false
 }: {
   label: string
   verticalPadding: number
   renderContent: () => React.ReactNode
+  isOpenByDefault?: boolean
 }): JSX.Element => {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(isOpenByDefault)
 
   return (
     <View>
