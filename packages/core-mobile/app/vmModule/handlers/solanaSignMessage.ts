@@ -36,8 +36,11 @@ export const solanaSignMessage = async ({
     const signatureBase64 = await walletService.signMessage({
       walletId,
       walletType,
-      rpcMethod: RpcMethod.SOLANA_SIGN_MESSAGE,
-      data: message.message,
+      signingData: {
+        type: RpcMethod.SOLANA_SIGN_MESSAGE,
+        account: message.pubkey,
+        data: message.message
+      },
       accountIndex: account.index,
       network
     })

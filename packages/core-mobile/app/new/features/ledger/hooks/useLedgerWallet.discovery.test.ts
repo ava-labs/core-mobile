@@ -73,12 +73,10 @@ jest.mock('../store', () => ({
   useLedgerWalletMap: jest.fn()
 }))
 
-jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
+jest.mock('services/bluetooth/BluetoothService', () => ({
   __esModule: true,
   default: {
-    observeState: jest.fn(() => ({
-      unsubscribe: jest.fn()
-    }))
+    observeBluetoothState: jest.fn(() => ({ unsubscribe: jest.fn() }))
   }
 }))
 
@@ -90,7 +88,7 @@ jest.mock('services/ledger/LedgerService', () => ({
   __esModule: true,
   default: {
     connect: jest.fn(),
-    getTransport: jest.fn(),
+    ensureConnection: jest.fn(),
     disconnect: jest.fn()
   }
 }))
