@@ -14,6 +14,11 @@ import GlacierService, {
 } from 'services/glacier/GlacierService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { StakeTargetValidator } from 'types/earn'
+import { FAST_STAKE_CANDIDATE_PAGE_SIZE } from '../constants'
+import {
+  isFastStakeEligible,
+  selectFastStakeValidator
+} from '../utils/selectFastStakeValidator'
 
 /**
  * Finds the best validator node for the Fast Stake flow.
@@ -27,11 +32,13 @@ import { StakeTargetValidator } from 'types/earn'
  * - Delegation capacity ≥ requested stake amount
  * - Time remaining on the validator ≥ desired stake duration
  *
- * Results are sorted by uptime descending with `pageSize: 1`, so the hook
- * receives the single highest-uptime validator that meets every criterion.
+ * The top uptime candidates are then narrowed client-side to validators that
+ * are reachable, at least 14 days old, and can absorb 7 more days of downtime
+ * while still clearing the 80% reward uptime requirement; one is picked at
+ * random among the top 10 by that headroom (see `selectFastStakeValidator`).
  * When `preferredNodeId` is supplied (restake), that specific node is
  * queried first; if it still qualifies we reuse it, otherwise we fall back
- * to auto-selection. Mirrors core-web's `useFastStakeNode`.
+ * to auto-selection.
  *
  * `enabled = false` disables the query (e.g. when the user picked a node
  * manually via the advanced flow).
@@ -74,8 +81,7 @@ export const useFastStakeNode = ({
             isTestnet: isDeveloperMode,
             // Asserted by `canQuery`.
             stakeAmountNAvax: stakeAmountNAvax as string,
-            minTimeRemainingSeconds:
-              (endTimeSeconds as number) - getUnixTime(new Date()),
+            endTimeSeconds: endTimeSeconds as number,
             preferredNodeId
           })
       : skipToken
@@ -90,18 +96,22 @@ export const useFastStakeNode = ({
 export const fetchFastStakeValidator = async ({
   isTestnet,
   stakeAmountNAvax,
-  minTimeRemainingSeconds,
-  preferredNodeId
+  endTimeSeconds,
+  preferredNodeId,
+  now = getUnixTime(new Date()),
+  random = Math.random
 }: {
   isTestnet: boolean
   stakeAmountNAvax: string
-  minTimeRemainingSeconds: number
+  endTimeSeconds: number
   preferredNodeId?: string
+  now?: number
+  random?: () => number
 }): Promise<StakeTargetValidator | undefined> => {
   const baseFilters = buildFastStakeFilters({
     isTestnet,
     stakeAmountNAvax,
-    minTimeRemainingSeconds
+    minTimeRemainingSeconds: endTimeSeconds - now
   })
 
   // Restake path: check the user's previous validator first. If it still
@@ -113,7 +123,9 @@ export const fetchFastStakeValidator = async ({
       nodeIds: preferredNodeId,
       pageSize: 1
     })
-    const matched = pickActiveValidators(preferred.validators)[0]
+    const matched = pickActiveValidators(preferred.validators).find(v =>
+      isFastStakeEligible(v, now)
+    )
     if (matched) return toFastStakeValidator(matched)
   }
 
@@ -121,10 +133,13 @@ export const fetchFastStakeValidator = async ({
     ...baseFilters,
     sortBy: SortByOption.UPTIME_PERFORMANCE,
     sortOrder: SortOrder.DESC,
-    pageSize: 1
+    pageSize: FAST_STAKE_CANDIDATE_PAGE_SIZE
   })
-  const top = pickActiveValidators(result.validators)[0]
-  return top ? toFastStakeValidator(top) : undefined
+  const selected = selectFastStakeValidator(
+    pickActiveValidators(result.validators),
+    { now, random }
+  )
+  return selected ? toFastStakeValidator(selected) : undefined
 }
 
 /**

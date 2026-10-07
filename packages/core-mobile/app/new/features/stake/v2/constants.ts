@@ -57,3 +57,17 @@ export const getDelegationFeeEscrowAddress = (isTestnet: boolean): string =>
   isTestnet
     ? DELEGATION_FEE_ESCROW_ADDRESS_FUJI
     : DELEGATION_FEE_ESCROW_ADDRESS_MAINNET
+
+const SECONDS_PER_DAY = 24 * 60 * 60
+
+/** Minimum Glacier `validatorHealth.reachabilityPercent` for a validator to count as online and accessible. */
+export const MIN_VALIDATOR_REACHABILITY_PERCENT = 75
+/** Glacier's maximum page size; the extra candidates are filtered and ranked client-side. */
+export const FAST_STAKE_CANDIDATE_PAGE_SIZE = 100
+/** A fresh validator reports 100% uptime with no history, so it needs a track record before Fast Stake trusts it. */
+export const FAST_STAKE_MIN_VALIDATOR_AGE_SECONDS = 14 * SECONDS_PER_DAY
+/** Downtime a validator must still be able to absorb before falling below the reward uptime requirement. */
+export const FAST_STAKE_MIN_REWARD_HEADROOM_SECONDS = 7 * SECONDS_PER_DAY
+export const FAST_STAKE_TOP_CANDIDATES = 10
+/** Primary Network validators (and their delegators) are only rewarded at >= 80% uptime over the validation period. */
+export const REWARD_UPTIME_REQUIREMENT_PERCENT = 80

@@ -104,11 +104,32 @@ describe('toFastStakeValidator', () => {
   })
 })
 
+const NOW = 1_800_000_000
+const DAY = 24 * 60 * 60
+
+const glacierValidator = (
+  nodeId: string,
+  {
+    reachabilityPercent = 100,
+    ageDays = 100
+  }: { reachabilityPercent?: number; ageDays?: number } = {}
+): ActiveValidatorDetails =>
+  ({
+    validationStatus: 'active',
+    nodeId,
+    startTimestamp: NOW - ageDays * DAY,
+    endTimestamp: NOW + 200 * DAY,
+    uptimePerformance: 100,
+    validatorHealth: { reachabilityPercent }
+  } as unknown as ActiveValidatorDetails)
+
 describe('fetchFastStakeValidator', () => {
   const baseParams = {
     isTestnet: false,
     stakeAmountNAvax: '25000000000',
-    minTimeRemainingSeconds: 30 * 24 * 60 * 60
+    endTimeSeconds: NOW + 30 * DAY,
+    now: NOW,
+    random: () => 0
   }
 
   let mockListValidators: jest.SpyInstance<
@@ -128,16 +149,9 @@ describe('fetchFastStakeValidator', () => {
   })
 
   describe('auto-selection (no preferredNodeId)', () => {
-    it('issues a single sorted lookup and returns the top candidate', async () => {
+    it('fetches a page of uptime-sorted candidates without constraining by node', async () => {
       mockListValidators.mockResolvedValueOnce({
-        validators: [
-          {
-            validationStatus: 'active',
-            nodeId: 'NodeID-AUTO',
-            endTimestamp: 2_000_000,
-            uptimePerformance: 99
-          } as unknown as ActiveValidatorDetails
-        ]
+        validators: [glacierValidator('NodeID-AUTO')]
       })
 
       const result = await fetchFastStakeValidator(baseParams)
@@ -146,10 +160,10 @@ describe('fetchFastStakeValidator', () => {
       expect(mockListValidators).toHaveBeenCalledWith(
         expect.objectContaining({
           sortBy: SortByOption.UPTIME_PERFORMANCE,
-          pageSize: 1
+          pageSize: 100,
+          minTimeRemaining: 30 * DAY
         })
       )
-      // Should not be using the preferred-node lookup shape.
       const call = mockListValidators.mock.calls[0]?.[0] as
         | { nodeIds?: string }
         | undefined
@@ -157,8 +171,62 @@ describe('fetchFastStakeValidator', () => {
       expect(result?.nodeID).toBe('NodeID-AUTO')
     })
 
+    it('skips unreachable validators', async () => {
+      mockListValidators.mockResolvedValueOnce({
+        validators: [
+          glacierValidator('NodeID-OFFLINE', { reachabilityPercent: 0 }),
+          glacierValidator('NodeID-ONLINE')
+        ]
+      })
+
+      const result = await fetchFastStakeValidator(baseParams)
+
+      expect(result?.nodeID).toBe('NodeID-ONLINE')
+    })
+
+    it('skips validators younger than the minimum age', async () => {
+      mockListValidators.mockResolvedValueOnce({
+        validators: [
+          glacierValidator('NodeID-FRESH', { ageDays: 1 }),
+          glacierValidator('NodeID-ESTABLISHED')
+        ]
+      })
+
+      const result = await fetchFastStakeValidator(baseParams)
+
+      expect(result?.nodeID).toBe('NodeID-ESTABLISHED')
+    })
+
+    it('picks randomly among eligible candidates', async () => {
+      mockListValidators.mockResolvedValueOnce({
+        validators: [
+          glacierValidator('NodeID-FIRST'),
+          glacierValidator('NodeID-SECOND')
+        ]
+      })
+
+      const result = await fetchFastStakeValidator({
+        ...baseParams,
+        random: () => 0.99
+      })
+
+      expect(result?.nodeID).toBe('NodeID-SECOND')
+    })
+
     it('returns undefined when no validator qualifies', async () => {
       mockListValidators.mockResolvedValueOnce({ validators: [] })
+
+      const result = await fetchFastStakeValidator(baseParams)
+
+      expect(result).toBeUndefined()
+    })
+
+    it('returns undefined when every candidate is unreachable', async () => {
+      mockListValidators.mockResolvedValueOnce({
+        validators: [
+          glacierValidator('NodeID-OFFLINE', { reachabilityPercent: 0 })
+        ]
+      })
 
       const result = await fetchFastStakeValidator(baseParams)
 
@@ -169,14 +237,7 @@ describe('fetchFastStakeValidator', () => {
   describe('preferredNodeId (restake)', () => {
     it('reuses the preferred node and skips the fallback when it still qualifies', async () => {
       mockListValidators.mockResolvedValueOnce({
-        validators: [
-          {
-            validationStatus: 'active',
-            nodeId: 'NodeID-PREFERRED',
-            endTimestamp: 2_000_000,
-            uptimePerformance: 98
-          } as unknown as ActiveValidatorDetails
-        ]
+        validators: [glacierValidator('NodeID-PREFERRED')]
       })
 
       const result = await fetchFastStakeValidator({
@@ -196,19 +257,8 @@ describe('fetchFastStakeValidator', () => {
 
     it('falls back to auto-selection when the preferred node no longer qualifies', async () => {
       mockListValidators
-        // Preferred lookup: empty
         .mockResolvedValueOnce({ validators: [] })
-        // Auto-select fallback: a different node qualifies
-        .mockResolvedValueOnce({
-          validators: [
-            {
-              validationStatus: 'active',
-              nodeId: 'NodeID-NEW',
-              endTimestamp: 2_000_000,
-              uptimePerformance: 99
-            } as unknown as ActiveValidatorDetails
-          ]
-        })
+        .mockResolvedValueOnce({ validators: [glacierValidator('NodeID-NEW')] })
 
       const result = await fetchFastStakeValidator({
         ...baseParams,
@@ -216,13 +266,44 @@ describe('fetchFastStakeValidator', () => {
       })
 
       expect(mockListValidators).toHaveBeenCalledTimes(2)
-      // Fallback call should not constrain by nodeIds — that's what makes
-      // it an auto-select rather than a constrained lookup.
       const fallbackCall = mockListValidators.mock.calls[1]?.[0] as
         | { nodeIds?: string; sortBy?: SortByOption }
         | undefined
       expect(fallbackCall?.nodeIds).toBeUndefined()
       expect(fallbackCall?.sortBy).toBe(SortByOption.UPTIME_PERFORMANCE)
+      expect(result?.nodeID).toBe('NodeID-NEW')
+    })
+
+    it('falls back to auto-selection when the preferred node is unreachable', async () => {
+      mockListValidators
+        .mockResolvedValueOnce({
+          validators: [
+            glacierValidator('NodeID-PREFERRED', { reachabilityPercent: 0 })
+          ]
+        })
+        .mockResolvedValueOnce({ validators: [glacierValidator('NodeID-NEW')] })
+
+      const result = await fetchFastStakeValidator({
+        ...baseParams,
+        preferredNodeId: 'NodeID-PREFERRED'
+      })
+
+      expect(mockListValidators).toHaveBeenCalledTimes(2)
+      expect(result?.nodeID).toBe('NodeID-NEW')
+    })
+
+    it('falls back to auto-selection when the preferred node is too new', async () => {
+      mockListValidators
+        .mockResolvedValueOnce({
+          validators: [glacierValidator('NodeID-PREFERRED', { ageDays: 1 })]
+        })
+        .mockResolvedValueOnce({ validators: [glacierValidator('NodeID-NEW')] })
+
+      const result = await fetchFastStakeValidator({
+        ...baseParams,
+        preferredNodeId: 'NodeID-PREFERRED'
+      })
+
       expect(result?.nodeID).toBe('NodeID-NEW')
     })
 

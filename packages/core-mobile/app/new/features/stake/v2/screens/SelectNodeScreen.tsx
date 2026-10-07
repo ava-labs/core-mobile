@@ -111,7 +111,8 @@ const SelectNodeScreen = (): JSX.Element => {
   )
 
   const validators = useMemo(() => {
-    const all = data?.validators ?? []
+    // Unreachable validators are hidden even from NodeID searches.
+    const all = (data?.validators ?? []).filter(v => v.connected)
     const query = searchText.trim().toLowerCase()
     const isSearching = query.length > 0
 
