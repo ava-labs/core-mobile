@@ -1,4 +1,4 @@
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { BleManager, State } from 'react-native-ble-plx'
 import { Linking, PermissionsAndroid, Platform } from 'react-native'
 import { request, PERMISSIONS, RESULTS, check } from 'react-native-permissions'
 import Logger from 'utils/Logger'
@@ -6,23 +6,46 @@ import { BluetoothAvailability, BluetoothState } from './types'
 import { ANDROID_PERMISSIONS } from './consts'
 
 export class BluetoothService {
+  // Built on first use: constructing a BleManager spins up the native BLE
+  // stack, which must not happen at module-import time.
+  private manager: BleManager | null = null
+
+  private getManager(): BleManager {
+    if (!this.manager) {
+      this.manager = new BleManager()
+    }
+    return this.manager
+  }
+
   observeBluetoothState(onChange: (state: BluetoothState) => void): {
     unsubscribe: () => void
   } {
-    return TransportBLE.observeState({
-      next: (e: { type: string }) => onChange(e.type as BluetoothState),
-      error: () => onChange(BluetoothState.UNKNOWN),
-      complete: () => undefined
-    })
+    try {
+      // ble-plx's State values are the same strings as BluetoothState.
+      const subscription = this.getManager().onStateChange(
+        (state: State) => onChange(state as unknown as BluetoothState),
+        true
+      )
+      return { unsubscribe: () => subscription.remove() }
+    } catch (err) {
+      Logger.error('BluetoothService: observeBluetoothState failed', err)
+      onChange(BluetoothState.UNKNOWN)
+      return { unsubscribe: () => undefined }
+    }
   }
 
+  // Reads the radio state directly rather than taking the first emission of
+  // observeBluetoothState: onStateChange has no error channel, so a native
+  // failure there would never emit and would hang every caller that gates on
+  // assertBluetoothAvailable.
   async getBluetoothState(): Promise<BluetoothState> {
-    return new Promise(resolve => {
-      const sub = this.observeBluetoothState(state => {
-        resolve(state)
-        sub.unsubscribe()
-      })
-    })
+    try {
+      const state = await this.getManager().state()
+      return state as unknown as BluetoothState
+    } catch (err) {
+      Logger.error('BluetoothService: getBluetoothState failed', err)
+      return BluetoothState.UNKNOWN
+    }
   }
 
   async ensureBluetoothAvailable(): Promise<BluetoothAvailability> {

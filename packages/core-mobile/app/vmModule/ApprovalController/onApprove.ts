@@ -95,8 +95,7 @@ export const onApprove = async ({
       signMessage({
         walletId,
         walletType,
-        method: signingData.type,
-        data: signingData.data,
+        signingData,
         account,
         network,
         resolve

@@ -1,5 +1,5 @@
 import { PermissionsAndroid, Platform } from 'react-native'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import * as blePlx from 'react-native-ble-plx'
 import { check, request, RESULTS } from 'react-native-permissions'
 import BluetoothService from './BluetoothService'
 import { BluetoothState } from './types'
@@ -8,12 +8,26 @@ import { BluetoothState } from './types'
 // Module mocks
 // ---------------------------------------------------------------------------
 
-jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
-  __esModule: true,
-  default: {
-    observeState: jest.fn()
+jest.mock('react-native-ble-plx', () => {
+  const onStateChange = jest.fn()
+  const state = jest.fn()
+  return {
+    __esModule: true,
+    BleManager: jest.fn(() => ({ onStateChange, state })),
+    // Handles for the tests; the factory closes over one instance so every
+    // `new BleManager()` shares these mocks.
+    __onStateChange: onStateChange,
+    __state: state,
+    State: {
+      PoweredOn: 'PoweredOn',
+      PoweredOff: 'PoweredOff',
+      Unauthorized: 'Unauthorized',
+      Resetting: 'Resetting',
+      Unsupported: 'Unsupported',
+      Unknown: 'Unknown'
+    }
   }
-}))
+})
 
 jest.mock('react-native-permissions', () => ({
   check: jest.fn(),
@@ -39,9 +53,8 @@ jest.mock('utils/Logger', () => ({
 // Typed references to mocks
 // ---------------------------------------------------------------------------
 
-const mockTransportBLE = TransportBLE as unknown as {
-  observeState: jest.Mock
-}
+const { __onStateChange: mockOnStateChange, __state: mockState } =
+  blePlx as unknown as { __onStateChange: jest.Mock; __state: jest.Mock }
 const mockCheck = check as jest.Mock
 const mockRequest = request as jest.Mock
 
@@ -49,35 +62,23 @@ const mockRequest = request as jest.Mock
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Sets up TransportBLE.observeState to synchronously emit the given state. */
-function setupObserveState(state: BluetoothState): void {
-  mockTransportBLE.observeState.mockImplementation(
-    ({
-      next,
-      error: onError
-    }: {
-      next?: (e: { type: string }) => void
-      error?: () => void
-      complete?: () => void
-    }) => {
-      try {
-        next?.({ type: state })
-      } catch {
-        onError?.()
-      }
-      return { unsubscribe: jest.fn() }
+/** Sets up the radio to report the given state to both read paths. */
+function setupBluetoothState(state: BluetoothState): void {
+  mockState.mockResolvedValue(state)
+  mockOnStateChange.mockImplementation(
+    (listener: (newState: string) => void) => {
+      listener(state)
+      return { remove: jest.fn() }
     }
   )
 }
 
-/** Sets up TransportBLE.observeState to fire the error callback. */
-function setupObserveStateError(): void {
-  mockTransportBLE.observeState.mockImplementation(
-    ({ error: onError }: { error?: () => void }) => {
-      onError?.()
-      return { unsubscribe: jest.fn() }
-    }
-  )
+/** Sets up the radio reads to reject, as a native BLE failure would. */
+function setupBluetoothStateError(): void {
+  mockState.mockRejectedValue(new Error('native BLE failure'))
+  mockOnStateChange.mockImplementation(() => {
+    throw new Error('native BLE failure')
+  })
 }
 
 const originalPlatformOS = Platform.OS
@@ -267,14 +268,14 @@ describe('getBluetoothState', () => {
     BluetoothState.POWERED_OFF,
     BluetoothState.UNAUTHORIZED,
     BluetoothState.UNSUPPORTED
-  ])('resolves with %s when observeState emits it', async state => {
-    setupObserveState(state)
+  ])('resolves with %s when the radio reports it', async state => {
+    setupBluetoothState(state)
 
     await expect(BluetoothService.getBluetoothState()).resolves.toBe(state)
   })
 
-  it('resolves with UNKNOWN when observeState fires the error callback', async () => {
-    setupObserveStateError()
+  it('resolves with UNKNOWN when the radio read rejects', async () => {
+    setupBluetoothStateError()
 
     await expect(BluetoothService.getBluetoothState()).resolves.toBe(
       BluetoothState.UNKNOWN
@@ -301,7 +302,7 @@ describe('ensureBluetoothAvailable', () => {
 
   it('returns { hasPermission: true, state: POWERED_ON } when radio is on and permission is granted', async () => {
     mockCheck.mockResolvedValue(RESULTS.GRANTED)
-    setupObserveState(BluetoothState.POWERED_ON)
+    setupBluetoothState(BluetoothState.POWERED_ON)
 
     await expect(BluetoothService.ensureBluetoothAvailable()).resolves.toEqual({
       hasPermission: true,
@@ -311,7 +312,7 @@ describe('ensureBluetoothAvailable', () => {
 
   it('returns { hasPermission: false, state: POWERED_ON } when permission is blocked but radio is on', async () => {
     mockCheck.mockResolvedValue(RESULTS.BLOCKED)
-    setupObserveState(BluetoothState.POWERED_ON)
+    setupBluetoothState(BluetoothState.POWERED_ON)
 
     await expect(BluetoothService.ensureBluetoothAvailable()).resolves.toEqual({
       hasPermission: false,
@@ -321,7 +322,7 @@ describe('ensureBluetoothAvailable', () => {
 
   it('returns { hasPermission: true, state: POWERED_OFF } when permission is granted but radio is off', async () => {
     mockCheck.mockResolvedValue(RESULTS.GRANTED)
-    setupObserveState(BluetoothState.POWERED_OFF)
+    setupBluetoothState(BluetoothState.POWERED_OFF)
 
     await expect(BluetoothService.ensureBluetoothAvailable()).resolves.toEqual({
       hasPermission: true,
@@ -331,7 +332,7 @@ describe('ensureBluetoothAvailable', () => {
 
   it('returns { hasPermission: false, state: POWERED_OFF } when both permission is blocked and radio is off', async () => {
     mockCheck.mockResolvedValue(RESULTS.BLOCKED)
-    setupObserveState(BluetoothState.POWERED_OFF)
+    setupBluetoothState(BluetoothState.POWERED_OFF)
 
     await expect(BluetoothService.ensureBluetoothAvailable()).resolves.toEqual({
       hasPermission: false,
@@ -341,7 +342,7 @@ describe('ensureBluetoothAvailable', () => {
 
   it('returns { hasPermission: true, state: UNAUTHORIZED } for CoreBluetooth unauthorized state', async () => {
     mockCheck.mockResolvedValue(RESULTS.GRANTED)
-    setupObserveState(BluetoothState.UNAUTHORIZED)
+    setupBluetoothState(BluetoothState.UNAUTHORIZED)
 
     await expect(BluetoothService.ensureBluetoothAvailable()).resolves.toEqual({
       hasPermission: true,
@@ -361,13 +362,10 @@ describe('ensureBluetoothAvailable', () => {
         })
     )
 
-    mockTransportBLE.observeState.mockImplementation(
-      ({ next }: { next: (e: { type: string }) => void }) => {
-        stateResolved = true
-        next({ type: BluetoothState.POWERED_ON })
-        return { unsubscribe: jest.fn() }
-      }
-    )
+    mockState.mockImplementation(() => {
+      stateResolved = true
+      return Promise.resolve(BluetoothState.POWERED_ON)
+    })
 
     const result = await BluetoothService.ensureBluetoothAvailable()
 
