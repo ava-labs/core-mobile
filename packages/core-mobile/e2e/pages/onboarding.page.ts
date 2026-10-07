@@ -137,12 +137,13 @@ class OnboardingPage {
     } else {
       try {
         console.log('you are using a dev build, skipping metro dev menu now...')
-        const precedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
-        const metroDevMenu = selectors.getByText(`http://${precedingHost}:8081`)
+        // The dev launcher may list Metro under localhost/10.0.2.2 or the host's LAN IP
+        const metroDevMenu = selectors.getBySomeText(':8081')
         const dismissBtn = selectors.getByText('AvaxWallet')
         await actions.waitFor(metroDevMenu)
-        await actions.tap(metroDevMenu, dismissBtn)
-        await actions.waitFor(dismissBtn, 30000)
+        await actions.tap(metroDevMenu)
+        // The first bundle from a cold Metro cache can take minutes before the dev menu shows
+        await actions.waitFor(dismissBtn, 180000)
         await actions.dragAndDrop(dismissBtn, [0, 1500])
         console.log('Dismissed Metro dev menu')
       } catch (e) {
@@ -311,12 +312,12 @@ class OnboardingPage {
     }
   }
 
-  async unlockEnterPin() {
+  async unlockEnterPin(pin = '000000') {
     try {
-      await this.tapZero()
+      await this.tapZero(pin)
     } catch {
       await this.tapKeypadUpButton()
-      await this.tapZero()
+      await this.tapZero(pin)
     }
   }
 }

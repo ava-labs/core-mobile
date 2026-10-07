@@ -3,8 +3,11 @@ import settingsLoc from '../../locators/settings.loc'
 import settings from '../../pages/settings.page'
 
 describe('Settings', () => {
-  it('App icon - should have Default icon', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('App icon - should have Default icon', async () => {
     await settings.goSettings()
     await settings.verifySettingsRow(settingsLoc.appIcon, settingsLoc.default)
     await settings.tapAppIcon()

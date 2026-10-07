@@ -1,9 +1,17 @@
 import settings from '../../pages/settings.page'
-import warmup from '../../helpers/warmup'
+import warmup, { restartAndUnlock } from '../../helpers/warmup'
 
 describe('Settings', () => {
-  it('Testnet - Should enable testnet', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  after(async () => {
+    await restartAndUnlock()
+    await settings.ensureMainnet()
+  })
+
+  it('Testnet - Should enable testnet', async () => {
     await settings.switchToTestnet()
     await settings.verifyTestnetMode()
   })

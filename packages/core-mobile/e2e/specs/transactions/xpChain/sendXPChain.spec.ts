@@ -6,9 +6,11 @@ import commonElsPage from '../../../pages/commonEls.page'
 import commonElsLoc from '../../../locators/commonEls.loc'
 
 describe('Send transaction', () => {
-  it('[Smoke] should send AVAX on P-Chain', async () => {
-    // login & create account
+  before(async () => {
     await warmup()
+  })
+
+  it('[Smoke] should send AVAX on P-Chain', async () => {
     await commonElsPage.filter(commonElsLoc.pChain)
     await portfolioPage.tapToken()
     // Send

@@ -168,3 +168,23 @@ export async function killAndRestart() {
     await driver.activateApp(appId)
   }
 }
+
+// Teardown entry point: a failed test can leave the UI on any screen, so start from a cold, unlocked portfolio.
+// Returns the PIN that unlocked; a wrong PIN only clears the input, so candidates can be tried in turn.
+export async function restartAndUnlock(pins = ['000000']): Promise<string> {
+  await killAndRestart()
+  await onboardingPage.exitMetroAfterLogin()
+  for (const [i, pin] of pins.entries()) {
+    await onboardingPage.unlockEnterPin(pin)
+    const timeout = i === pins.length - 1 ? 40000 : 20000
+    // Not verifyLoggedIn(): it waits for "Account 1", which a failed accounts spec may have renamed
+    if (
+      await actions.isElementVisible(
+        portfolioPage.portfolioBalanceHeader,
+        timeout
+      )
+    )
+      return pin
+  }
+  throw new Error(`Could not unlock the app with PINs: ${pins.join(', ')}`)
+}

@@ -68,7 +68,7 @@ download an e2e binary from Bitrise and set `E2E_LOCAL_PATH` to it.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `TESTRAIL_API_KEY` | Yes | The WDIO hooks create a TestRail run and push a result for every test (`testrail/testrail.config.ts`). |
+| `TESTRAIL_API_KEY` | CI only | The WDIO hooks create a TestRail run and push a result for every test (`testrail/testrail.config.ts`). Leave unset locally to skip TestRail reporting. |
 
 ### Seedless specs
 

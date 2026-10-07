@@ -1,4 +1,4 @@
-import warmup from '../../helpers/warmup'
+import warmup, { restartAndUnlock } from '../../helpers/warmup'
 import txPage from '../../pages/transactions.page'
 import commons from '../../pages/commonEls.page'
 import settingsPage from '../../pages/settings.page'
@@ -10,6 +10,12 @@ import commonElsPage from '../../pages/commonEls.page'
 describe('Buy', () => {
   before(async () => {
     await warmup()
+  })
+
+  after(async () => {
+    await restartAndUnlock()
+    await txPage.ensureLocale(commonLoc.usa, commonLoc.usd)
+    await settingsPage.ensureCurrency(commonLoc.usd)
   })
 
   afterEach(async () => {

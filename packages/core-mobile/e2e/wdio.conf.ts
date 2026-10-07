@@ -15,6 +15,7 @@ import {
 } from './helpers/resolve-local-device'
 
 let runId: number | undefined
+const isTestRailEnabled = !!process.env.TESTRAIL_API_KEY
 const sectionCache: Record<string, number> = {}
 
 const platformToRun =
@@ -205,13 +206,15 @@ export const config: WebdriverIO.Config = {
       testType === 'performance' || process.env.IS_PERFORMANCE === 'true'
     const isSeedlessTransactions =
       process.env.IS_SEEDLESS_TRANSACTIONS === 'true'
-    runId = await getTestRun(
-      platform,
-      isSmoke,
-      isPerformance,
-      isDeviceFarm,
-      isSeedlessTransactions
-    )
+    if (isTestRailEnabled) {
+      runId = await getTestRun(
+        platform,
+        isSmoke,
+        isPerformance,
+        isDeviceFarm,
+        isSeedlessTransactions
+      )
+    }
     console.log(
       `------------Starting test run${
         isDeviceFarm ? ' on AWS Device Farm' : ''
@@ -242,8 +245,10 @@ export const config: WebdriverIO.Config = {
 
   // hook beforeTest: make or get testSection before test
   beforeTest: async test => {
-    const sectionTitle = test.parent
-    sectionCache[sectionTitle] = await getSection(sectionTitle)
+    if (isTestRailEnabled) {
+      const sectionTitle = test.parent
+      sectionCache[sectionTitle] = await getSection(sectionTitle)
+    }
     console.log('TEST: ', test.title)
   },
 
@@ -254,6 +259,7 @@ export const config: WebdriverIO.Config = {
 
   // hook afterTest: make or get testCase and send result after test
   afterTest: async (test, _, { passed, error }) => {
+    if (!isTestRailEnabled) return
     const sectionTitle = test.parent
     const sectionId = sectionCache[sectionTitle]
     const caseId = await getTestCase(test.title, sectionId)

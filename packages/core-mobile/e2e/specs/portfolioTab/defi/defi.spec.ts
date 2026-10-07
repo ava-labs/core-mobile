@@ -7,8 +7,11 @@ import portfolioLoc from '../../../locators/portfolio.loc'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
 
 describe('Portfolio tab', () => {
-  it('Defi - Should verify the defi detail', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('Defi - Should verify the defi detail', async () => {
     await portfolioPage.tapDefiTab()
 
     const defiItemPrice = await portfolioPage.getDefiItemPrice()

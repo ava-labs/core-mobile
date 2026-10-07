@@ -6,8 +6,11 @@ import portfolioPage from '../../../pages/portfolio.page'
 import warmup from '../../../helpers/warmup'
 
 describe.skip('Send transaction', () => {
-  it('should send NFT on C-Chain', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('should send NFT on C-Chain', async () => {
     await portfolioPage.tapCollectiblesTab()
     await common.filter(commonLoc.cChain)
     await txPage.sendNft()

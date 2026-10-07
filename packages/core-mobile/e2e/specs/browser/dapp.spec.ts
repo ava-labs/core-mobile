@@ -4,8 +4,11 @@ import browserPage from '../../pages/browser.page'
 import browserLoc from '../../locators/browser.loc'
 
 describe('Browser - dApp', () => {
-  it('Should verify the injected provider on dapps', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('Should verify the injected provider on dapps', async () => {
     await bottomTabsPage.tapBrowserTab()
 
     await browserPage.goToUrl(browserLoc.core)

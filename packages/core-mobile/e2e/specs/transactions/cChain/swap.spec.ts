@@ -3,8 +3,11 @@ import bottomTabsPage from '../../../pages/bottomTabs.page'
 import txPage from '../../../pages/transactions.page'
 
 describe('Swap on C-Chain', () => {
-  it('[Smoke] Should swap AVAX to ERC20', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('[Smoke] Should swap AVAX to ERC20', async () => {
     await txPage.tapSwap()
     await txPage.quickSwap('0.01')
     await txPage.verifySuccessToast()

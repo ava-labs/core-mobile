@@ -6,8 +6,11 @@ import commonElsLoc from '../../../locators/commonEls.loc'
 import { actions } from '../../../helpers/actions'
 
 describe.skip('Portfolio tab', () => {
-  it('Collectibles - C-Chain collectible detail', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('Collectibles - C-Chain collectible detail', async () => {
     await portfolioPage.tapCollectiblesTab()
     await commonElsPage.selectDropdown('view', 'List view')
     await commonElsPage.filter(commonElsLoc.cChain)

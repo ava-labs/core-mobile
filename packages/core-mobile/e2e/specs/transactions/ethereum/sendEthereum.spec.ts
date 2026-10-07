@@ -4,9 +4,11 @@ import txPage from '../../../pages/transactions.page'
 import txLoc from '../../../locators/transactions.loc'
 
 describe('Send transaction', () => {
-  it('should send ETH on Ethereum', async () => {
-    // login & create account
+  before(async () => {
     await warmup()
+  })
+
+  it('should send ETH on Ethereum', async () => {
     // Send
     await txPage.send(txLoc.ethToken, txLoc.sendingAmount)
     await txPage.verifySuccessToast()
