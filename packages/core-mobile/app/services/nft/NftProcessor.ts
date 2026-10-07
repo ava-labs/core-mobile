@@ -1,9 +1,32 @@
+import Logger from 'utils/Logger'
 import { NftContentType, NftImageData, NftItemExternalData } from './types'
 import { assertSafeNftUrl, convertIPFSResolver } from './utils'
 
 const BASE64_SVG_PREFIX = 'data:image/svg+xml;base64,'
 // Cap the size of inline base64 metadata before decoding/parsing so a hostile tokenUri can't force a huge allocation / JSON.parse.
 const MAX_INLINE_METADATA_BYTES = 1_000_000
+
+// R2-9: RN's fetch ignores the `redirect` option and native networking follows
+// redirects, so a public host can 30x to a private one. `response.url` is the
+// FINAL url; re-check it before reading the body. This blocks reading a
+// redirected private-host response but does not stop the redirected request
+// itself from being sent, and the image component's native load is not covered.
+let hasWarnedFinalUrlUnavailable = false
+
+const assertFinalUrlSafe = (response: Response, requestedUrl: string): void => {
+  if (!response.url) {
+    if (!hasWarnedFinalUrlUnavailable) {
+      hasWarnedFinalUrlUnavailable = true
+      Logger.warn(
+        '[NftProcessor] Response did not expose its final URL; redirect re-validation was skipped'
+      )
+    }
+    return
+  }
+  if (response.url !== requestedUrl) {
+    assertSafeNftUrl(response.url)
+  }
+}
 
 export class NftProcessor {
   async fetchImage(imageData: string): Promise<NftImageData> {
@@ -17,21 +40,25 @@ export class NftProcessor {
 
     const imageUrl = convertIPFSResolver(imageData)
     // restrict the resolved URL to https public hosts before fetch.
-    assertSafeNftUrl(imageUrl)
-    const type = await this.identifyByMagicNumber(imageUrl)
-    return { uri: imageUrl, type }
+    const safeImageUrl = assertSafeNftUrl(imageUrl)
+    const type = await this.identifyByMagicNumber(safeImageUrl)
+    return { uri: safeImageUrl, type }
   }
 
   private async identifyByMagicNumber(url: string): Promise<NftContentType> {
     // guard again at the fetch site.
-    assertSafeNftUrl(url)
-    const response = await fetch(url, {
+    const safeUrl = assertSafeNftUrl(url)
+    const response = await fetch(safeUrl, {
       method: 'GET',
       headers: { Range: 'bytes=0-256' }
     })
 
+    assertFinalUrlSafe(response, safeUrl)
+
     if (!response.ok) {
-      throw new Error(`[NftProcessor] HTTP ${response.status} fetching ${url}`)
+      throw new Error(
+        `[NftProcessor] HTTP ${response.status} fetching ${safeUrl}`
+      )
     }
 
     const buffer = await response.arrayBuffer()
@@ -105,13 +132,15 @@ export class NftProcessor {
       }
     } else {
       const ipfsPath = convertIPFSResolver(tokenUri)
-      assertSafeNftUrl(ipfsPath)
+      const safeIpfsPath = assertSafeNftUrl(ipfsPath)
 
-      const response = await fetch(ipfsPath)
+      const response = await fetch(safeIpfsPath)
+
+      assertFinalUrlSafe(response, safeIpfsPath)
 
       if (!response.ok) {
         throw new Error(
-          `[NftProcessor] fetchMetadata error from ${ipfsPath} with status code ${response.status}`
+          `[NftProcessor] fetchMetadata error from ${safeIpfsPath} with status code ${response.status}`
         )
       }
 

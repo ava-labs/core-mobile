@@ -16,7 +16,7 @@ import { BitcoinInputUTXO, createTransferTx } from '@avalabs/core-wallets-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
-const MAX_BTC_FEE_RATE = 10_000
+export const MAX_BTC_FEE_RATE = 10_000
 
 // Validate the shape of each UTXO A UTXO missing `script` (or with malformed numeric fields) must be rejected
 const isValidInputUtxo = (utxo: unknown): utxo is BitcoinInputUTXO => {
@@ -38,7 +38,7 @@ const isValidInputUtxo = (utxo: unknown): utxo is BitcoinInputUTXO => {
   )
 }
 
-// Rebuild the transaction for a changed fee rate 
+// Rebuild the transaction for a changed fee rate
 const rebuildTxForFeeRate = async ({
   transactionData,
   network,

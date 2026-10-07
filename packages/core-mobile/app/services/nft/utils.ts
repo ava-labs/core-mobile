@@ -21,17 +21,41 @@ export const convertIPFSResolver = (url: string): string => {
   }
 }
 
-// NFT tokenUri/image URLs are attacker-controlled restrict local network / loopback 
+// NFT tokenUri/image URLs are attacker-controlled: restrict local network,
+// loopback, link-local, CGNAT and IPv4-mapped IPv6 hosts (CP-15105 R2-9).
 const PRIVATE_IPV4_PATTERNS = [
   /^127\./, // loopback
   /^10\./, // private
-  /^169\.254\./, // link-local
+  /^169\.254\./, // link-local (cloud metadata)
   /^192\.168\./, // private
-  /^172\.(1[6-9]|2\d|3[0-1])\./ // private
+  /^172\.(1[6-9]|2\d|3[0-1])\./, // private
+  /^100\.(6[4-9]|[7-9]\d|1[0-1]\d|12[0-7])\./ // CGNAT 100.64.0.0/10
 ]
 
+const isPrivateIpv4 = (host: string): boolean =>
+  host === '0.0.0.0' || PRIVATE_IPV4_PATTERNS.some(p => p.test(host))
+
+// ::ffff:a.b.c.d or ::ffff:XXXX:XXXX (hex) -> dotted quad, else undefined
+const ipv4FromMappedIpv6 = (host: string): string | undefined => {
+  const dotted = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i.exec(host)
+  if (dotted?.[1]) return dotted[1]
+  const hex = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i.exec(host)
+  if (hex?.[1] && hex[2]) {
+    const hi = parseInt(hex[1], 16)
+    const lo = parseInt(hex[2], 16)
+    return `${Math.floor(hi / 256)}.${hi % 256}.${Math.floor(lo / 256)}.${
+      lo % 256
+    }`
+  }
+  return undefined
+}
+
 const isPrivateOrReservedHost = (hostname: string): boolean => {
-  const host = hostname.toLowerCase().replace(/^\[|\]$/g, '')
+  // strip one trailing dot: "localhost." resolves like "localhost"
+  const host = hostname
+    .toLowerCase()
+    .replace(/^\[|\]$/g, '')
+    .replace(/\.$/, '')
 
   if (
     host === 'localhost' ||
@@ -41,9 +65,9 @@ const isPrivateOrReservedHost = (hostname: string): boolean => {
     return true
   }
 
-  // IPv6 literal: block loopback, link-local (fe80::/10) and unique-local
-  // (fc00::/7) ranges.
   if (host.includes(':')) {
+    const mapped = ipv4FromMappedIpv6(host)
+    if (mapped) return isPrivateIpv4(mapped)
     return (
       host === '::1' ||
       host === '::' ||
@@ -53,17 +77,25 @@ const isPrivateOrReservedHost = (hostname: string): boolean => {
     )
   }
 
-  // IPv4 / dotted-quad
-  if (host === '0.0.0.0') return true
-  return PRIVATE_IPV4_PATTERNS.some(pattern => pattern.test(host))
+  return isPrivateIpv4(host)
 }
 
-export const assertSafeNftUrl = (rawUrl: string): void => {
+/**
+ * Validates an NFT media/metadata URL and returns the URL that may be fetched.
+ * `http:` is upgraded to `https:` before the check (CP-15105 R2-10): iOS used
+ * to render cleartext images via NSAllowsArbitraryLoads, Android release never
+ * did; upgrading keeps most legacy assets working without allowing cleartext.
+ */
+export const assertSafeNftUrl = (rawUrl: string): string => {
   let parsed: URL
   try {
     parsed = new URL(rawUrl)
   } catch {
     throw new Error(`[Nft] Refusing to fetch invalid URL: ${rawUrl}`)
+  }
+
+  if (parsed.protocol === 'http:') {
+    parsed.protocol = 'https:'
   }
 
   if (parsed.protocol !== 'https:') {
@@ -75,6 +107,8 @@ export const assertSafeNftUrl = (rawUrl: string): void => {
   if (isPrivateOrReservedHost(parsed.hostname)) {
     throw new Error('[Nft] Refusing to fetch private/reserved host')
   }
+
+  return parsed.toString()
 }
 
 export const isNftTokenType = (

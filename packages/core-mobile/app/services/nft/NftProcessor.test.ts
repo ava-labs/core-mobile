@@ -6,6 +6,12 @@ const MP4_MAGIC = new Uint8Array([
   0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70
 ])
 
+const mockResponseWithUrl = (body: Uint8Array, url: string): Response => {
+  const response = mockFetchResponse(body)
+  Object.defineProperty(response, 'url', { value: url })
+  return response
+}
+
 const mockFetchResponse = (body: Uint8Array, ok = true): Response =>
   new Response(body.buffer as ArrayBuffer, { status: ok ? 206 : 504 })
 
@@ -81,12 +87,38 @@ describe('NftProcessor.fetchImage', () => {
   })
 
   // non-https schemes or private/loopback hosts, and must never hit the network.
-  it('refuses to fetch non-https URLs', async () => {
+  it('refuses to fetch non-http(s) URLs', async () => {
     await expect(
-      NftProcessor.fetchImage('http://example.com/image.bin')
+      NftProcessor.fetchImage('ftp://example.com/image.bin')
     ).rejects.toThrow(/non-https/)
     expect(fetchSpy).not.toHaveBeenCalled()
   })
+
+  it('upgrades http URLs to https before fetching', async () => {
+    fetchSpy.mockResolvedValueOnce(mockFetchResponse(JPEG_MAGIC))
+    const result = await NftProcessor.fetchImage('http://example.com/a.jpg')
+    expect(result.uri).toBe('https://example.com/a.jpg')
+    const request = fetchSpy.mock.calls[0]?.[0] as Request
+    expect(request.url).toBe('https://example.com/a.jpg')
+  })
+
+  it('rejects when the response was redirected to a private host (R2-9)', async () => {
+    fetchSpy.mockResolvedValueOnce(
+      mockResponseWithUrl(JPEG_MAGIC, 'https://169.254.169.254/x')
+    )
+    await expect(
+      NftProcessor.fetchImage('https://example.com/a.jpg')
+    ).rejects.toThrow(/private\/reserved host/)
+  })
+
+  it.each(['', 'https://example.com/a.jpg'])(
+    'proceeds when response.url is %p',
+    async finalUrl => {
+      fetchSpy.mockResolvedValueOnce(mockResponseWithUrl(JPEG_MAGIC, finalUrl))
+      const result = await NftProcessor.fetchImage('https://example.com/a.jpg')
+      expect(result.type).toBe(NftContentType.JPG)
+    }
+  )
 
   it('refuses to fetch localhost', async () => {
     await expect(

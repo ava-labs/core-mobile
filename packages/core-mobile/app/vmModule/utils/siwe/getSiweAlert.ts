@@ -1,7 +1,7 @@
-import { RpcMethod } from '@avalabs/vm-module-types'
+import { AlertType, RpcMethod } from '@avalabs/vm-module-types'
 import type { SigningData, DisplayData } from '@avalabs/vm-module-types'
 import type { RpcRequest } from '@avalabs/vm-module-types'
-import { parseSiweMessage } from './parseSiweMessage'
+import { parseSiweMessageStrict } from './parseSiweMessage'
 import { validateSiweOrigin } from './validateSiweOrigin'
 
 /**
@@ -28,18 +28,39 @@ export function maybeInjectSiweAlert({
   const message = hexToUtf8(signingData.data as string)
   if (!message) return displayData
 
-  const siwe = parseSiweMessage(message)
-  if (!siwe) return displayData
+  const parsed = parseSiweMessageStrict(message)
+  if (!parsed) return displayData
 
-  const alert = validateSiweOrigin(siwe, request.dappInfo.url)
+  // A SIWE header with a malformed/ambiguous body must never be signed
+  // silently: the displayed fields could differ from what a lenient parser sees.
+  if (parsed.kind === 'malformed') {
+    return {
+      ...displayData,
+      alert: {
+        type: AlertType.DANGER,
+        details: {
+          title: 'Malformed sign-in request',
+          description:
+            'This sign-in message is not formatted as a valid Sign-In with Ethereum request. Do not sign it.'
+        }
+      }
+    }
+  }
+
+  const alert = validateSiweOrigin(parsed.message, request.dappInfo.url)
   if (!alert) return displayData
 
   return { ...displayData, alert }
 }
 
-function hexToUtf8(hex: string): string | undefined {
+// Mirrors @metamask/eth-sig-util `legacyToBuffer` (what personal_sign signs):
+// a `0x`-prefixed hex string is hex-decoded; any other string is signed as
+// UTF-8 text. Decoding a plain-text message as hex would hide a SIWE payload.
+function hexToUtf8(data: string): string | undefined {
   try {
-    const cleaned = hex.startsWith('0x') ? hex.slice(2) : hex
+    if (!/^0x[0-9a-fA-F]*$/.test(data)) return data
+    let cleaned = data.slice(2)
+    if (cleaned.length % 2 === 1) cleaned = '0' + cleaned
     const bytes = new Uint8Array(
       cleaned.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) ?? []
     )

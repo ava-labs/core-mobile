@@ -6,16 +6,41 @@ import {
   GroupList,
   alpha,
   useTheme,
-  GroupListItem
+  GroupListItem,
+  showAlert
 } from '@avalabs/k2-alpine'
 import { Eip1559Fees } from 'utils/Utils'
 import { SubTextNumber } from 'new/common/components/SubTextNumber'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { MAX_BTC_FEE_RATE } from 'vmModule/handlers/btcSendTransaction'
 import { useNetworkFeeSelector } from '../../hooks/useNetworkFeeSelector'
 import { FeePreset, FeeType } from '../../types'
 import { GasOptions } from './GasOptions'
 import { CustomFees } from './CustomFees'
+
+const isValidBtcFeeRate = (value: string): boolean => {
+  // digits only (BigInt would reject "1e3"); 0 is ignored by the signer
+  if (!/^\d+$/.test(value)) return false
+  const rate = Number(value)
+  return rate >= 1 && rate <= MAX_BTC_FEE_RATE
+}
+
+// Returns false (after alerting) when a base-unit (sat/vB) rate is out of range.
+const validateBaseUnitFeeRate = (
+  isBaseUnitRate: boolean,
+  key: string,
+  value: string
+): boolean => {
+  if (!isBaseUnitRate || key !== FeeType.MAX_FEE_PER_GAS) return true
+  if (isValidBtcFeeRate(value)) return true
+  showAlert({
+    title: 'Invalid fee rate',
+    description: `Enter a whole number between 1 and ${MAX_BTC_FEE_RATE} sat/vB.`,
+    buttons: [{ text: 'OK' }]
+  })
+  return false
+}
 
 export const NetworkFeeSelector = ({
   chainId,
@@ -65,7 +90,13 @@ export const NetworkFeeSelector = ({
             onSave: (values: Record<string, string>) => {
               const enteredValue = values[item.key]
 
-              if (!enteredValue) return
+              // R2-11: the BTC signer rejects rates above MAX_BTC_FEE_RATE with
+              // a generic error; validate here so the user sees why.
+              if (
+                !enteredValue ||
+                !validateBaseUnitFeeRate(isBaseUnitRate, item.key, enteredValue)
+              )
+                return
 
               let updatedValue: bigint | number
 

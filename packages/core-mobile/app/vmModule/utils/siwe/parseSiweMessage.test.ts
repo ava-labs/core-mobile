@@ -1,4 +1,4 @@
-import { parseSiweMessage } from './parseSiweMessage'
+import { parseSiweMessage, parseSiweMessageStrict } from './parseSiweMessage'
 
 const VALID_SIWE_MESSAGE = `example.com wants you to sign in with your Ethereum account:
 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
@@ -101,5 +101,82 @@ Nonce: abc
 Issued At: 2021-09-30T16:25:24Z`
     const result = parseSiweMessage(message)
     expect(result?.domain).toBe('localhost:3000')
+  })
+
+  describe('malformed / ambiguous messages (R2-7)', () => {
+    const HEADER =
+      'victim.com wants you to sign in with your Ethereum account:\n' +
+      '0x0000000000000000000000000000000000000001\n'
+    const TAIL =
+      'Version: 1\nChain ID: 1\nNonce: abc\nIssued At: 2026-10-06T00:00:00Z'
+
+    it.each([
+      [
+        'multi-line statement with blank-line URI',
+        HEADER +
+          '\nLegit statement\n\nURI: https://evil.com\n\nURI: https://victim.com\n' +
+          TAIL
+      ],
+      [
+        'duplicate URI without blank line',
+        HEADER + '\nURI: https://evil.com\nURI: https://victim.com\n' + TAIL
+      ],
+      [
+        'CRLF CRLF separator',
+        HEADER +
+          '\nLegit\r\n\r\nURI: https://evil.com\n\nURI: https://victim.com\n' +
+          TAIL
+      ],
+      [
+        'CR CR separator',
+        HEADER +
+          '\nLegit\r\rURI: https://evil.com\n\nURI: https://victim.com\n' +
+          TAIL
+      ],
+      [
+        'unicode line separator',
+        HEADER +
+          '\nLegit\u2028\u2028URI: https://evil.com\n\nURI: https://victim.com\n' +
+          TAIL
+      ],
+      [
+        'URI smuggled after Resources',
+        HEADER +
+          '\nURI: https://victim.com\n' +
+          TAIL +
+          '\nResources:\nURI: https://evil.com'
+      ]
+    ])('flags %s as malformed', (_name, msg) => {
+      expect(parseSiweMessageStrict(msg)?.kind).toBe('malformed')
+      expect(parseSiweMessage(msg)).toBeUndefined()
+    })
+
+    it('returns undefined (not malformed) when the header does not match', () => {
+      expect(parseSiweMessageStrict('Hello world')).toBeUndefined()
+    })
+
+    it('accepts an empty statement line per EIP-4361', () => {
+      const msg = HEADER + '\n\nURI: https://victim.com\n' + TAIL
+      expect(parseSiweMessageStrict(msg)?.kind).toBe('ok')
+    })
+
+    it('accepts a bare Resources: line with zero items (viem shape)', () => {
+      const msg = HEADER + '\nURI: https://victim.com\n' + TAIL + '\nResources:'
+      expect(parseSiweMessageStrict(msg)?.kind).toBe('ok')
+    })
+
+    it('flags Resources: followed by a non-resource line as malformed', () => {
+      const msg =
+        HEADER +
+        '\nURI: https://victim.com\n' +
+        TAIL +
+        '\nResources:\nnot a resource'
+      expect(parseSiweMessageStrict(msg)?.kind).toBe('malformed')
+    })
+
+    it('accepts a single trailing newline', () => {
+      const msg = HEADER + '\nURI: https://victim.com\n' + TAIL + '\n'
+      expect(parseSiweMessageStrict(msg)?.kind).toBe('ok')
+    })
   })
 })
