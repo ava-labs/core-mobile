@@ -50,7 +50,8 @@ const walletsSlice = createSlice({
   },
   extraReducers: builder => {
     builder.addCase(storeWallet.fulfilled, (state, action) => {
-      const wallet = action.payload
+      // secureHardware is a one-off signal for the caller, not persisted state
+      const { secureHardware: _secureHardware, ...wallet } = action.payload
       state.wallets[wallet.id] = wallet
     })
   }

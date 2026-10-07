@@ -26,7 +26,7 @@ import { _removeWallet, selectActiveWalletId } from './slice'
 import { generateWalletName } from './utils'
 
 export const storeWallet = createAsyncThunk<
-  Wallet,
+  Wallet & { secureHardware: boolean },
   StoreWalletParams,
   ThunkApi
 >(
@@ -35,14 +35,10 @@ export const storeWallet = createAsyncThunk<
     { walletId, walletSecret, type, name }: StoreWalletParams,
     thunkApi
   ) => {
-    const success = await BiometricsSDK.storeWalletSecret(
+    const { secureHardware } = await BiometricsSDK.storeWalletSecret(
       walletId,
       walletSecret
     )
-
-    if (!success) {
-      throw new Error('Failed to store wallet in BiometricsSDK')
-    }
 
     const state = thunkApi.getState()
     const walletCount = Object.keys(selectWallets(state)).length
@@ -50,7 +46,8 @@ export const storeWallet = createAsyncThunk<
     return {
       id: walletId,
       name: name || generateWalletName(walletCount + 1),
-      type
+      type,
+      secureHardware
     }
   }
 )

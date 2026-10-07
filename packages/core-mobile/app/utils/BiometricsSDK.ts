@@ -329,33 +329,57 @@ class BiometricsSDK {
 
   // Wallet Secret Management
   /**
-   * Whether this device can generate keys in a hardware-backed keystore
-   * (TEE/StrongBox). Emulators and some low-end devices cannot. On iOS the
-   * Keychain/Secure Enclave is always used and `securityLevel` does not apply,
-   * so we report `true` (no warning).
+   * Stores the wallet secret, preferring a hardware-backed key (TEE or
+   * StrongBox). react-native-keychain enforces `securityLevel` against the key
+   * it actually generated (KeyInfo.isInsideSecureHardware), so trying
+   * SECURE_HARDWARE first and catching the failure is the accurate probe; the
+   * old `getSecurityLevel()` check answered "StrongBox?" and warned every
+   * TEE-only device (CP-15105 S1).
+   *
+   * SECURE_HARDWARE is attempted twice before falling back to
+   * SECURE_SOFTWARE, so a single transient keystore error does not permanently
+   * downgrade a wallet.
+   *
+   * The returned `secureHardware` flag is accurate only when the key is newly
+   * generated (first store for this alias); react-native-keychain does not
+   * re-validate the level for an existing key.
    */
-  async isSecureHardwareAvailable(): Promise<boolean> {
-    if (iOS) return true
-    try {
-      const level = await Keychain.getSecurityLevel()
-      return level === Keychain.SECURITY_LEVEL.SECURE_HARDWARE
-    } catch (e) {
-      Logger.error('Failed to determine keystore security level', e)
-      return false
-    }
-  }
-
-  async storeWalletSecret(walletId: string, secret: string): Promise<boolean> {
+  async storeWalletSecret(
+    walletId: string,
+    secret: string
+  ): Promise<{ secureHardware: boolean }> {
     const encrypted = await encrypt(secret, this.encryptionKey)
-    // Fall back to the software keystore when no secure hardware is present so
-    // wallet creation still succeeds; the caller warns the user in that case.
-    const secureHardware = await this.isSecureHardwareAvailable()
+    if (iOS) {
+      await Keychain.setGenericPassword(
+        'walletSecret',
+        encrypted,
+        walletSecretOptions(walletId)
+      )
+      return { secureHardware: true }
+    }
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        await Keychain.setGenericPassword(
+          'walletSecret',
+          encrypted,
+          walletSecretOptions(walletId, true)
+        )
+        return { secureHardware: true }
+      } catch (e) {
+        if (attempt === 2) {
+          Logger.warn(
+            'Hardware-backed keystore unavailable, falling back to software keystore',
+            e
+          )
+        }
+      }
+    }
     await Keychain.setGenericPassword(
       'walletSecret',
       encrypted,
-      walletSecretOptions(walletId, secureHardware)
+      walletSecretOptions(walletId, false)
     )
-    return true
+    return { secureHardware: false }
   }
 
   async removeWalletSecret(walletId: string): Promise<boolean> {

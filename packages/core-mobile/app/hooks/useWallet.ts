@@ -10,8 +10,8 @@ import { AppThunkDispatch } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { setActiveWallet } from 'store/wallet/slice'
 
-const warnIfNoSecureHardware = async (): Promise<void> => {
-  if (await BiometricsSDK.isSecureHardwareAvailable()) return
+const warnIfNoSecureHardware = (secureHardware: boolean): void => {
+  if (secureHardware) return
 
   showAlert({
     title: 'Secure hardware unavailable',
@@ -103,12 +103,12 @@ export function useWallet(): UseWallet {
           type: walletType
         })
       )
-      await dispatchStoreWallet.unwrap()
+      const { secureHardware } = await dispatchStoreWallet.unwrap()
       dispatch(setActiveWallet(walletId))
 
       // Wallet stored — if it landed in the software keystore (no secure
       // hardware on this device), let the user know their protection is weaker.
-      await warnIfNoSecureHardware()
+      warnIfNoSecureHardware(secureHardware)
 
       return Promise.resolve(walletId)
     } catch (error) {

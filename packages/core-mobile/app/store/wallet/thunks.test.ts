@@ -42,7 +42,9 @@ describe('wallet thunks', () => {
 
     it('should successfully store wallet with PIN', async () => {
       // Mock successful storage
-      jest.spyOn(BiometricsSDK, 'storeWalletSecret').mockResolvedValue(true)
+      jest
+        .spyOn(BiometricsSDK, 'storeWalletSecret')
+        .mockResolvedValue({ secureHardware: true })
 
       const mockGetState = jest.fn().mockReturnValue(mockState)
       const result = await storeWallet(mockParams)(
@@ -59,13 +61,15 @@ describe('wallet thunks', () => {
       expect(result.payload).toEqual({
         id: mockParams.walletId,
         name: 'Wallet 1',
-        type: mockParams.type
+        type: mockParams.type,
+        secureHardware: true
       })
     })
 
-    it('should throw error when storage fails', async () => {
-      // Mock failed storage
-      jest.spyOn(BiometricsSDK, 'storeWalletSecret').mockResolvedValue(false)
+    it('should reject when storage fails', async () => {
+      jest
+        .spyOn(BiometricsSDK, 'storeWalletSecret')
+        .mockRejectedValue(new Error('Failed to store wallet in BiometricsSDK'))
 
       const mockGetState = jest.fn().mockReturnValue(mockState)
       const result = (await storeWallet(mockParams)(
@@ -95,7 +99,9 @@ describe('wallet thunks', () => {
       ;(uuid as jest.Mock)
         .mockReturnValueOnce('mock-wallet-uuid')
         .mockReturnValueOnce('mock-account-uuid')
-      jest.spyOn(BiometricsSDK, 'storeWalletSecret').mockResolvedValue(true)
+      jest
+        .spyOn(BiometricsSDK, 'storeWalletSecret')
+        .mockResolvedValue({ secureHardware: true })
       ;(AccountsService.getAddresses as jest.Mock).mockResolvedValue(
         mockAddresses
       )
