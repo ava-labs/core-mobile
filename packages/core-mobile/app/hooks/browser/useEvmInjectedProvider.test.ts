@@ -182,7 +182,24 @@ function setupMocks(
   )
 }
 
-const MAIN_FRAME: MessageFrameInfo = { isMainFrame: true }
+// Real main-frame messages always carry a frameOrigin matching the committed
+// URL, so track the origin of the last committed URL (see commitUrl).
+let committedFrameOrigin: string | undefined
+function commitUrl(commit: (url: string) => void, url: string): void {
+  try {
+    committedFrameOrigin = new URL(url).origin
+  } catch {
+    committedFrameOrigin = undefined
+  }
+  commit(url)
+}
+
+const MAIN_FRAME: MessageFrameInfo = {
+  isMainFrame: true,
+  get frameOrigin() {
+    return committedFrameOrigin
+  }
+}
 
 // Wraps renderHook and seeds a native origin by default. Tests that explicitly
 // want the no-origin path pass an empty string: `renderProvider('')`.
@@ -192,7 +209,7 @@ function renderProvider(url = 'https://example.com') {
   )
   if (url) {
     act(() => {
-      hookReturn.result.current.handleCommittedUrl(url)
+      commitUrl(hookReturn.result.current.handleCommittedUrl, url)
     })
   }
   return hookReturn
@@ -201,6 +218,7 @@ function renderProvider(url = 'https://example.com') {
 describe('useEvmInjectedProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    committedFrameOrigin = undefined
     mockUseDispatch.mockReturnValue(mockDispatch)
     mockUseStore.mockReturnValue(mockStore)
     // Default read-only path: module loads and resolves a result.
@@ -254,7 +272,7 @@ describe('useEvmInjectedProvider', () => {
       )
       mockInjectJavaScript.mockClear()
       act(() => {
-        result.current.handleCommittedUrl('https://example.com')
+        commitUrl(result.current.handleCommittedUrl, 'https://example.com')
       })
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
         expect.stringContaining("__coreProviderReassertChain('0xa86a')")
@@ -276,7 +294,7 @@ describe('useEvmInjectedProvider', () => {
       )
       mockInjectJavaScript.mockClear()
       act(() => {
-        result.current.handleCommittedUrl('https://example.com')
+        commitUrl(result.current.handleCommittedUrl, 'https://example.com')
       })
       expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
         expect.stringContaining('__coreProviderReassertChain')
@@ -342,7 +360,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         await act(async () => {
@@ -379,7 +397,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         // Switch browser to chain 1 (auto-approved)
@@ -544,7 +562,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -656,7 +674,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -722,7 +740,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         await act(async () => {
@@ -759,7 +777,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         await act(async () => {
@@ -786,7 +804,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         await act(async () => {
@@ -852,7 +870,7 @@ describe('useEvmInjectedProvider', () => {
           const { result } = renderProvider()
 
           act(() => {
-            result.current.handleCommittedUrl('https://example.com')
+            commitUrl(result.current.handleCommittedUrl, 'https://example.com')
           })
 
           const payload = JSON.stringify({
@@ -902,7 +920,10 @@ describe('useEvmInjectedProvider', () => {
 
         // The page is actually loaded from a malicious origin...
         act(() => {
-          result.current.handleCommittedUrl('https://malicious.example/path')
+          commitUrl(
+            result.current.handleCommittedUrl,
+            'https://malicious.example/path'
+          )
         })
 
         // ...but it tries to spoof its display name via domain_metadata.
@@ -949,7 +970,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -980,7 +1001,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -1087,7 +1108,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -1117,7 +1138,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -1351,7 +1372,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.handleCommittedUrl('https://example.com')
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -1693,7 +1714,7 @@ describe('useEvmInjectedProvider', () => {
       expect(capturedSignal?.aborted).toBe(false)
 
       act(() => {
-        result.current.handleCommittedUrl('https://opensea.io')
+        commitUrl(result.current.handleCommittedUrl, 'https://opensea.io')
       })
 
       expect(capturedSignal?.aborted).toBe(true)
@@ -1735,7 +1756,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       act(() => {
-        result.current.handleCommittedUrl('https://opensea.io')
+        commitUrl(result.current.handleCommittedUrl, 'https://opensea.io')
       })
 
       // Settlement still no-ops in the controller for this phase, and the abort
@@ -1773,7 +1794,7 @@ describe('useEvmInjectedProvider', () => {
 
       act(() => {
         // Same origin, different path — mimics a SPA nav_change message
-        result.current.handleCommittedUrl('https://uniswap.org/pool')
+        commitUrl(result.current.handleCommittedUrl, 'https://uniswap.org/pool')
       })
 
       expect(capturedSignal?.aborted).toBe(false)
@@ -1800,7 +1821,10 @@ describe('useEvmInjectedProvider', () => {
 
       act(() => {
         // SPA route change within the same origin (e.g. core.app -> /stake).
-        result.current.handleCommittedUrl('https://uniswap.org/stake')
+        commitUrl(
+          result.current.handleCommittedUrl,
+          'https://uniswap.org/stake'
+        )
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1870,7 +1894,7 @@ describe('useEvmInjectedProvider', () => {
       )
 
       act(() => {
-        result.current.handleCommittedUrl('https://opensea.io/')
+        commitUrl(result.current.handleCommittedUrl, 'https://opensea.io/')
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1886,7 +1910,7 @@ describe('useEvmInjectedProvider', () => {
       )
 
       act(() => {
-        result.current.handleCommittedUrl('https://opensea.io/')
+        commitUrl(result.current.handleCommittedUrl, 'https://opensea.io/')
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1904,7 +1928,7 @@ describe('useEvmInjectedProvider', () => {
       )
 
       act(() => {
-        result.current.handleCommittedUrl('https://opensea.io/')
+        commitUrl(result.current.handleCommittedUrl, 'https://opensea.io/')
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1924,7 +1948,7 @@ describe('useEvmInjectedProvider', () => {
       )
 
       act(() => {
-        result.current.handleCommittedUrl('https://opensea.io/')
+        commitUrl(result.current.handleCommittedUrl, 'https://opensea.io/')
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1951,7 +1975,7 @@ describe('useEvmInjectedProvider', () => {
       )
 
       act(() => {
-        result.current.handleCommittedUrl('https://opensea.io/')
+        commitUrl(result.current.handleCommittedUrl, 'https://opensea.io/')
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1971,7 +1995,7 @@ describe('useEvmInjectedProvider', () => {
       )
 
       act(() => {
-        result.current.handleCommittedUrl('https://opensea.io/')
+        commitUrl(result.current.handleCommittedUrl, 'https://opensea.io/')
       })
       mockInjectJavaScript.mockClear()
 
@@ -1991,7 +2015,7 @@ describe('useEvmInjectedProvider', () => {
       )
 
       act(() => {
-        result.current.handleCommittedUrl('https://evil.example/')
+        commitUrl(result.current.handleCommittedUrl, 'https://evil.example/')
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -2008,7 +2032,7 @@ describe('useEvmInjectedProvider', () => {
       mockInjectJavaScript.mockClear()
 
       act(() => {
-        result.current.handleCommittedUrl('')
+        commitUrl(result.current.handleCommittedUrl, '')
       })
 
       expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
@@ -2023,7 +2047,7 @@ describe('useEvmInjectedProvider', () => {
       )
 
       act(() => {
-        result.current.handleCommittedUrl('https://opensea.io/')
+        commitUrl(result.current.handleCommittedUrl, 'https://opensea.io/')
       })
 
       expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
@@ -2061,7 +2085,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.handleCommittedUrl(ORIGIN))
+      act(() => commitUrl(result.current.handleCommittedUrl, ORIGIN))
       mockInjectJavaScript.mockClear()
 
       setupMocks({ account: accountB })
@@ -2079,7 +2103,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.handleCommittedUrl(ORIGIN))
+      act(() => commitUrl(result.current.handleCommittedUrl, ORIGIN))
       mockInjectJavaScript.mockClear()
 
       setupMocks({ account: accountB })
@@ -2096,7 +2120,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.handleCommittedUrl(ORIGIN))
+      act(() => commitUrl(result.current.handleCommittedUrl, ORIGIN))
       mockInjectJavaScript.mockClear()
 
       setupMocks({ account: accountC })
@@ -2111,7 +2135,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountC })
       const { rerender, result } = renderProvider()
-      act(() => result.current.handleCommittedUrl(ORIGIN))
+      act(() => commitUrl(result.current.handleCommittedUrl, ORIGIN))
       // Switch to ungranted-adjacent path then back to a granted account.
       setupMocks({ account: accountA })
       act(() => rerender())
@@ -2130,7 +2154,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.handleCommittedUrl(ORIGIN))
+      act(() => commitUrl(result.current.handleCommittedUrl, ORIGIN))
       setupMocks({ account: accountB })
       act(() => rerender())
       mockInjectJavaScript.mockClear()
@@ -2153,7 +2177,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.handleCommittedUrl(ORIGIN))
+      act(() => commitUrl(result.current.handleCommittedUrl, ORIGIN))
       act(() =>
         result.current.handleDomainMetadata(JSON.stringify({ name: 'x' }))
       )
@@ -2171,7 +2195,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.handleCommittedUrl(ORIGIN))
+      act(() => commitUrl(result.current.handleCommittedUrl, ORIGIN))
       // First switch emits [A, B].
       setupMocks({ account: { ...mockActiveAccount } })
       act(() => rerender())
@@ -2222,7 +2246,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(store)
       setupMocks({ account: accountA })
       const { result } = renderProvider()
-      act(() => result.current.handleCommittedUrl(ORIGIN))
+      act(() => commitUrl(result.current.handleCommittedUrl, ORIGIN))
       // Prime so the dApp is seen connected to [A].
       act(() =>
         result.current.handleDomainMetadata(JSON.stringify({ name: 'OpenSea' }))
@@ -2252,7 +2276,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(store)
       setupMocks({ account: accountA })
       const { result } = renderProvider()
-      act(() => result.current.handleCommittedUrl(ORIGIN))
+      act(() => commitUrl(result.current.handleCommittedUrl, ORIGIN))
       act(() =>
         result.current.handleDomainMetadata(JSON.stringify({ name: 'OpenSea' }))
       )

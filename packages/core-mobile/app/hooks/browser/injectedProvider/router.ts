@@ -39,7 +39,9 @@ const warnOriginUnavailable = (
   const key = isKnown ? method : OTHER_METHOD_KEY
   const now = Date.now()
   const last = lastOriginWarnAt.get(key) ?? 0
-  if (now - last < ORIGIN_WARN_WINDOW_MS) return
+  // `now < last` (clock moved backwards) counts as elapsed so it can never
+  // suppress the warning indefinitely.
+  if (now >= last && now - last < ORIGIN_WARN_WINDOW_MS) return
   lastOriginWarnAt.set(key, now)
   const printed = isKnown
     ? method
@@ -931,9 +933,24 @@ export function createInjectedProviderRouter(
       return
     }
 
+    // An opaque-origin main frame (e.g. a page served with
+    // `Content-Security-Policy: sandbox allow-scripts`) reports frameOrigin as
+    // "null", normalised to undefined upstream. It must not be evaluated
+    // against the previously committed origin. Both fork platforms always send
+    // frameOrigin for real main-frame messages.
+    if (!frameOrigin) {
+      warnOriginUnavailable(method, id, isMainFrame)
+      sendResponse(
+        id,
+        providerErrors.unauthorized('Origin unavailable'),
+        undefined
+      )
+      return
+    }
+
     const nativeOrigin = getNativeOrigin()
 
-    if (frameOrigin && nativeOrigin && frameOrigin !== nativeOrigin) {
+    if (nativeOrigin && frameOrigin && frameOrigin !== nativeOrigin) {
       Logger.warn(
         `[InjectedProvider] Frame origin mismatch rejected: frame=${frameOrigin} native=${nativeOrigin}`
       )

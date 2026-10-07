@@ -63,6 +63,10 @@ const OTHER_GRANTED_ADDR = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 const UNGRANTED_ADDR = '0xcccccccccccccccccccccccccccccccccccccccc'
 const MOCK_ACCOUNT = { addressC: MOCK_ADDR } as Account
 
+// Tracks the native origin of the most recent makeDeps() so MAIN_FRAME can
+// carry a matching frameOrigin (real main-frame messages always do).
+let currentNativeOrigin: string | undefined = 'https://example.com'
+
 function makeDeps(overrides?: {
   browserNetwork?: BrowserNetwork
   allNetworks?: Networks
@@ -72,6 +76,10 @@ function makeDeps(overrides?: {
   grantedAddresses?: string[]
   isDeveloperMode?: boolean
 }): MockDeps {
+  currentNativeOrigin =
+    overrides && 'nativeOrigin' in overrides
+      ? overrides.nativeOrigin
+      : 'https://example.com'
   const currentNetwork = {
     value: overrides?.browserNetwork ?? {
       chainId: 43114,
@@ -132,10 +140,7 @@ function makeDeps(overrides?: {
     emitEvent,
     emitAccountsChangedForOrigin,
     emitEventForOrigin,
-    getNativeOrigin: () =>
-      overrides && 'nativeOrigin' in overrides
-        ? overrides.nativeOrigin
-        : 'https://example.com',
+    getNativeOrigin: () => currentNativeOrigin,
     trackPendingOrigin,
     getPeerMeta: () => ({
       name: 'example',
@@ -172,7 +177,14 @@ function makeDeps(overrides?: {
     currentNetwork
   }
 }
-const MAIN_FRAME: MessageFrameInfo = { isMainFrame: true }
+// Getter so the frameOrigin always matches the committed origin of the router
+// under test (real main-frame messages always carry a frameOrigin).
+const MAIN_FRAME: MessageFrameInfo = {
+  isMainFrame: true,
+  get frameOrigin() {
+    return currentNativeOrigin
+  }
+}
 
 function send(
   router: ReturnType<typeof createInjectedProviderRouter>,
@@ -882,7 +894,7 @@ describe('createInjectedProviderRouter', () => {
       )
     })
 
-    it('does not treat an opaque/unavailable frame origin as a mismatch', () => {
+    it('rejects a main-frame request whose frameOrigin is missing (opaque origin) instead of using the committed origin', () => {
       const { deps, sendResponse, requestReadOnly } = makeDeps()
       const router = createInjectedProviderRouter(deps)
 
@@ -894,14 +906,12 @@ describe('createInjectedProviderRouter', () => {
         { isMainFrame: true, frameOrigin: undefined }
       )
 
-      expect(requestReadOnly).toHaveBeenCalled()
-      expect(sendResponse).not.toHaveBeenCalledWith(
+      expect(sendResponse).toHaveBeenCalledWith(
         1,
-        expect.objectContaining({
-          message: expect.stringContaining('Origin mismatch')
-        }),
+        expect.objectContaining({ code: 4100 }),
         undefined
       )
+      expect(requestReadOnly).not.toHaveBeenCalled()
     })
 
     it('fails closed when the platform reports no frame provenance at all', () => {

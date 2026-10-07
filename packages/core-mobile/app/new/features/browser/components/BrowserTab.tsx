@@ -481,7 +481,10 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         // message (legacy Android bridge). Treat it like a subframe (R2-5/B5).
         if (frame.isMainFrame !== true) {
           const now = Date.now()
-          if (now - lastFrameDropWarnAt >= FRAME_DROP_WARN_WINDOW_MS) {
+          if (
+            now < lastFrameDropWarnAt ||
+            now - lastFrameDropWarnAt >= FRAME_DROP_WARN_WINDOW_MS
+          ) {
             lastFrameDropWarnAt = now
             Logger.warn(
               `[Browser] Ignored WebView message without proven main-frame provenance (isMainFrame=${String(

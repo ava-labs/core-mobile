@@ -35,7 +35,7 @@ export const getMessageFrameInfo = (
   ) {
     hasReportedMissingProvenance = true
     Logger.error(
-      '[Browser] WebView message carries no frame provenance on iOS — the react-native-webview patch is missing; every provider request will be refused as unattributable'
+      '[Browser] WebView message carries no frame provenance on iOS — the react-native-webview fork pin is missing; every provider request will be refused as unattributable'
     )
   }
 
