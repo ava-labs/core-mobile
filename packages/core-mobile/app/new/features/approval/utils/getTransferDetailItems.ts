@@ -13,10 +13,30 @@ export type TransferDetailItem =
   | CurrencyItem
   | DateItem
 
+type Until = Transfer['lockedUntil']
+
 const isLocked = (
-  seconds: number | undefined,
+  until: Until,
   nowInSeconds: number
-): seconds is number => seconds !== undefined && seconds > nowInSeconds
+): until is NonNullable<Until> =>
+  until === 'indefinitely' || (until !== undefined && until > nowInSeconds)
+
+const getUntilItem = (
+  label: string,
+  until: NonNullable<Until>
+): TransferDetailItem =>
+  until === 'indefinitely'
+    ? {
+        type: DetailItemType.TEXT,
+        label,
+        value: 'Indefinitely',
+        alignment: 'horizontal'
+      }
+    : {
+        type: DetailItemType.DATE,
+        label,
+        value: String(until)
+      }
 
 const getRecipientItems = (addresses: string[]): TransferDetailItem[] => {
   if (addresses.length === 0) {
@@ -91,11 +111,7 @@ const getStakeItems = ({
           value: 'Until the validator stops',
           alignment: 'horizontal'
         }
-      : {
-          type: DetailItemType.DATE,
-          label: 'Staked until',
-          value: String(stakedUntil)
-        }
+      : getUntilItem('Staked until', stakedUntil)
   ]
 }
 
@@ -104,22 +120,10 @@ const getLockItems = (
   nowInSeconds: number
 ): TransferDetailItem[] => [
   ...(isLocked(lockedUntil, nowInSeconds)
-    ? [
-        {
-          type: DetailItemType.DATE,
-          label: 'Locked until',
-          value: String(lockedUntil)
-        } as const
-      ]
+    ? [getUntilItem('Locked until', lockedUntil)]
     : []),
   ...(isLocked(stakeableLockedUntil, nowInSeconds)
-    ? [
-        {
-          type: DetailItemType.DATE,
-          label: 'Staking only until',
-          value: String(stakeableLockedUntil)
-        } as const
-      ]
+    ? [getUntilItem('Staking only until', stakeableLockedUntil)]
     : [])
 ]
 

@@ -128,6 +128,20 @@ describe('getTransferDetailItems', () => {
     })
   })
 
+  it('returns an indefinite stake when the stake end is past the latest representable date', () => {
+    expect(
+      getTransferDetailItems(
+        { ...avaxTransfer, isStaked: true, stakedUntil: 'indefinitely' },
+        NOW
+      )
+    ).toContainEqual({
+      type: DetailItemType.TEXT,
+      label: 'Staked until',
+      value: 'Indefinitely',
+      alignment: 'horizontal'
+    })
+  })
+
   it('returns a message for auto-renewed staked funds', () => {
     expect(
       getTransferDetailItems({ ...avaxTransfer, isStaked: true }, NOW)
@@ -207,6 +221,31 @@ describe('getTransferDetailItems', () => {
       label: 'Staking only until',
       value: String(NOW + 2)
     })
+  })
+
+  it('returns indefinite locks when they are past the latest representable date', () => {
+    const items = getTransferDetailItems(
+      {
+        ...avaxTransfer,
+        lockedUntil: 'indefinitely',
+        stakeableLockedUntil: 'indefinitely'
+      },
+      NOW
+    )
+
+    expect(items).toContainEqual({
+      type: DetailItemType.TEXT,
+      label: 'Locked until',
+      value: 'Indefinitely',
+      alignment: 'horizontal'
+    })
+    expect(items).toContainEqual({
+      type: DetailItemType.TEXT,
+      label: 'Staking only until',
+      value: 'Indefinitely',
+      alignment: 'horizontal'
+    })
+    expect(items.some(item => item.type === DetailItemType.DATE)).toBe(false)
   })
 
   it('does not return dates for locks that have already expired', () => {
