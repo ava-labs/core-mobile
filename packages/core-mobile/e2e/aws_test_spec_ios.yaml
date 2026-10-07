@@ -61,9 +61,9 @@ phases:
         if which devicefarm-cli > /dev/null 2>&1; then
           echo "devicefarm-cli available — xcuitest already configured by Device Farm"
         else
-          echo "Upgrading xcuitest to Appium 3 compatible version (>=7.35.1)..."
+          echo "Installing xcuitest 12.15.0 (matches package.json)..."
           appium driver uninstall xcuitest 2>&1 | tail -5 || true
-          appium driver install xcuitest@10.14.7 2>&1 | tail -10
+          appium driver install xcuitest@12.15.0 2>&1 | tail -10
           echo "--- xcuitest driver after install ---"
           appium driver list 2>&1 | tail -20
         fi
