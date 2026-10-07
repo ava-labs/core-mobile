@@ -4,6 +4,7 @@ import { Signer as CsEthersSigner } from '@cubist-labs/cubesigner-sdk-ethers-v6'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
+  MessageSigningRequest,
   SolanaTransactionRequest,
   Wallet
 } from 'services/wallet/types'
@@ -15,13 +16,14 @@ import {
   BitcoinProvider,
   JsonRpcBatchInternal,
   SolanaProvider,
-  createPsbt,
+  createPSBT,
   getEvmAddressFromPubKey,
   compileSolanaTx,
   serializeSolanaTx,
   deserializeTransactionMessage
 } from '@avalabs/core-wallets-sdk'
 import { sha256 } from '@noble/hashes/sha256'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import { EVM, utils } from '@avalabs/avalanchejs'
 import {
   SignTypedDataVersion,
@@ -51,6 +53,18 @@ import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessService from '../SeedlessService'
 import { SeedlessPubKeysStorage } from '../storage/SeedlessPubKeysStorage'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
+
+const validateSignature = (
+  pubkey: Buffer,
+  msghash: Buffer,
+  signature: Buffer
+): boolean =>
+  secp256k1.verify(
+    Uint8Array.from(signature),
+    Uint8Array.from(msghash),
+    Uint8Array.from(pubkey),
+    { lowS: false }
+  )
 
 export default class SeedlessWallet implements Wallet {
   #client: cs.CubeSignerClient
@@ -171,26 +185,21 @@ export default class SeedlessWallet implements Wallet {
 
   /** WALLET INTERFACE IMPLEMENTATION **/
   public async signMessage({
-    rpcMethod,
-    data,
+    signingData,
     accountIndex,
     network,
     provider
   }: {
-    rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    signingData: MessageSigningRequest
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
   }): Promise<string> {
-    switch (rpcMethod) {
-      case RpcMethod.SOLANA_SIGN_MESSAGE: {
-        if (typeof data !== 'string') throw new Error('Data must be string')
-        return this.signSolanaMessage(data, accountIndex)
-      }
-      case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
-        if (typeof data !== 'string') throw new Error('Data must be string')
+    switch (signingData.type) {
+      case RpcMethod.SOLANA_SIGN_MESSAGE:
+        return this.signSolanaMessage(signingData.data, accountIndex)
 
+      case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
         const chainAlias = getChainAliasFromNetwork(network)
         if (!chainAlias)
           throw new Error(`Unsupported network ${network.vmName}`)
@@ -200,7 +209,7 @@ export default class SeedlessWallet implements Wallet {
 
         return this.signAvalancheMessage({
           accountIndex,
-          message: data,
+          message: signingData.data,
           provider
         })
       }
@@ -210,7 +219,11 @@ export default class SeedlessWallet implements Wallet {
       case RpcMethod.SIGN_TYPED_DATA_V1:
       case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4:
-        return this.signEvmMessage(data, accountIndex, rpcMethod)
+        return this.signEvmMessage(
+          signingData.data,
+          accountIndex,
+          signingData.type
+        )
 
       default:
         throw new Error('Unknown message type method')
@@ -227,7 +240,7 @@ export default class SeedlessWallet implements Wallet {
     provider: BitcoinProvider
   }): Promise<string> {
     const btcNetwork = provider.getNetwork()
-    const psbt = createPsbt(transaction.inputs, transaction.outputs, btcNetwork)
+    const psbt = createPSBT(transaction.inputs, transaction.outputs, btcNetwork)
     const addressPublicKey = await this.getAddressPublicKey({
       accountIndex,
       vmType: NetworkVMType.BITCOIN
@@ -250,7 +263,8 @@ export default class SeedlessWallet implements Wallet {
     )
 
     // Validate inputs
-    const areSignaturesValid = psbt.validateSignaturesOfAllInputs()
+    const areSignaturesValid =
+      psbt.validateSignaturesOfAllInputs(validateSignature)
 
     if (!areSignaturesValid)
       throw new Error('Unable to sign Btc transaction: invalid signatures')

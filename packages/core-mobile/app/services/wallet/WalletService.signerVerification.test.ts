@@ -98,8 +98,11 @@ describe('WalletService EVM signer-recovery verification (real crypto)', () => {
         WalletService.signMessage({
           walletId: 'w1',
           walletType: 'MNEMONIC' as never,
-          rpcMethod: RpcMethod.PERSONAL_SIGN,
-          data,
+          signingData: {
+            type: RpcMethod.PERSONAL_SIGN,
+            account: SIGNER_ADDRESS,
+            data
+          },
           accountIndex: 0,
           network,
           fromAddress: SIGNER_ADDRESS
@@ -120,8 +123,11 @@ describe('WalletService EVM signer-recovery verification (real crypto)', () => {
         WalletService.signMessage({
           walletId: 'w1',
           walletType: 'MNEMONIC' as never,
-          rpcMethod: RpcMethod.PERSONAL_SIGN,
-          data,
+          signingData: {
+            type: RpcMethod.PERSONAL_SIGN,
+            account: SIGNER_ADDRESS,
+            data
+          },
           accountIndex: 0,
           network,
           fromAddress: OTHER_ADDRESS
@@ -142,8 +148,11 @@ describe('WalletService EVM signer-recovery verification (real crypto)', () => {
         WalletService.signMessage({
           walletId: 'w1',
           walletType: 'MNEMONIC' as never,
-          rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-          data: TYPED_DATA_V4,
+          signingData: {
+            type: RpcMethod.SIGN_TYPED_DATA_V4,
+            account: SIGNER_ADDRESS,
+            data: TYPED_DATA_V4
+          },
           accountIndex: 0,
           network,
           fromAddress: SIGNER_ADDRESS
@@ -161,8 +170,10 @@ describe('WalletService EVM signer-recovery verification (real crypto)', () => {
         WalletService.signMessage({
           walletId: 'w1',
           walletType: 'MNEMONIC' as never,
-          rpcMethod: RpcMethod.AVALANCHE_SIGN_MESSAGE,
-          data: '0xdeadbeef',
+          signingData: {
+            type: RpcMethod.AVALANCHE_SIGN_MESSAGE,
+            data: '0xdeadbeef'
+          },
           accountIndex: 0,
           network,
           fromAddress: SIGNER_ADDRESS
@@ -264,8 +275,11 @@ describe('WalletService EVM signer-recovery verification (real crypto)', () => {
         WalletService.signMessage({
           walletId: 'w1',
           walletType: 'MNEMONIC' as never,
-          rpcMethod: RpcMethod.PERSONAL_SIGN,
-          data: '0xdeadbeef',
+          signingData: {
+            type: RpcMethod.PERSONAL_SIGN,
+            account: '0xaccount',
+            data: '0xdeadbeef'
+          },
           accountIndex: 0,
           network
         })
@@ -284,8 +298,11 @@ describe('WalletService EVM signer-recovery verification (real crypto)', () => {
         WalletService.signMessage({
           walletId: 'w1',
           walletType: 'MNEMONIC' as never,
-          rpcMethod: RpcMethod.SOLANA_SIGN_MESSAGE,
-          data: 'hello',
+          signingData: {
+            type: RpcMethod.SOLANA_SIGN_MESSAGE,
+            account: 'solanaAccount',
+            data: 'hello'
+          },
           accountIndex: 0,
           network
         })

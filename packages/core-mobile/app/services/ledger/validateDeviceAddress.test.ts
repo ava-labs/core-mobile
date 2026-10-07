@@ -1,6 +1,7 @@
+import bs58 from 'bs58'
 import { utils } from '@avalabs/avalanchejs'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
-import type Transport from '@ledgerhq/hw-transport'
+import type { LedgerTransport as Transport } from '@avalabs/hw-app-avalanche'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { SentryTag } from 'services/sentry/types'
 import { LedgerReturnCode } from './types'
@@ -8,7 +9,7 @@ import {
   assertDeviceBech32Address,
   assertDeviceEvmAddress,
   assertDevicePublicKey,
-  assertDeviceSolanaAddress
+  assertDeviceSolanaBase58Address
 } from './validateDeviceAddress'
 
 const mockCaptureMessage = jest.fn()
@@ -304,35 +305,43 @@ describe('assertDevicePublicKey', () => {
   })
 })
 
-describe('assertDeviceSolanaAddress', () => {
+describe('assertDeviceSolanaBase58Address', () => {
+  const VALID_BASE58_ADDRESS = bs58.encode(new Uint8Array(VALID_SOLANA_ADDRESS))
+
   it('returns the address on a healthy 32-byte reply', () => {
     expect(
-      assertDeviceSolanaAddress('getAddress(solana)', {
-        address: VALID_SOLANA_ADDRESS
-      })
-    ).toBe(VALID_SOLANA_ADDRESS)
+      assertDeviceSolanaBase58Address(
+        'getAddress(solana)',
+        VALID_BASE58_ADDRESS
+      )
+    ).toBe(VALID_BASE58_ADDRESS)
   })
 
   it('throws on an empty address', () => {
     expect(() =>
-      assertDeviceSolanaAddress('getAddress(solana)', {
-        address: Buffer.alloc(0)
-      })
+      assertDeviceSolanaBase58Address('getAddress(solana)', '')
     ).toThrow(/getAddress\(solana\)/)
   })
 
   it('throws on a 31-byte address', () => {
     expect(() =>
-      assertDeviceSolanaAddress('getAddress(solana)', {
-        address: Buffer.alloc(31).fill(3)
-      })
+      assertDeviceSolanaBase58Address(
+        'getAddress(solana)',
+        bs58.encode(new Uint8Array(Buffer.alloc(31).fill(3)))
+      )
     ).toThrow(/31 bytes/)
   })
 
+  it('throws on a value that is not base58', () => {
+    expect(() =>
+      assertDeviceSolanaBase58Address('getAddress(solana)', '0OIl+/')
+    ).toThrow(/getAddress\(solana\)/)
+  })
+
   it('throws on an absent address', () => {
-    expect(() => assertDeviceSolanaAddress('getAddress(solana)', {})).toThrow(
-      /getAddress\(solana\)/
-    )
+    expect(() =>
+      assertDeviceSolanaBase58Address('getAddress(solana)', undefined)
+    ).toThrow(/getAddress\(solana\)/)
   })
 })
 

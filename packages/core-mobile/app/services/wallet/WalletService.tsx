@@ -6,6 +6,7 @@ import {
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import {
+  MessageSigningRequest,
   PubKeyType,
   SignTransactionRequest,
   WalletType
@@ -320,16 +321,14 @@ class WalletService {
   public async signMessage({
     walletId,
     walletType,
-    rpcMethod,
-    data,
+    signingData,
     accountIndex,
     network,
     fromAddress
   }: {
     walletId: string
     walletType: WalletType
-    rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    signingData: MessageSigningRequest
     accountIndex: number
     network: Network
     fromAddress?: string
@@ -348,39 +347,30 @@ class WalletService {
       walletType
     })
 
-    if (!fromAddress && isEvmSignMethod(rpcMethod)) {
+    if (!fromAddress && isEvmSignMethod(signingData.type)) {
       throw new Error(
         'EVM message signing requires the approved signer address for verification'
       )
     }
 
     const signature = await wallet.signMessage({
-      rpcMethod,
-      data,
+      signingData,
       accountIndex,
       network,
       provider
     })
 
-    if (fromAddress && isEvmSignMethod(rpcMethod)) {
+    if (fromAddress && isEvmSignMethod(signingData.type)) {
       assertEvmMessageSigner({
         signature,
-        rpcMethod,
-        data,
+        rpcMethod: signingData.type,
+        data: signingData.data,
         expectedAddress: fromAddress
       })
     }
 
     return signature
   }
-
-  //FIXME: call terminate for seedless
-  // public async destroy(): Promise<void> {
-  //   await WalletInitializer.terminate(this.walletType).catch(e =>
-  //     Logger.error('unable to destroy wallet', e)
-  //   )
-  //   this.walletType = WalletType.UNSET
-  // }
 
   /**
    * Get the public key of an account
