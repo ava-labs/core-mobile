@@ -44,6 +44,7 @@ import { toSentenceCase } from 'common/utils/toSentenceCase'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { FlatList } from 'react-native'
 import { getTransferDetailItems } from '../utils/getTransferDetailItems'
+import { getDetailItemLabel } from '../utils/getDetailItemLabel'
 import { CollapsibleDetailGroup } from './CollapsibleDetailGroup'
 
 export const Details = ({
@@ -526,7 +527,7 @@ export const Details = ({
                   lineHeight: 22,
                   color: '$textPrimary'
                 }}>
-                {toSentenceCase(item.label)}
+                {getDetailItemLabel(item)}
               </Text>
             </View>
             <View
