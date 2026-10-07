@@ -113,7 +113,8 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       handleProviderMessage,
       handleDomainMetadata,
       handleCommittedUrl,
-      handleProvisionalCrossOriginNavigation
+      handleProvisionalCrossOriginNavigation,
+      handleProvisionalNavigationAborted
     } = useEvmInjectedProvider(webViewRef, tabId)
 
     const isInjectedProviderBlocked = useSelector(
@@ -196,8 +197,9 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         provisionalTimerRef.current = null
         isProvisionalNavigationRef.current = false
         setIsProvisionalNavigation(false)
+        handleProvisionalNavigationAborted()
       }, PROVISIONAL_NAVIGATION_TIMEOUT_MS)
-    }, [])
+    }, [handleProvisionalNavigationAborted])
 
     useEffect(() => {
       return () => {
@@ -697,6 +699,9 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     }
 
     const onError = (event: WebViewErrorEvent): void => {
+      if (isProvisionalNavigationRef.current) {
+        handleProvisionalNavigationAborted()
+      }
       clearProvisionalNavigation()
 
       // Fallback: unknown schemes can sometimes reach `onError` without triggering

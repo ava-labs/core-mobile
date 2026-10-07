@@ -10,7 +10,7 @@ const toHex = (s: string): string =>
   '0x' + Buffer.from(s, 'utf8').toString('hex')
 
 const TAIL =
-  'Version: 1\nChain ID: 1\nNonce: abc\nIssued At: 2026-10-06T00:00:00Z'
+  'Version: 1\nChain ID: 1\nNonce: abc12345\nIssued At: 2026-10-06T00:00:00Z'
 const HEADER =
   'victim.com wants you to sign in with your Ethereum account:\n' +
   '0x0000000000000000000000000000000000000001\n'
@@ -67,5 +67,12 @@ describe('maybeInjectSiweAlert', () => {
   it('raises no alert for a plain-text well-formed message from the matching domain', () => {
     const msg = HEADER + '\nURI: https://victim.com\n' + TAIL
     expect(run(msg, 'https://victim.com', true).alert).toBeUndefined()
+  })
+
+  it('raises a DANGER alert for a matching-domain message with an unparseable URI', () => {
+    const msg = HEADER + '\nURI: not a url\n' + TAIL
+    const result = run(msg, 'https://victim.com')
+    expect(result.alert?.type).toBe(AlertType.DANGER)
+    expect(result.alert?.details.title).toBe('Malformed sign-in request')
   })
 })

@@ -71,9 +71,8 @@ const isPrivateOrReservedHost = (hostname: string): boolean => {
     return (
       host === '::1' ||
       host === '::' ||
-      host.startsWith('fe80:') ||
-      host.startsWith('fc') ||
-      host.startsWith('fd')
+      /^fe[89ab][0-9a-f]:/.test(host) || // fe80::/10 link-local
+      /^f[cd]/.test(host) // fc00::/7 unique local
     )
   }
 

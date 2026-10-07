@@ -11,9 +11,19 @@ describe('assertSafeNftUrl', () => {
     'https://localhost/x',
     'https://localhost./x',
     'https://foo.local./x',
-    'https://10.0.0.1/x'
+    'https://10.0.0.1/x',
+    'https://[fe80::1]/x',
+    'https://[fe90::1]/x',
+    'https://[feb0::1]/x',
+    'https://[febf::1]/x'
   ])('rejects private or mapped host %s (R2-9)', url => {
     expect(() => assertSafeNftUrl(url)).toThrow(/private\/reserved host/)
+  })
+
+  it('accepts a public IPv6 host', () => {
+    expect(assertSafeNftUrl('https://[2606:4700::1111]/x')).toBe(
+      'https://[2606:4700::1111]/x'
+    )
   })
 
   it('upgrades http to https and returns the URL to fetch (R2-10)', () => {

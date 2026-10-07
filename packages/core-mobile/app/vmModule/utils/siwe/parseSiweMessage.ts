@@ -85,8 +85,9 @@ export function parseSiweMessageStrict(
   const sections = splitStatementAndFields(message.slice(headerMatch[0].length))
   if (!sections) return malformed('unexpected layout')
 
-  const fields = parseFields(sections.fields)
-  if (!fields) return malformed('invalid or ambiguous fields')
+  const parsed = parseFields(sections.fields)
+  if (!parsed.ok) return malformed(parsed.reason)
+  const { fields } = parsed
 
   return {
     kind: 'ok',
@@ -137,7 +138,49 @@ type ParsedFields = Record<string, string | undefined> & {
   resources?: string[]
 }
 
-function parseFields(section: string): ParsedFields | undefined {
+type FieldsResult =
+  | { ok: true; fields: ParsedFields }
+  | { ok: false; reason: string }
+
+const INVALID_FIELDS: FieldsResult = {
+  ok: false,
+  reason: 'invalid or ambiguous fields'
+}
+
+// EIP-4361 ABNF (nonce = 8*( ALPHA / DIGIT )) plus the two URL-safe
+// separators '-' and '_' used by UUID and base64url nonces in real backends.
+const NONCE_REGEX = /^[a-zA-Z0-9_-]{8,}$/
+const CHAIN_ID_REGEX = /^\d+$/
+// RFC 3339 date-time, as required for the timestamp fields.
+const RFC3339_REGEX =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/
+const TIMESTAMP_FIELDS = ['Issued At', 'Expiration Time', 'Not Before'] as const
+
+const hasScheme = (uri: string): boolean => {
+  try {
+    return new URL(uri).protocol.length > 0
+  } catch {
+    return false
+  }
+}
+
+function validateFieldValues(fields: ParsedFields): string | undefined {
+  if (!hasScheme(fields.URI as string)) return 'invalid URI'
+  if (fields.Version !== '1') return 'unsupported version'
+  if (!CHAIN_ID_REGEX.test(fields['Chain ID'] as string)) {
+    return 'invalid chain id'
+  }
+  if (!NONCE_REGEX.test(fields.Nonce as string)) return 'invalid nonce'
+  for (const label of TIMESTAMP_FIELDS) {
+    const value = fields[label]
+    if (value !== undefined && !RFC3339_REGEX.test(value)) {
+      return 'invalid timestamp'
+    }
+  }
+  return undefined
+}
+
+function parseFields(section: string): FieldsResult {
   const lines = section.split('\n')
   // allow a single trailing newline
   if (lines[lines.length - 1] === '') lines.pop()
@@ -147,7 +190,7 @@ function parseFields(section: string): ParsedFields | undefined {
 
   for (const label of REQUIRED_FIELDS) {
     const value = readField(lines[i], label)
-    if (!value) return undefined
+    if (!value) return INVALID_FIELDS
     out[label] = value
     i++
   }
@@ -165,13 +208,16 @@ function parseFields(section: string): ParsedFields | undefined {
     // EIP-4361 allows zero resources (`*( LF resource )`); viem emits a bare
     // `Resources:` for `resources: []`. Any non-resource line is malformed.
     if (!resources.every(isResourceLine)) {
-      return undefined
+      return INVALID_FIELDS
     }
     out.resources = resources.map(line => line.slice(2).trim())
     i = lines.length
   }
 
-  return i === lines.length ? out : undefined
+  if (i !== lines.length) return INVALID_FIELDS
+
+  const reason = validateFieldValues(out)
+  return reason ? { ok: false, reason } : { ok: true, fields: out }
 }
 
 const isResourceLine = (line: string): boolean =>

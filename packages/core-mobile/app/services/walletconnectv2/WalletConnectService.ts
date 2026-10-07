@@ -306,9 +306,11 @@ class WalletConnectService implements WalletConnectServiceInterface {
       namespaces[key] = { ...namespace }
     }
 
-    // an approved account on a chain the dApp never declared has nothing to
-    // sync, and the sign-client rejects events for it.
-    if (isActiveAccountApproved && !isChainDeclared) {
+    // a chain the dApp never declared has nothing to sync (regardless of
+    // whether the active account is approved), and the sign-client rejects
+    // events for it. The unapproved-account snackbar is about membership on a
+    // chain the session actually covers, so it is not shown here either.
+    if (!isChainDeclared) {
       Logger.info(
         `skipping WC session update: chain '${caip2ChainId}' is not declared in session '${session.peer.metadata.name}'`
       )

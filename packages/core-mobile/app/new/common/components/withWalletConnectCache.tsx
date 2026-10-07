@@ -16,6 +16,22 @@ type InferParamType<K extends WalletConnectKey> = IsKeyedCache<
   ? ReturnType<typeof walletConnectCache[K]['get']>
   : ReturnType<typeof walletConnectCache[K]['get']>
 
+function readCacheEntry<K extends WalletConnectKey>(
+  key: K,
+  requestIdParam: string | undefined,
+  requestId: string | undefined
+): InferParamType<K> {
+  const cache = walletConnectCache[key]
+  if (requestIdParam && 'get' in cache) {
+    if (!requestId) throw new Error(`Missing ${requestIdParam} route param`)
+    // keyed cache: pass the id
+    return (cache as unknown as { get: (id: string) => InferParamType<K> }).get(
+      requestId
+    )
+  }
+  return (cache as unknown as { get: () => InferParamType<K> }).get()
+}
+
 export function withWalletConnectCache<K extends WalletConnectKey>(
   key: K,
   options?: { requestIdParam?: string }
@@ -28,28 +44,21 @@ export function withWalletConnectCache<K extends WalletConnectKey>(
     ): JSX.Element | null {
       const searchParams = useLocalSearchParams()
       const [params, setParams] = useState<InferParamType<K> | null>(null)
+      const requestIdValue = options?.requestIdParam
+        ? (searchParams[options.requestIdParam] as string | undefined)
+        : undefined
 
       useLayoutEffect(() => {
         try {
-          const cache = walletConnectCache[key]
-          const requestIdParam = options?.requestIdParam
-          let data: InferParamType<K>
-          if (requestIdParam && 'get' in cache) {
-            const id = searchParams[requestIdParam] as string | undefined
-            if (!id) throw new Error(`Missing ${requestIdParam} route param`)
-            // keyed cache: pass the id
-            data = (
-              cache as unknown as { get: (id: string) => InferParamType<K> }
-            ).get(id)
-          } else {
-            data = (cache as unknown as { get: () => InferParamType<K> }).get()
-          }
-          setParams(data)
+          setParams(
+            readCacheEntry(key, options?.requestIdParam, requestIdValue)
+          )
         } catch (err) {
           Logger.error('Error getting wallet connect cache', err)
+          // don't keep rendering the previous request's data under a new id
+          setParams(null)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [])
+      }, [requestIdValue])
 
       if (!params) return null
 

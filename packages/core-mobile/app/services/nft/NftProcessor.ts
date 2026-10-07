@@ -1,4 +1,3 @@
-import Logger from 'utils/Logger'
 import { NftContentType, NftImageData, NftItemExternalData } from './types'
 import { assertSafeNftUrl, convertIPFSResolver } from './utils'
 
@@ -8,20 +7,16 @@ const MAX_INLINE_METADATA_BYTES = 1_000_000
 
 // R2-9: RN's fetch ignores the `redirect` option and native networking follows
 // redirects, so a public host can 30x to a private one. `response.url` is the
-// FINAL url; re-check it before reading the body. This blocks reading a
-// redirected private-host response but does not stop the redirected request
-// itself from being sent, and the image component's native load is not covered.
-let hasWarnedFinalUrlUnavailable = false
-
+// FINAL url; re-check it before reading the body. React Native's XHR always
+// sets `responseURL` from the native response, so a missing final URL is
+// abnormal and we fail closed. This blocks reading a redirected private-host
+// response but does not stop the redirected request itself from being sent,
+// and the image component's native load is not covered.
 const assertFinalUrlSafe = (response: Response, requestedUrl: string): void => {
   if (!response.url) {
-    if (!hasWarnedFinalUrlUnavailable) {
-      hasWarnedFinalUrlUnavailable = true
-      Logger.warn(
-        '[NftProcessor] Response did not expose its final URL; redirect re-validation was skipped'
-      )
-    }
-    return
+    throw new Error(
+      '[Nft] Refusing to read a response whose final URL is unknown'
+    )
   }
   if (response.url !== requestedUrl) {
     assertSafeNftUrl(response.url)

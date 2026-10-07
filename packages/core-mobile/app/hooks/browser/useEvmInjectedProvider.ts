@@ -77,6 +77,12 @@ type UseEvmInjectedProviderResult = {
    * complete after the page has navigated away.
    */
   handleProvisionalCrossOriginNavigation: (provisionalUrl: string) => void
+  /**
+   * Call when a provisional cross-origin navigation ends without committing
+   * (error or timeout). Restores the router's liveOrigin to the committed
+   * document so its signing requests are no longer born aborted.
+   */
+  handleProvisionalNavigationAborted: () => void
 }
 /**
  * Hook providing EVM injected provider functionality for the in-app browser.
@@ -686,6 +692,7 @@ export function useEvmInjectedProvider(
         activeAccountRef.current = selectActiveAccount(store.getState())
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the router (and its liveOrigin state) must not be recreated when the origin-scoped emitters change; it reads changing values through refs
   }, [
     dispatch,
     store,
@@ -784,6 +791,16 @@ export function useEvmInjectedProvider(
     [tabId]
   )
 
+  // A provisional cross-origin navigation moved the router's persistent
+  // liveOrigin to the provisional origin. If that navigation fails or times out
+  // without committing, the still-active document would otherwise have every
+  // later signing request born aborted (origin !== liveOrigin). Re-pointing
+  // liveOrigin at the committed origin restores it.
+  const handleProvisionalNavigationAborted = useCallback(() => {
+    const committed = getOriginFromUrl(currentUrlRef.current)
+    if (committed) routerRef.current?.cancelByOrigin(committed)
+  }, [])
+
   return {
     providerShimJs,
     handleProviderMessage,
@@ -791,6 +808,7 @@ export function useEvmInjectedProvider(
     emitEvent,
     dappMetadata,
     handleCommittedUrl,
-    handleProvisionalCrossOriginNavigation
+    handleProvisionalCrossOriginNavigation,
+    handleProvisionalNavigationAborted
   }
 }

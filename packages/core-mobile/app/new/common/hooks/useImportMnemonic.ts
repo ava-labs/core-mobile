@@ -39,7 +39,7 @@ export const useImportMnemonic = (): {
       try {
         const { walletId } = await dispatch(
           importMnemonicWalletAndAccount({
-            mnemonic,
+            mnemonic: normalizedMnemonic,
             name
           })
         ).unwrap()

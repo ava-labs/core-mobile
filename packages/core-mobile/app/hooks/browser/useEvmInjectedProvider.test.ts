@@ -1800,6 +1800,71 @@ describe('useEvmInjectedProvider', () => {
       expect(capturedSignal?.aborted).toBe(false)
     })
 
+    describe('provisional cross-origin navigation that never commits', () => {
+      let capturedSignal: AbortSignal | undefined
+
+      // Must run before renderProvider: the router captures these at creation.
+      const primeSigning = (): void => {
+        capturedSignal = undefined
+        mockCreateInAppRequest.mockReturnValue(
+          jest.fn(args => {
+            capturedSignal = args.signal
+            return new Promise(() => undefined)
+          })
+        )
+        mockUseStore.mockReturnValue(grantStoreForOrigin('https://uniswap.org'))
+      }
+
+      const sendSigningRequestFromA = async (
+        result: ReturnType<typeof renderProvider>['result']
+      ): Promise<void> => {
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 7,
+              origin: 'https://uniswap.org',
+              request: {
+                method: 'personal_sign',
+                params: ['0xMsg', mockActiveAccount.addressC]
+              }
+            }),
+            MAIN_FRAME
+          )
+        })
+      }
+
+      it('aborts (born aborted) signing requests from the committed origin until the abort is reported', async () => {
+        primeSigning()
+        const { result } = renderProvider('https://uniswap.org')
+
+        act(() => {
+          result.current.handleProvisionalCrossOriginNavigation(
+            'https://opensea.io/'
+          )
+        })
+        await sendSigningRequestFromA(result)
+
+        expect(capturedSignal?.aborted).toBe(true)
+      })
+
+      it('lets the committed origin sign again after handleProvisionalNavigationAborted', async () => {
+        primeSigning()
+        const { result } = renderProvider('https://uniswap.org')
+
+        act(() => {
+          result.current.handleProvisionalCrossOriginNavigation(
+            'https://opensea.io/'
+          )
+        })
+        act(() => {
+          result.current.handleProvisionalNavigationAborted()
+        })
+        await sendSigningRequestFromA(result)
+
+        expect(capturedSignal?.aborted).toBe(false)
+      })
+    })
+
     it('re-primes accountsChanged on same-origin SPA navigation to a new path (CP-13772)', () => {
       // Origin granted to the active account so priming yields a non-empty list.
       mockUseStore.mockReturnValue({

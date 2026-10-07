@@ -135,15 +135,10 @@ describe('WalletConnectService.updateSession', () => {
     await WalletConnectService.updateSession({
       session: makeSession(['eip155:1']),
       chainId: 137,
-      account: makeAccount(UNAPPROVED_ADDRESS)
+      account: makeAccount(UNAPPROVED_ADDRESS),
+      notifyUnapprovedAccount: true
     })
-    const calls = updateSession.mock.calls
-    calls.forEach(([arg]) => {
-      expect(arg.namespaces.eip155.accounts).toEqual([
-        `eip155:1:${APPROVED_ADDRESS}`
-      ])
-      expect(arg.namespaces.eip155.chains).toEqual(['eip155:1'])
-    })
+    expect(updateSession).not.toHaveBeenCalled()
     expect(emitSessionEvent).not.toHaveBeenCalled()
     expect(mockShowSnackbar).not.toHaveBeenCalled()
   })
@@ -204,9 +199,8 @@ describe('WalletConnectService.updateSession', () => {
       account: makeAccount(UNAPPROVED_ADDRESS)
     })
 
-    const { namespaces } = updateSession.mock.calls[0][0]
-    expect(namespaces.eip155.accounts).toEqual([`eip155:1:${APPROVED_ADDRESS}`])
-    expect(namespaces.eip155.chains).not.toContain('eip155:43114')
+    // 43114 is not declared by the session, so nothing is pushed at all.
+    expect(updateSession).not.toHaveBeenCalled()
     expect(emitSessionEvent).not.toHaveBeenCalled()
   })
 

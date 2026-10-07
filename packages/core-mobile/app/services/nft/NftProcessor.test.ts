@@ -8,12 +8,22 @@ const MP4_MAGIC = new Uint8Array([
 
 const mockResponseWithUrl = (body: Uint8Array, url: string): Response => {
   const response = mockFetchResponse(body)
-  Object.defineProperty(response, 'url', { value: url })
+  Object.defineProperty(response, 'url', { value: url, configurable: true })
   return response
 }
 
-const mockFetchResponse = (body: Uint8Array, ok = true): Response =>
-  new Response(body.buffer as ArrayBuffer, { status: ok ? 206 : 504 })
+// RN always exposes the final URL; default to a public one so only tests that
+// care about redirects need to override it.
+const mockFetchResponse = (body: Uint8Array, ok = true): Response => {
+  const response = new Response(body.buffer as ArrayBuffer, {
+    status: ok ? 206 : 504
+  })
+  Object.defineProperty(response, 'url', {
+    value: 'https://example.com/a.jpg',
+    configurable: true
+  })
+  return response
+}
 
 describe('NftProcessor.fetchImage', () => {
   const fetchSpy = jest.spyOn(global, 'fetch')
@@ -111,14 +121,20 @@ describe('NftProcessor.fetchImage', () => {
     ).rejects.toThrow(/private\/reserved host/)
   })
 
-  it.each(['', 'https://example.com/a.jpg'])(
-    'proceeds when response.url is %p',
-    async finalUrl => {
-      fetchSpy.mockResolvedValueOnce(mockResponseWithUrl(JPEG_MAGIC, finalUrl))
-      const result = await NftProcessor.fetchImage('https://example.com/a.jpg')
-      expect(result.type).toBe(NftContentType.JPG)
-    }
-  )
+  it('proceeds when response.url matches the requested url', async () => {
+    fetchSpy.mockResolvedValueOnce(
+      mockResponseWithUrl(JPEG_MAGIC, 'https://example.com/a.jpg')
+    )
+    const result = await NftProcessor.fetchImage('https://example.com/a.jpg')
+    expect(result.type).toBe(NftContentType.JPG)
+  })
+
+  it('rejects when response.url is empty (fails closed)', async () => {
+    fetchSpy.mockResolvedValueOnce(mockResponseWithUrl(JPEG_MAGIC, ''))
+    await expect(
+      NftProcessor.fetchImage('https://example.com/a.jpg')
+    ).rejects.toThrow(/final URL is unknown/)
+  })
 
   it('refuses to fetch localhost', async () => {
     await expect(
