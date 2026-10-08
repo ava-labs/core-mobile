@@ -28,6 +28,7 @@ import {
   setDelegateNodeSelection,
   useDelegateFilters
 } from '../store'
+import { filterConnectedValidators } from '../utils/filterConnectedValidators'
 import {
   NodeWithAvailable,
   sortDelegateNodes
@@ -112,7 +113,7 @@ const SelectNodeScreen = (): JSX.Element => {
 
   const validators = useMemo(() => {
     // Unreachable validators are hidden even from NodeID searches.
-    const all = (data?.validators ?? []).filter(v => v.connected)
+    const all = filterConnectedValidators(data?.validators ?? [])
     const query = searchText.trim().toLowerCase()
     const isSearching = query.length > 0
 

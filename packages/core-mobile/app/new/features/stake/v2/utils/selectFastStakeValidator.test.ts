@@ -1,35 +1,39 @@
 import {
-  FAST_STAKE_MIN_REWARD_HEADROOM_SECONDS,
   FAST_STAKE_MIN_VALIDATOR_AGE_SECONDS,
   FAST_STAKE_TOP_CANDIDATES,
   MIN_VALIDATOR_REACHABILITY_PERCENT
 } from '../constants'
 import {
+  FastStakeSelectionContext,
   getRewardHeadroomSeconds,
   isFastStakeEligible,
   isValidatorReachable,
   selectFastStakeValidator
 } from './selectFastStakeValidator'
 
+const DAY = 24 * 60 * 60
 const NOW = 1_800_000_000
-const SECONDS_PER_DAY = 24 * 60 * 60
+
+const context = ({
+  delegationDays = 30
+}: { delegationDays?: number } = {}): FastStakeSelectionContext => ({
+  now: NOW,
+  delegationEndTime: NOW + delegationDays * DAY
+})
 
 const candidate = ({
   nodeId = 'NodeID-A',
-  ageDays = 100,
-  remainingDays = 200,
+  ageDays = 400,
   uptimePerformance = 100,
   reachabilityPercent = 100
 }: {
   nodeId?: string
   ageDays?: number
-  remainingDays?: number
   uptimePerformance?: number
   reachabilityPercent?: number
 } = {}): {
   nodeId: string
   startTimestamp: number
-  endTimestamp: number
   uptimePerformance: number
   validatorHealth: {
     reachabilityPercent: number
@@ -39,8 +43,7 @@ const candidate = ({
   }
 } => ({
   nodeId,
-  startTimestamp: NOW - ageDays * SECONDS_PER_DAY,
-  endTimestamp: NOW + remainingDays * SECONDS_PER_DAY,
+  startTimestamp: NOW - ageDays * DAY,
   uptimePerformance,
   validatorHealth: {
     reachabilityPercent,
@@ -81,55 +84,55 @@ describe('isValidatorReachable', () => {
 })
 
 describe('getRewardHeadroomSeconds', () => {
-  it('returns the downtime a validator can still absorb while staying above the 80% reward requirement', () => {
-    // 100 days at 90% = 90 days up; +200 remaining = 290; needs 0.8 * 300 = 240 → 50 days of headroom
+  it('measures headroom at the delegation end, not the validator end', () => {
+    // 100 days at 95% = 95 up; +30 delegation = 125; needs 0.9 * 130 = 117 → 8 days
     expect(
-      getRewardHeadroomSeconds(candidate({ uptimePerformance: 90 }), NOW)
-    ).toBeCloseTo(50 * SECONDS_PER_DAY)
+      getRewardHeadroomSeconds(
+        candidate({ ageDays: 100, uptimePerformance: 95 }),
+        context()
+      )
+    ).toBeCloseTo(8 * DAY)
   })
 
   it('is negative when the validator can no longer reach the requirement', () => {
     expect(
       getRewardHeadroomSeconds(
-        candidate({ ageDays: 300, remainingDays: 10, uptimePerformance: 50 }),
-        NOW
+        candidate({ ageDays: 300, uptimePerformance: 50 }),
+        context()
       )
     ).toBeLessThan(0)
   })
 })
 
 describe('isFastStakeEligible', () => {
-  it('accepts an established, reachable validator with enough headroom', () => {
-    expect(isFastStakeEligible(candidate(), NOW)).toBe(true)
+  it('accepts an established, reachable validator', () => {
+    expect(isFastStakeEligible(candidate(), context())).toBe(true)
   })
 
   it('rejects an unreachable validator', () => {
     expect(
-      isFastStakeEligible(candidate({ reachabilityPercent: 0 }), NOW)
+      isFastStakeEligible(candidate({ reachabilityPercent: 0 }), context())
     ).toBe(false)
   })
 
   it('rejects a validator younger than the minimum age', () => {
-    const ageDays = FAST_STAKE_MIN_VALIDATOR_AGE_SECONDS / SECONDS_PER_DAY - 1
-    expect(isFastStakeEligible(candidate({ ageDays }), NOW)).toBe(false)
+    const ageDays = FAST_STAKE_MIN_VALIDATOR_AGE_SECONDS / DAY - 1
+    expect(isFastStakeEligible(candidate({ ageDays }), context())).toBe(false)
   })
 
   it('accepts a validator exactly at the minimum age', () => {
-    const ageDays = FAST_STAKE_MIN_VALIDATOR_AGE_SECONDS / SECONDS_PER_DAY
-    expect(isFastStakeEligible(candidate({ ageDays }), NOW)).toBe(true)
+    const ageDays = FAST_STAKE_MIN_VALIDATOR_AGE_SECONDS / DAY
+    expect(isFastStakeEligible(candidate({ ageDays }), context())).toBe(true)
   })
 
-  it('rejects a validator below the minimum reward headroom', () => {
-    // 300 days at 81% = 243 up; +10 remaining = 253; needs 0.8 * 310 = 248 → 5 days of headroom
-    const lowHeadroom = candidate({
-      ageDays: 300,
-      remainingDays: 10,
-      uptimePerformance: 81
-    })
-    expect(getRewardHeadroomSeconds(lowHeadroom, NOW)).toBeLessThan(
-      FAST_STAKE_MIN_REWARD_HEADROOM_SECONDS
-    )
-    expect(isFastStakeEligible(lowHeadroom, NOW)).toBe(false)
+  it('accepts a minimum-age validator on a short delegation', () => {
+    // 14 days at 98% over a 14-day delegation leaves only ~2.5 days of headroom
+    expect(
+      isFastStakeEligible(
+        candidate({ ageDays: 14, uptimePerformance: 98 }),
+        context({ delegationDays: 14 })
+      )
+    ).toBe(true)
   })
 })
 
@@ -138,7 +141,8 @@ describe('selectFastStakeValidator', () => {
     candidates: ReturnType<typeof candidate>[],
     r: number
   ): string | undefined =>
-    selectFastStakeValidator(candidates, { now: NOW, random: () => r })?.nodeId
+    selectFastStakeValidator(candidates, { ...context(), random: () => r })
+      ?.nodeId
 
   it('returns undefined when no candidate is eligible', () => {
     expect(
@@ -173,15 +177,16 @@ describe('selectFastStakeValidator', () => {
     expect(select(candidates, 0.99)).toBe('NodeID-B')
   })
 
-  it('only picks from the top candidates ranked by reward headroom', () => {
+  it('ranks by reward headroom rather than uptime', () => {
+    // 400 days at 99% → 39 days of headroom; 60 days at 100% → 9 days
     const top = Array.from({ length: FAST_STAKE_TOP_CANDIDATES }, (_, i) =>
-      candidate({ nodeId: `NodeID-TOP-${i}` })
+      candidate({ nodeId: `NodeID-TOP-${i}`, uptimePerformance: 99 })
     )
-    const outsider = candidate({
+    const highUptimeLowHeadroom = candidate({
       nodeId: 'NodeID-OUTSIDER',
-      uptimePerformance: 99
+      ageDays: 60
     })
-    const candidates = [outsider, ...top]
+    const candidates = [highUptimeLowHeadroom, ...top]
 
     expect([0, 0.5, 0.99].map(r => select(candidates, r))).not.toContain(
       'NodeID-OUTSIDER'

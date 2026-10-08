@@ -33,9 +33,10 @@ import {
  * - Time remaining on the validator ≥ desired stake duration
  *
  * The top uptime candidates are then narrowed client-side to validators that
- * are reachable, at least 14 days old, and can absorb 7 more days of downtime
- * while still clearing the 80% reward uptime requirement; one is picked at
- * random among the top 10 by that headroom (see `selectFastStakeValidator`).
+ * are reachable and at least 14 days old, ranked by how much downtime they can
+ * still absorb before the delegation ends without dropping below the 90%
+ * reward uptime requirement, and one is picked at random among the top 10
+ * (see `selectFastStakeValidator`).
  * When `preferredNodeId` is supplied (restake), that specific node is
  * queried first; if it still qualifies we reuse it, otherwise we fall back
  * to auto-selection.
@@ -114,6 +115,11 @@ export const fetchFastStakeValidator = async ({
     minTimeRemainingSeconds: endTimeSeconds - now
   })
 
+  const selectionContext = {
+    now,
+    delegationEndTime: endTimeSeconds
+  }
+
   // Restake path: check the user's previous validator first. If it still
   // meets every criterion we reuse it; otherwise we fall through to
   // auto-selection.
@@ -124,7 +130,7 @@ export const fetchFastStakeValidator = async ({
       pageSize: 1
     })
     const matched = pickActiveValidators(preferred.validators).find(v =>
-      isFastStakeEligible(v, now)
+      isFastStakeEligible(v, selectionContext)
     )
     if (matched) return toFastStakeValidator(matched)
   }
@@ -137,7 +143,7 @@ export const fetchFastStakeValidator = async ({
   })
   const selected = selectFastStakeValidator(
     pickActiveValidators(result.validators),
-    { now, random }
+    { ...selectionContext, random }
   )
   return selected ? toFastStakeValidator(selected) : undefined
 }

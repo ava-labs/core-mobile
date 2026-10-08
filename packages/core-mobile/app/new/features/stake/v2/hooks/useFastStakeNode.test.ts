@@ -111,15 +111,20 @@ const glacierValidator = (
   nodeId: string,
   {
     reachabilityPercent = 100,
-    ageDays = 100
-  }: { reachabilityPercent?: number; ageDays?: number } = {}
+    ageDays = 400,
+    uptimePerformance = 100
+  }: {
+    reachabilityPercent?: number
+    ageDays?: number
+    uptimePerformance?: number
+  } = {}
 ): ActiveValidatorDetails =>
   ({
     validationStatus: 'active',
     nodeId,
     startTimestamp: NOW - ageDays * DAY,
     endTimestamp: NOW + 200 * DAY,
-    uptimePerformance: 100,
+    uptimePerformance,
     validatorHealth: { reachabilityPercent }
   } as unknown as ActiveValidatorDetails)
 
