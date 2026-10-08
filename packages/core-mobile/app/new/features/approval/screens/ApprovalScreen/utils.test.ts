@@ -2,7 +2,8 @@ import {
   RpcRequest,
   DetailItem,
   RpcMethod,
-  DetailItemType
+  DetailItemType,
+  SigningData
 } from '@avalabs/vm-module-types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
@@ -14,7 +15,9 @@ import {
   getAccountSelector,
   getDisplayAccountAddress,
   isRequestedAccountUnavailable,
-  getAccountUnavailableMessage
+  getAccountUnavailableMessage,
+  isAvalancheSigningData,
+  isAvalancheBaseTx
 } from './utils'
 
 // Mock the isInAppRequest function for controlled testing
@@ -407,5 +410,50 @@ describe('getAccountUnavailableMessage', () => {
     ]) {
       expect(message).not.toContain('transaction')
     }
+  })
+})
+
+describe('isAvalancheSigningData', () => {
+  it.each([
+    RpcMethod.AVALANCHE_SEND_TRANSACTION,
+    RpcMethod.AVALANCHE_SIGN_TRANSACTION
+  ])('returns true for %s', type => {
+    expect(isAvalancheSigningData({ type } as SigningData)).toBe(true)
+  })
+
+  it.each([
+    RpcMethod.AVALANCHE_SIGN_MESSAGE,
+    RpcMethod.ETH_SEND_TRANSACTION,
+    RpcMethod.SOLANA_SIGN_TRANSACTION
+  ])('returns false for %s', type => {
+    expect(isAvalancheSigningData({ type } as SigningData)).toBe(false)
+  })
+})
+
+describe('isAvalancheBaseTx', () => {
+  it.each([
+    RpcMethod.AVALANCHE_SEND_TRANSACTION,
+    RpcMethod.AVALANCHE_SIGN_TRANSACTION
+  ])('returns true for a base tx sent via %s', type => {
+    expect(
+      isAvalancheBaseTx({ type, data: { type: 'base' } } as SigningData)
+    ).toBe(true)
+  })
+
+  it('returns false for other avalanche tx types', () => {
+    expect(
+      isAvalancheBaseTx({
+        type: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+        data: { type: 'add_permissionless_delegator' }
+      } as SigningData)
+    ).toBe(false)
+  })
+
+  it('returns false for non-avalanche transactions', () => {
+    expect(
+      isAvalancheBaseTx({
+        type: RpcMethod.ETH_SEND_TRANSACTION
+      } as SigningData)
+    ).toBe(false)
   })
 })
