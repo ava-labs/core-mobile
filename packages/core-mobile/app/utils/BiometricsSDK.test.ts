@@ -38,6 +38,11 @@ jest.mock('react-native-keychain', () => ({
   SECURITY_RULES: {
     NONE: 'NONE'
   },
+  SECURITY_LEVEL: {
+    SECURE_SOFTWARE: 'SECURE_SOFTWARE',
+    SECURE_HARDWARE: 'SECURE_HARDWARE'
+  },
+  getSecurityLevel: jest.fn(),
   BIOMETRY_TYPE: {
     FACE: 'FACE',
     FACE_ID: 'FACE_ID',
@@ -66,7 +71,8 @@ jest.mock('react-native-aes-crypto', () => ({
 }))
 
 jest.mock('utils/Logger', () => ({
-  error: jest.fn()
+  error: jest.fn(),
+  warn: jest.fn()
 }))
 
 jest.mock('expo-local-authentication', () => ({
@@ -624,5 +630,97 @@ describe('BiometricsSDK', () => {
         service: LEGACY_SERVICE_KEY_BIO
       })
     })
+  })
+})
+
+describe('S1 storeWalletSecret security level', () => {
+  // `iOS` is evaluated at module load, so load an Android copy of the SDK
+  // together with the keychain mock instance it will use.
+  const loadAndroid = async (): Promise<{
+    sdk: typeof BiometricsSDK
+    keychain: jest.Mocked<typeof Keychain>
+  }> => {
+    let loaded!: {
+      sdk: typeof BiometricsSDK
+      keychain: jest.Mocked<typeof Keychain>
+    }
+    jest.isolateModules(() => {
+      // the isolated registry has its own react-native instance
+      require('react-native').Platform.OS = 'android'
+      loaded = {
+        sdk: require('utils/BiometricsSDK').default,
+        keychain: require('react-native-keychain')
+      }
+      const { encrypt: enc } = require('utils/EncryptionHelper')
+      enc.mockResolvedValue('encrypted')
+    })
+    loaded.keychain.getGenericPassword.mockResolvedValue({
+      username: 'encryptionKey',
+      password: 'key',
+      service: 'svc',
+      storage: 'keychain' as never
+    })
+    await loaded.sdk.loadEncryptionKeyWithBiometry()
+    return loaded
+  }
+
+  it('stores once at SECURE_HARDWARE when the device supports it (TEE or StrongBox)', async () => {
+    const { sdk, keychain } = await loadAndroid()
+    keychain.setGenericPassword.mockResolvedValue(true as never)
+    const result = await sdk.storeWalletSecret('w1', 'secret')
+    expect(result).toEqual({ secureHardware: true })
+    expect(keychain.setGenericPassword).toHaveBeenCalledTimes(1)
+    expect(keychain.setGenericPassword.mock.calls[0]?.[2]).toEqual(
+      expect.objectContaining({
+        securityLevel: keychain.SECURITY_LEVEL.SECURE_HARDWARE
+      })
+    )
+  })
+
+  it('falls back to SECURE_SOFTWARE and reports it when hardware-level storage throws', async () => {
+    const { sdk, keychain } = await loadAndroid()
+    keychain.setGenericPassword
+      .mockRejectedValueOnce(
+        new Error('Could not generate key at SECURE_HARDWARE')
+      )
+      .mockRejectedValueOnce(
+        new Error('Could not generate key at SECURE_HARDWARE')
+      )
+      .mockResolvedValueOnce(true as never)
+    const result = await sdk.storeWalletSecret('w1', 'secret')
+    expect(result).toEqual({ secureHardware: false })
+    expect(keychain.setGenericPassword).toHaveBeenCalledTimes(3)
+    const levels = keychain.setGenericPassword.mock.calls.map(
+      c => (c[2] as { securityLevel?: unknown }).securityLevel
+    )
+    expect(levels).toEqual([
+      keychain.SECURITY_LEVEL.SECURE_HARDWARE,
+      keychain.SECURITY_LEVEL.SECURE_HARDWARE,
+      keychain.SECURITY_LEVEL.SECURE_SOFTWARE
+    ])
+  })
+
+  it('a transient first failure followed by success stays at SECURE_HARDWARE', async () => {
+    const { sdk, keychain } = await loadAndroid()
+    keychain.setGenericPassword
+      .mockRejectedValueOnce(new Error('transient keystore error'))
+      .mockResolvedValueOnce(true as never)
+    const result = await sdk.storeWalletSecret('w1', 'secret')
+    expect(result).toEqual({ secureHardware: true })
+    expect(keychain.setGenericPassword).toHaveBeenCalledTimes(2)
+    const levels = keychain.setGenericPassword.mock.calls.map(
+      c => (c[2] as { securityLevel?: unknown }).securityLevel
+    )
+    expect(levels).toEqual([
+      keychain.SECURITY_LEVEL.SECURE_HARDWARE,
+      keychain.SECURITY_LEVEL.SECURE_HARDWARE
+    ])
+  })
+
+  it('never consults getSecurityLevel', async () => {
+    const { sdk, keychain } = await loadAndroid()
+    keychain.setGenericPassword.mockResolvedValue(true as never)
+    await sdk.storeWalletSecret('w1', 'secret')
+    expect(keychain.getSecurityLevel).not.toHaveBeenCalled()
   })
 })

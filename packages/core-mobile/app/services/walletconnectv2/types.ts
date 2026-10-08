@@ -81,7 +81,8 @@ export interface WalletConnectServiceInterface {
     session: SessionTypes.Struct
     chainId: number
     account: Account
-  }): Promise<void>
+    notifyUnapprovedAccount?: boolean
+  }): Promise<boolean>
 
   updateSessionWithTimeout({
     session,
@@ -91,7 +92,8 @@ export interface WalletConnectServiceInterface {
     session: SessionTypes.Struct
     chainId: number
     account: Account
-  }): Promise<void>
+    notifyUnapprovedAccount?: boolean
+  }): Promise<boolean>
 
   updateSessions({
     chainId,
@@ -99,6 +101,7 @@ export interface WalletConnectServiceInterface {
   }: {
     chainId: number
     account: Account
+    notifyUnapprovedAccount?: boolean
   }): Promise<void>
 
   updateSessionWithTimeoutForNonEvm({

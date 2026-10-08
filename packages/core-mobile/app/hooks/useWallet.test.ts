@@ -7,6 +7,7 @@ import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import { appReducer, WalletState } from 'store/app'
 import { walletsReducer } from 'store/wallet/slice'
+import { showAlert } from '@avalabs/k2-alpine'
 import mockMnemonic from 'tests/fixtures/mockMnemonic.json'
 
 // Mock encryption dependencies
@@ -18,6 +19,10 @@ jest.mock('react-native-aes-crypto', () => ({
 jest.mock('react-native-argon2', () => ({
   __esModule: true,
   default: jest.fn().mockResolvedValue({ rawHash: 'mock-raw-hash' })
+}))
+
+jest.mock('@avalabs/k2-alpine', () => ({
+  showAlert: jest.fn()
 }))
 
 jest.mock('utils/uuid', () => ({
@@ -91,7 +96,9 @@ describe('useWallet', () => {
 
   describe('onPinCreated', () => {
     it('should create wallet with PIN and return the walletId', async () => {
-      jest.spyOn(BiometricsSDK, 'storeWalletSecret').mockResolvedValue(true)
+      jest
+        .spyOn(BiometricsSDK, 'storeWalletSecret')
+        .mockResolvedValue({ secureHardware: true })
       jest.spyOn(BiometricsSDK, 'canUseBiometry').mockResolvedValue(true)
 
       const { result } = renderHook(() => useWallet(), { wrapper })
@@ -113,8 +120,35 @@ describe('useWallet', () => {
       expect(response).toBe(mockWalletId)
     })
 
+    it.each([
+      [true, 0],
+      [false, 1]
+    ])(
+      'secureHardware=%s shows the software keystore warning %s time(s)',
+      async (secureHardware, alertCount) => {
+        jest
+          .spyOn(BiometricsSDK, 'storeWalletSecret')
+          .mockResolvedValue({ secureHardware })
+
+        const { result } = renderHook(() => useWallet(), { wrapper })
+
+        await act(async () => {
+          await result.current.onPinCreated({
+            walletId: mockWalletId,
+            mnemonic,
+            pin: mockPin,
+            walletType: WalletType.MNEMONIC
+          })
+        })
+
+        expect(showAlert).toHaveBeenCalledTimes(alertCount)
+      }
+    )
+
     it('should throw error when storing wallet fails', async () => {
-      jest.spyOn(BiometricsSDK, 'storeWalletSecret').mockResolvedValue(false)
+      jest
+        .spyOn(BiometricsSDK, 'storeWalletSecret')
+        .mockRejectedValue(new Error('keystore failure'))
 
       const { result } = renderHook(() => useWallet(), { wrapper })
 

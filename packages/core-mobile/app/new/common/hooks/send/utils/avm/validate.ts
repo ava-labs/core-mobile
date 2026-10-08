@@ -1,14 +1,45 @@
 import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { networkIDs, utils } from '@avalabs/avalanchejs'
 import { TokenWithBalanceAVM } from '@avalabs/vm-module-types'
 import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
 import { SendErrorMessage } from '../types'
+
+// Reject addresses whose network (avax/fuji) does not match the active network.
+const getAddressHrp = (address: string): string => {
+  const bech32Part = address.includes('-')
+    ? address.slice(address.indexOf('-') + 1)
+    : address
+  const [hrp] = utils.parseBech32(bech32Part)
+  return hrp
+}
+
+const assertValidAddressForNetwork = (
+  address: string,
+  isTestnet: boolean
+): void => {
+  const expectedHrp = isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
+  let addressHrp: string | undefined
+  try {
+    addressHrp = getAddressHrp(address)
+  } catch {
+    throw new Error(SendErrorMessage.INVALID_ADDRESS)
+  }
+
+  const isStructurallyValid =
+    Avalanche.isBech32Address(address, false) ||
+    Avalanche.isBech32Address(address, true)
+
+  if (addressHrp !== expectedHrp || !isStructurallyValid)
+    throw new Error(SendErrorMessage.INVALID_ADDRESS)
+}
 
 export const validate = ({
   amount,
   address,
   maxFee,
   token,
-  spendableBalance
+  spendableBalance,
+  isTestnet
 }: {
   amount: bigint | undefined
   address: string | undefined
@@ -20,6 +51,7 @@ export const validate = ({
    * refuse to spend.
    */
   spendableBalance?: bigint
+  isTestnet: boolean
 }): void => {
   if (!address) throw new Error(SendErrorMessage.ADDRESS_REQUIRED)
 
@@ -28,11 +60,7 @@ export const validate = ({
   const balance = spendableBalance ?? token.available ?? 0n
   const maxAmountValue = balance - fee
 
-  if (
-    !Avalanche.isBech32Address(address, false) &&
-    !Avalanche.isBech32Address(address, true)
-  )
-    throw new Error(SendErrorMessage.INVALID_ADDRESS)
+  assertValidAddressForNetwork(address, isTestnet)
 
   if (!maxFee || maxFee === 0n)
     throw new Error(SendErrorMessage.INVALID_NETWORK_FEE)

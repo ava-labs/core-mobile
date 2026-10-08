@@ -107,9 +107,15 @@ describe('validateSiweOrigin', () => {
     expect(result).toBeUndefined()
   })
 
-  it('returns undefined when dApp URL cannot be parsed', () => {
+  it('fails closed when the dApp URL cannot be parsed', () => {
+    // With no parsable origin there is nothing to compare the SIWE message
+    // against, so the request cannot be vouched for — warn instead of silently
+    // presenting an unverified sign-in as legitimate.
     const result = validateSiweOrigin(baseSiwe, '')
-    expect(result).toBeUndefined()
+    expect(result?.type).toBe(AlertType.DANGER)
+    expect(result?.details.body).toContainEqual(
+      'The dApp did not provide a valid URL for origin verification.'
+    )
   })
 
   it('handles dApp URL without scheme', () => {

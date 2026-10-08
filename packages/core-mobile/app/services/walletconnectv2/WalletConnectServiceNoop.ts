@@ -45,12 +45,12 @@ export class WalletConnectServiceNoop {
     //noop
   }
 
-  updateSession = async (): Promise<void> => {
-    //noop
+  updateSession = async (): Promise<boolean> => {
+    return true
   }
 
-  updateSessionWithTimeout = async (): Promise<void> => {
-    //noop
+  updateSessionWithTimeout = async (): Promise<boolean> => {
+    return true
   }
 
   updateSessions = async (): Promise<void> => {

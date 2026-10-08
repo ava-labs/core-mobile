@@ -124,6 +124,9 @@ class EthSendTransactionBatchHandler
         walletId: activeWalletId,
         walletType: activeWallet.type,
         accountIndex: activeAccount.index,
+        // The approved signer address. quickSwapsBypass.readBatchSigningContext
+        // refuses to sign without it (CP-15105 B1).
+        fromAddress: activeAccount.addressC,
         network,
         [RequestContext.QUICK_SWAPS_AVAILABLE]:
           selectIsQuickSwapsAvailable(state)

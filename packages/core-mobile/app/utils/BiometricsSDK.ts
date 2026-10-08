@@ -2,7 +2,6 @@ import * as LocalAuthentication from 'expo-local-authentication'
 import { Platform } from 'react-native'
 import Aes from 'react-native-aes-crypto'
 import Keychain, {
-  BaseOptions,
   GetOptions,
   getSupportedBiometryType,
   hasGenericPassword,
@@ -81,8 +80,22 @@ export const bioSetOptions: SetOptions = {
   accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
 }
 
-export const walletSecretOptions = (walletId: string): BaseOptions => ({
-  service: getWalletServiceKey(walletId)
+export const walletSecretOptions = (
+  walletId: string,
+  // Prefer a hardware-backed keystore (TEE/StrongBox). When the device has no
+  // secure hardware (emulators, some low-end devices) key generation with
+  // SECURE_HARDWARE throws, so we fall back to the software-backed keystore so
+  // wallet creation can still succeed. Reads/resets ignore securityLevel, so
+  // the default keeps their behavior unchanged.
+  secureHardware = true
+): SetOptions => ({
+  service: getWalletServiceKey(walletId),
+  accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  securityLevel: iOS
+    ? undefined
+    : secureHardware
+    ? Keychain.SECURITY_LEVEL.SECURE_HARDWARE
+    : Keychain.SECURITY_LEVEL.SECURE_SOFTWARE
 })
 
 class BiometricsSDK {
@@ -315,14 +328,58 @@ class BiometricsSDK {
   }
 
   // Wallet Secret Management
-  async storeWalletSecret(walletId: string, secret: string): Promise<boolean> {
+  /**
+   * Stores the wallet secret, preferring a hardware-backed key (TEE or
+   * StrongBox). react-native-keychain enforces `securityLevel` against the key
+   * it actually generated (KeyInfo.isInsideSecureHardware), so trying
+   * SECURE_HARDWARE first and catching the failure is the accurate probe; the
+   * old `getSecurityLevel()` check answered "StrongBox?" and warned every
+   * TEE-only device (CP-15105 S1).
+   *
+   * SECURE_HARDWARE is attempted twice before falling back to
+   * SECURE_SOFTWARE, so a single transient keystore error does not permanently
+   * downgrade a wallet.
+   *
+   * The returned `secureHardware` flag is accurate only when the key is newly
+   * generated (first store for this alias); react-native-keychain does not
+   * re-validate the level for an existing key.
+   */
+  async storeWalletSecret(
+    walletId: string,
+    secret: string
+  ): Promise<{ secureHardware: boolean }> {
     const encrypted = await encrypt(secret, this.encryptionKey)
+    if (iOS) {
+      await Keychain.setGenericPassword(
+        'walletSecret',
+        encrypted,
+        walletSecretOptions(walletId)
+      )
+      return { secureHardware: true }
+    }
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        await Keychain.setGenericPassword(
+          'walletSecret',
+          encrypted,
+          walletSecretOptions(walletId, true)
+        )
+        return { secureHardware: true }
+      } catch (e) {
+        if (attempt === 2) {
+          Logger.warn(
+            'Hardware-backed keystore unavailable, falling back to software keystore',
+            e
+          )
+        }
+      }
+    }
     await Keychain.setGenericPassword(
       'walletSecret',
       encrypted,
-      walletSecretOptions(walletId)
+      walletSecretOptions(walletId, false)
     )
-    return true
+    return { secureHardware: false }
   }
 
   async removeWalletSecret(walletId: string): Promise<boolean> {

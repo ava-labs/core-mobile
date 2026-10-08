@@ -1,32 +1,64 @@
 import React, { useState, useLayoutEffect } from 'react'
+import { useLocalSearchParams } from 'expo-router'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import Logger from 'utils/Logger'
 
 type WalletConnectKey = keyof typeof walletConnectCache
 
-type InferParamType<K extends WalletConnectKey> = ReturnType<
-  // TODO: upgrade prettier to latest version to fix this
-  // eslint-disable-next-line prettier/prettier
-  (typeof walletConnectCache)[K]['get']
->
+type CacheEntry<K extends WalletConnectKey> = typeof walletConnectCache[K]
 
-export function withWalletConnectCache<K extends WalletConnectKey>(key: K) {
+// Distinguish singleton caches (get()) from keyed caches (get(id))
+type IsKeyedCache<C> = C extends { get: (id: string) => unknown } ? true : false
+
+type InferParamType<K extends WalletConnectKey> = IsKeyedCache<
+  CacheEntry<K>
+> extends true
+  ? ReturnType<typeof walletConnectCache[K]['get']>
+  : ReturnType<typeof walletConnectCache[K]['get']>
+
+function readCacheEntry<K extends WalletConnectKey>(
+  key: K,
+  requestIdParam: string | undefined,
+  requestId: string | undefined
+): InferParamType<K> {
+  const cache = walletConnectCache[key]
+  if (requestIdParam && 'get' in cache) {
+    if (!requestId) throw new Error(`Missing ${requestIdParam} route param`)
+    // keyed cache: pass the id
+    return (cache as unknown as { get: (id: string) => InferParamType<K> }).get(
+      requestId
+    )
+  }
+  return (cache as unknown as { get: () => InferParamType<K> }).get()
+}
+
+export function withWalletConnectCache<K extends WalletConnectKey>(
+  key: K,
+  options?: { requestIdParam?: string }
+) {
   return function <P extends { params: InferParamType<K> }>(
     WrappedComponent: React.ComponentType<P>
   ) {
     return function WalletConnectCacheWrapper(
       props: Omit<P, 'params'>
     ): JSX.Element | null {
+      const searchParams = useLocalSearchParams()
       const [params, setParams] = useState<InferParamType<K> | null>(null)
+      const requestIdValue = options?.requestIdParam
+        ? (searchParams[options.requestIdParam] as string | undefined)
+        : undefined
 
       useLayoutEffect(() => {
         try {
-          const data = walletConnectCache[key].get()
-          setParams(data as InferParamType<K>)
+          setParams(
+            readCacheEntry(key, options?.requestIdParam, requestIdValue)
+          )
         } catch (err) {
           Logger.error('Error getting wallet connect cache', err)
+          // don't keep rendering the previous request's data under a new id
+          setParams(null)
         }
-      }, [])
+      }, [requestIdValue])
 
       if (!params) return null
 

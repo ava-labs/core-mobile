@@ -87,17 +87,20 @@ export const initWalletConnect = async (
 
 export const updateSessions = async ({
   chainId,
-  account
+  account,
+  notifyUnapprovedAccount
 }: {
   chainId: number
   account?: Account
+  notifyUnapprovedAccount?: boolean
 }): Promise<void> => {
   try {
     if (!account) return
 
     await WalletConnectService.updateSessions({
       chainId,
-      account
+      account,
+      notifyUnapprovedAccount
     })
   } catch (e) {
     Logger.error('Unable to update WC sessions', e)
@@ -222,7 +225,7 @@ export const handleAccountChange = async (
   const { chainId } = selectActiveNetwork(state)
   const account = selectActiveAccount(state)
 
-  updateSessions({ chainId, account })
+  updateSessions({ chainId, account, notifyUnapprovedAccount: true })
 }
 
 export const handleNonEvmAccountsChange = async (
@@ -243,6 +246,7 @@ export const handleNonEvmAccountsChange = async (
   const promises: Promise<void>[] = []
 
   WalletConnectService.getSessions().forEach(session => {
+    // metadata.url is self-reported; only used to decide whether to attempt non-EVM namespace updates, which the handler re-gates on approval.
     const isCoreApp = isCoreDomain(session.peer.metadata.url)
 
     if (!isCoreApp) {

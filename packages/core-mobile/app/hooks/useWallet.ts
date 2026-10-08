@@ -1,4 +1,5 @@
 import { useDispatch } from 'react-redux'
+import { showAlert } from '@avalabs/k2-alpine'
 import { onAppUnlocked, onLogIn, setWalletType } from 'store/app'
 import { WalletType } from 'services/wallet/types'
 import Logger from 'utils/Logger'
@@ -8,6 +9,19 @@ import { storeWallet } from 'store/wallet/thunks'
 import { AppThunkDispatch } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { setActiveWallet } from 'store/wallet/slice'
+
+const warnIfNoSecureHardware = (secureHardware: boolean): void => {
+  if (secureHardware) return
+
+  showAlert({
+    title: 'Secure hardware unavailable',
+    description:
+      "This device doesn't have a hardware-backed secure keystore, so your " +
+      'wallet is protected with software-based encryption instead. This is ' +
+      'less secure than storage on devices with secure hardware.',
+    buttons: [{ text: 'I understand' }]
+  })
+}
 
 interface OnPinCreatedParams {
   walletId: string
@@ -89,11 +103,16 @@ export function useWallet(): UseWallet {
           type: walletType
         })
       )
-      await dispatchStoreWallet.unwrap()
+      const { secureHardware } = await dispatchStoreWallet.unwrap()
       dispatch(setActiveWallet(walletId))
+
+      // Wallet stored — if it landed in the software keystore (no secure
+      // hardware on this device), let the user know their protection is weaker.
+      warnIfNoSecureHardware(secureHardware)
 
       return Promise.resolve(walletId)
     } catch (error) {
+      Logger.error('Failed to store wallet with PIN', error)
       throw Error('Failed to store wallet with PIN')
     }
   }

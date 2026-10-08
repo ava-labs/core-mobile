@@ -1,12 +1,16 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { Icons, Text, useTheme, Button, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { showSnackbar } from 'new/common/utils/toast'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { useLocalSearchParams } from 'expo-router'
+import { useSecureScreen } from 'hooks/useSecureScreen'
+import { sensitiveDataStore } from 'utils/sensitiveDataStore'
 
 const ViewPrivateKeyScreen = (): JSX.Element => {
-  const { privateKey } = useLocalSearchParams<{ privateKey: string }>()
+  useSecureScreen()
+  // Read once on mount so the private key is never stored in route state
+  const privateKeyRef = useRef(sensitiveDataStore.getPrivateKey() ?? '')
+  const privateKey = privateKeyRef.current
   const {
     theme: { colors }
   } = useTheme()

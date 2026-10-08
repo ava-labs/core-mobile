@@ -3,6 +3,7 @@ import {
   CoreAccountAddresses,
   getAddressForChainId
 } from 'store/rpc/handlers/wc_sessionRequest/utils'
+import { isAddressApprovedInNamespace } from 'services/walletconnectv2/utils'
 
 // A granted account under ANY chain of the request's namespace authorizes the
 // address — sessions grant per-namespace account access, not per-chain.
@@ -12,20 +13,20 @@ export const isAddressApproved = (
   namespaces: SessionTypes.Namespaces
 ): boolean => {
   const namespace = caip2ChainId.split(':')[0]
+  const accounts = namespace ? namespaces[namespace]?.accounts : undefined
 
-  if (!namespace || !namespaces[namespace]) {
+  if (!accounts) {
     return false
   }
 
-  // Only EVM hex addresses are case-insensitive (EIP-55 checksums vary the
-  // casing); other namespaces (e.g. base58 Solana) must match exactly.
-  const matches =
-    namespace === 'eip155'
-      ? (acc: string): boolean =>
-          acc.split(':')[2]?.toLowerCase() === address.toLowerCase()
-      : (acc: string): boolean => acc.split(':')[2] === address
-
-  return Boolean(namespaces[namespace]?.accounts.some(matches))
+  // Delegates so the comparison is namespace-aware. Lowercasing both sides —
+  // as this did — is right for EVM but fails OPEN for the case-sensitive
+  // encodings (base58 for Solana, bech32/base58 for AVAX and BIP122), where it
+  // can make two genuinely different addresses compare equal.
+  return isAddressApprovedInNamespace({
+    caip10Account: `${caip2ChainId}:${address}`,
+    accounts
+  })
 }
 
 export const isAccountApproved = (

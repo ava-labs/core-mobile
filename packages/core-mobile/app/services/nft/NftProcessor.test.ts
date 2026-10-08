@@ -6,8 +6,24 @@ const MP4_MAGIC = new Uint8Array([
   0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70
 ])
 
-const mockFetchResponse = (body: Uint8Array, ok = true): Response =>
-  new Response(body.buffer as ArrayBuffer, { status: ok ? 206 : 504 })
+const mockResponseWithUrl = (body: Uint8Array, url: string): Response => {
+  const response = mockFetchResponse(body)
+  Object.defineProperty(response, 'url', { value: url, configurable: true })
+  return response
+}
+
+// RN always exposes the final URL; default to a public one so only tests that
+// care about redirects need to override it.
+const mockFetchResponse = (body: Uint8Array, ok = true): Response => {
+  const response = new Response(body.buffer as ArrayBuffer, {
+    status: ok ? 206 : 504
+  })
+  Object.defineProperty(response, 'url', {
+    value: 'https://example.com/a.jpg',
+    configurable: true
+  })
+  return response
+}
 
 describe('NftProcessor.fetchImage', () => {
   const fetchSpy = jest.spyOn(global, 'fetch')
@@ -78,5 +94,59 @@ describe('NftProcessor.fetchImage', () => {
     await expect(
       NftProcessor.fetchImage('https://example.com/broken')
     ).rejects.toThrow('network down')
+  })
+
+  // non-https schemes or private/loopback hosts, and must never hit the network.
+  it('refuses to fetch non-http(s) URLs', async () => {
+    await expect(
+      NftProcessor.fetchImage('ftp://example.com/image.bin')
+    ).rejects.toThrow(/non-https/)
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('upgrades http URLs to https before fetching', async () => {
+    fetchSpy.mockResolvedValueOnce(mockFetchResponse(JPEG_MAGIC))
+    const result = await NftProcessor.fetchImage('http://example.com/a.jpg')
+    expect(result.uri).toBe('https://example.com/a.jpg')
+    const request = fetchSpy.mock.calls[0]?.[0] as Request
+    expect(request.url).toBe('https://example.com/a.jpg')
+  })
+
+  it('rejects when the response was redirected to a private host (R2-9)', async () => {
+    fetchSpy.mockResolvedValueOnce(
+      mockResponseWithUrl(JPEG_MAGIC, 'https://169.254.169.254/x')
+    )
+    await expect(
+      NftProcessor.fetchImage('https://example.com/a.jpg')
+    ).rejects.toThrow(/private\/reserved host/)
+  })
+
+  it('proceeds when response.url matches the requested url', async () => {
+    fetchSpy.mockResolvedValueOnce(
+      mockResponseWithUrl(JPEG_MAGIC, 'https://example.com/a.jpg')
+    )
+    const result = await NftProcessor.fetchImage('https://example.com/a.jpg')
+    expect(result.type).toBe(NftContentType.JPG)
+  })
+
+  it('rejects when response.url is empty (fails closed)', async () => {
+    fetchSpy.mockResolvedValueOnce(mockResponseWithUrl(JPEG_MAGIC, ''))
+    await expect(
+      NftProcessor.fetchImage('https://example.com/a.jpg')
+    ).rejects.toThrow(/final URL is unknown/)
+  })
+
+  it('refuses to fetch localhost', async () => {
+    await expect(
+      NftProcessor.fetchImage('https://localhost/image.bin')
+    ).rejects.toThrow(/private\/reserved/)
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('refuses to fetch private IP ranges', async () => {
+    await expect(
+      NftProcessor.fetchImage('https://192.168.0.1/image.bin')
+    ).rejects.toThrow(/private\/reserved/)
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 })

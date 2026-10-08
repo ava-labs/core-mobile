@@ -209,4 +209,60 @@ describe('SeedlessWallet', () => {
       }
     })
   })
+
+  describe('signSvmTransaction', () => {
+    const DERIVED_SVM_ADDRESS = 'HAgk14JCTHbF7CnKMz1PBpJqPuUfmYSDsgLQXzHcxLDT'
+    const OTHER_SVM_ADDRESS = 'oeYf6KAJkVELrMEHzFmyRVrTvJgnZzXrLzPTaKp3Vzp'
+
+    const stubKeyLookup = (): void => {
+      jest
+        // @ts-ignore — private
+        .spyOn(wallet, 'getAddressPublicKey')
+        // @ts-ignore
+        .mockResolvedValue('testPublicKey')
+      jest
+        // @ts-ignore — private
+        .spyOn(wallet, 'getSigningKeyByTypeAndKey')
+        // @ts-ignore
+        .mockResolvedValue({ material_id: DERIVED_SVM_ADDRESS })
+    }
+
+    it('should refuse to sign for an account other than the derived one', async () => {
+      stubKeyLookup()
+
+      await expect(
+        wallet.signSvmTransaction({
+          accountIndex: 0,
+          transaction: {
+            account: OTHER_SVM_ADDRESS,
+            serializedTx: 'anyTransaction'
+          },
+          // @ts-ignore
+          network: { vmName: 'SVM' },
+          // @ts-ignore
+          provider: {}
+        })
+      ).rejects.toThrow(
+        'Failed to sign Solana transaction: Solana transaction signer mismatch'
+      )
+    })
+
+    it('should refuse to sign when the request carries no account address', async () => {
+      stubKeyLookup()
+
+      await expect(
+        wallet.signSvmTransaction({
+          accountIndex: 0,
+          // @ts-ignore — a request with no account must fail closed
+          transaction: { serializedTx: 'anyTransaction' },
+          // @ts-ignore
+          network: { vmName: 'SVM' },
+          // @ts-ignore
+          provider: {}
+        })
+      ).rejects.toThrow(
+        'Failed to sign Solana transaction: Solana transaction signer verification failed'
+      )
+    })
+  })
 })

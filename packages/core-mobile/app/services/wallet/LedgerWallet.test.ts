@@ -704,7 +704,7 @@ describe('LedgerWallet', () => {
 
     it('rejects without signing when the accounts differ', async () => {
       await expect(signSvm('SomeOtherAccount')).rejects.toThrow(
-        'Account mismatch'
+        'Solana transaction signer mismatch'
       )
 
       expect(mockSolSignTx).not.toHaveBeenCalled()

@@ -9,11 +9,49 @@ import {
 } from 'utils/caip2ChainIds'
 import { setTabChainId } from 'store/browser/slices/tabs'
 import type { Account } from 'store/account'
+import type { MessageFrameInfo } from '../messageFrameInfo'
 import { isUserRejectedRpcError } from './errors'
 import { resolveActiveConnectedAccounts } from './resolveGrantedAccounts'
 import { isFirstPartyOrigin } from './firstPartyDomains'
 import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
 import { isEvmSigningMethod, isAvalancheSigningMethod } from './approvalMethods'
+
+// R2-12: "Origin unavailable" rejections used to be silent, which hid B4/R2-1
+// from Sentry. Warn at most once per method per window so a busy page cannot
+// flood logs.
+const ORIGIN_WARN_WINDOW_MS = 10_000
+const OTHER_METHOD_KEY = '<other>'
+const KNOWN_METHODS: ReadonlySet<string> = new Set<string>([
+  ...Object.values(RpcMethod),
+  ...Object.values(AppRpcMethod)
+])
+// The method string is page-controlled. Key the limiter on a bounded set (known
+// methods plus one shared bucket) so unique names cannot bypass the window or
+// grow the map without bound, and sanitise what we print.
+const lastOriginWarnAt = new Map<string, number>()
+
+const warnOriginUnavailable = (
+  method: string,
+  id: number,
+  isMainFrame: boolean | undefined
+): void => {
+  const isKnown = KNOWN_METHODS.has(method)
+  const key = isKnown ? method : OTHER_METHOD_KEY
+  const now = Date.now()
+  const last = lastOriginWarnAt.get(key) ?? 0
+  // `now < last` (clock moved backwards) counts as elapsed so it can never
+  // suppress the warning indefinitely.
+  if (now >= last && now - last < ORIGIN_WARN_WINDOW_MS) return
+  lastOriginWarnAt.set(key, now)
+  const printed = isKnown
+    ? method
+    : method.replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 64)
+  Logger.warn(
+    `[InjectedProvider] Rejected ${printed} (id ${id}): origin unavailable (isMainFrame=${String(
+      isMainFrame
+    )}, hasCommittedOrigin=false)`
+  )
+}
 
 // avalanche_* methods (X/P account management + signing) are first-party-only.
 // A prefix classifies them: it conservatively covers every current and future
@@ -45,8 +83,22 @@ const isAvalancheAccountMethod = (method: string): boolean =>
 const isAvalancheChainAlias = (value: unknown): value is 'X' | 'P' | 'C' =>
   value === 'X' || value === 'P' || value === 'C'
 
-const isEvmAddress = (value: unknown): value is string =>
-  typeof value === 'string' && /^0x[0-9a-fA-F]{40}$/.test(value)
+// A signer the dApp named in the request, verbatim. Deliberately NOT filtered
+// to well-formed EVM addresses: the caller requires every named signer to be in
+// the origin's granted set, so an unexpected value has to fail *closed* there.
+// Shape-filtering would fail open instead — the filtered-out request falls back
+// to the (granted) active account and is forwarded, while the module still
+// resolves the signer from the value that was skipped. That is a grant bypass
+// twice over: (a) the approval screen resolves the signer with
+// selectAccountByAddressAndWalletId, which also matches an account's BTC / X-P /
+// Solana address, so a sibling account's non-EVM address would slip past an
+// isEvmAddress() filter and sign with that account's EVM key; and (b) any
+// address form the resolver accepts but the filter's regex doesn't would do the
+// same. An absent (or non-string) signer still yields [] so the caller gates on
+// the active account — required by eth_sendTransaction without `from` and
+// personal_sign without an address arg.
+const namedSigner = (value: unknown): string[] =>
+  typeof value === 'string' && value.length > 0 ? [value] : []
 
 // The account address(es) a signing request will be signed with, when the dApp
 // names one in the request. The approval screen resolves the signing account
@@ -56,38 +108,45 @@ const isEvmAddress = (value: unknown): value is string =>
 // the dApp wasn't granted (An's repro: connected as account 2, then
 // eth_sendTransaction with from = account 1).
 //
-// Arg positions follow the EIP/MetaMask conventions the VM module parses:
-//   personal_sign(message, address)            → params[1]
-//   eth_sign(address, message)                 → params[0]
-//   eth_signTypedData / _v1 (typedData, addr)  → params[1]
-//   eth_signTypedData_v3 / _v4 (addr, data)    → params[0]
+// Arg positions follow the schemas the VM module actually parses
+// (`evm-module` eth-sign/schemas/parse-request-params.ts), NOT the MetaMask
+// docs — the two disagree about the legacy typed-data pair, which the module
+// accepts address-first like every other typed-data version:
+//   personal_sign(message, address)             → params[1]
+//   eth_sign(address, message)                  → params[0]
+//   eth_signTypedData / _v1 (address, data)     → params[0]
+//   eth_signTypedData_v3 / _v4 (address, data)  → params[0]
+//
+// Reading the wrong index is a grant bypass, not a cosmetic mismatch: the gate
+// finds no signer, falls back to the granted active account and forwards the
+// request, and the module then signs with whatever account sits at the index it
+// reads. Gating eth_signTypedData / _v1 on params[1] (the typed data) let a
+// dApp granted only account A obtain a signature — e.g. an ERC-20 Permit — from
+// any sibling account B in the active wallet via [B, typedData]. Keep this
+// table in lockstep with the module's schemas; a divergence is exploitable.
 //
 // NOTE eth_sendTransactionBatch is intentionally absent: its handler signs with
 // the wallet's *active account index* and ignores the per-tx `from`, so gating
 // on `from` would be both wrong and bypassable (a granted `from` with an
 // ungranted active account). It falls through to [] here so the caller gates on
 // the active account instead.
-//
-// Only well-formed addresses are returned: a malformed/unexpected param is
-// skipped (the caller falls back to the active account) so a parse mismatch can
-// never reject a valid request.
 const requestedSignerAddresses = (
   method: RpcMethod,
   params: unknown[]
 ): string[] => {
   switch (method) {
-    case RpcMethod.ETH_SEND_TRANSACTION: {
-      const from = (params[0] as { from?: unknown } | null | undefined)?.from
-      return isEvmAddress(from) ? [from] : []
-    }
+    case RpcMethod.ETH_SEND_TRANSACTION:
+      return namedSigner(
+        (params[0] as { from?: unknown } | null | undefined)?.from
+      )
     case RpcMethod.PERSONAL_SIGN:
+      return namedSigner(params[1])
+    case RpcMethod.ETH_SIGN:
     case RpcMethod.SIGN_TYPED_DATA:
     case RpcMethod.SIGN_TYPED_DATA_V1:
-      return isEvmAddress(params[1]) ? [params[1]] : []
-    case RpcMethod.ETH_SIGN:
     case RpcMethod.SIGN_TYPED_DATA_V3:
     case RpcMethod.SIGN_TYPED_DATA_V4:
-      return isEvmAddress(params[0]) ? [params[0]] : []
+      return namedSigner(params[0])
     default:
       return []
   }
@@ -172,7 +231,7 @@ function parseProviderPayload(
 }
 
 export type InjectedProviderRouter = {
-  handleProviderMessage: (payload: string) => void
+  handleProviderMessage: (payload: string, frame: MessageFrameInfo) => void
   /**
    * Aborts every in-flight abortable request whose origin does not match
    * `currentOrigin`. Call when the WebView navigates to a new origin so stale
@@ -200,6 +259,8 @@ export function createInjectedProviderRouter(
     requestReadOnly,
     sendResponse,
     emitEvent,
+    emitAccountsChangedForOrigin,
+    emitEventForOrigin,
     getNativeOrigin,
     trackPendingOrigin,
     getPeerMeta,
@@ -549,7 +610,7 @@ export function createInjectedProviderRouter(
             rpcUrl: addedNetwork?.rpcUrl ?? addRpcUrl ?? ''
           })
           dispatch(setTabChainId({ tabId, chainId: newChainId }))
-          emitEvent('chainChanged', addHexChainId)
+          emitEventForOrigin('chainChanged', addHexChainId, origin)
         }
       }
       sendResponse(id, null, null)
@@ -604,6 +665,7 @@ export function createInjectedProviderRouter(
   const handleRequestAccounts = async (id: number): Promise<void> => {
     const origin = getNativeOrigin()
     if (!origin) {
+      warnOriginUnavailable('eth_requestAccounts', id, undefined)
       sendResponse(
         id,
         providerErrors.unauthorized('Origin unavailable — cannot connect'),
@@ -663,10 +725,7 @@ export function createInjectedProviderRouter(
         )
         return
       }
-      // Emit accountsChanged before resolving the Promise — matches
-      // MetaMask/Rabby ordering so wagmi listeners see the event alongside
-      // the resolution rather than one render later.
-      emitEvent('accountsChanged', reconciled)
+      emitAccountsChangedForOrigin(reconciled, origin)
       sendResponse(id, null, reconciled)
     } catch (e) {
       sendResponse(id, e, undefined)
@@ -679,6 +738,7 @@ export function createInjectedProviderRouter(
   const handleRequestPermissions = async (id: number): Promise<void> => {
     const origin = getNativeOrigin()
     if (!origin) {
+      warnOriginUnavailable('wallet_requestPermissions', id, undefined)
       sendResponse(
         id,
         providerErrors.unauthorized('Origin unavailable — cannot connect'),
@@ -732,8 +792,7 @@ export function createInjectedProviderRouter(
         )
         return
       }
-      // Emit accountsChanged before resolving the Promise (see handleRequestAccounts).
-      emitEvent('accountsChanged', reconciled)
+      emitAccountsChangedForOrigin(reconciled, origin)
       sendResponse(id, null, buildAccountsPermission(reconciled))
     } catch (e) {
       sendResponse(id, e, undefined)
@@ -847,7 +906,10 @@ export function createInjectedProviderRouter(
     }
   }
 
-  const handleProviderMessage = (payload: string): void => {
+  const handleProviderMessage = (
+    payload: string,
+    frame: MessageFrameInfo
+  ): void => {
     const respondWithError = (reqId: number, error: unknown): void =>
       sendResponse(reqId, error, undefined)
 
@@ -856,8 +918,45 @@ export function createInjectedProviderRouter(
 
     const { id, origin: pageOrigin, request: rpc } = parsed
     const { method, params } = rpc
+    const { isMainFrame, frameOrigin } = frame
+
+    // Frame gate: only the main frame is trusted to send provider requests.
+    if (isMainFrame !== true) {
+      Logger.warn(
+        `[InjectedProvider] Rejected provider_request without proven main-frame origin (isMainFrame=${isMainFrame})`
+      )
+      sendResponse(
+        id,
+        providerErrors.unauthorized('Untrusted frame'),
+        undefined
+      )
+      return
+    }
+
+    // An opaque-origin main frame (e.g. a page served with
+    // `Content-Security-Policy: sandbox allow-scripts`) reports frameOrigin as
+    // "null", normalised to undefined upstream. It must not be evaluated
+    // against the previously committed origin. Both fork platforms always send
+    // frameOrigin for real main-frame messages.
+    if (!frameOrigin) {
+      warnOriginUnavailable(method, id, isMainFrame)
+      sendResponse(
+        id,
+        providerErrors.unauthorized('Origin unavailable'),
+        undefined
+      )
+      return
+    }
 
     const nativeOrigin = getNativeOrigin()
+
+    if (nativeOrigin && frameOrigin && frameOrigin !== nativeOrigin) {
+      Logger.warn(
+        `[InjectedProvider] Frame origin mismatch rejected: frame=${frameOrigin} native=${nativeOrigin}`
+      )
+      sendResponse(id, rpcErrors.invalidRequest('Origin mismatch'), undefined)
+      return
+    }
 
     // Origin mismatch — the shim-reported origin disagrees with the origin
     // tracked by the WebView's navigation state. Either a race during
@@ -901,6 +1000,7 @@ export function createInjectedProviderRouter(
     // about:blank context, have no authoritative origin to gate on — reject
     // rather than silently treat them as unscoped.
     if (!nativeOrigin) {
+      warnOriginUnavailable(method, id, isMainFrame)
       sendResponse(
         id,
         providerErrors.unauthorized('Origin unavailable'),

@@ -27,6 +27,7 @@ type BatchSigningContext = {
   walletId: string
   walletType: WalletType
   accountIndex: number
+  fromAddress: string
   network: Parameters<typeof WalletService.sign>[0]['network']
 }
 
@@ -46,11 +47,13 @@ const readBatchSigningContext = (
 ): BatchSigningContext | undefined => {
   const ctx = readCtx(request)
   if (!ctx) return undefined
-  const { walletId, walletType, accountIndex, network } = ctx
+  const { walletId, walletType, accountIndex, fromAddress, network } = ctx
   if (
     typeof walletId !== 'string' ||
     typeof walletType !== 'string' ||
     typeof accountIndex !== 'number' ||
+    typeof fromAddress !== 'string' ||
+    fromAddress.length === 0 ||
     !network
   ) {
     return undefined
@@ -59,13 +62,16 @@ const readBatchSigningContext = (
     walletId,
     walletType: walletType as WalletType,
     accountIndex,
+    fromAddress,
     network: network as BatchSigningContext['network']
   }
 }
 
 // Skipped when an alert is already present (e.g. Blockaid Warning) to
-// avoid clobbering it. The title is baked into description with `\n`
-// because ApprovalScreen only renders `details.description`.
+// avoid clobbering it. The title used to be baked into `description` with a
+// newline because the sheets only rendered `details.description`; they now
+// compose title + description themselves (see getAlertMessage), so it is set
+// as a plain title here.
 const injectFallbackAlert = (
   displayData:
     | ApprovalParams['displayData']
@@ -73,14 +79,11 @@ const injectFallbackAlert = (
   reason: string | undefined
 ): void => {
   if (displayData.alert) return
-  const description = reason
-    ? `Manual approval required\n${reason}`
-    : 'Manual approval required\nQuick Swaps could not auto-approve this swap.'
   displayData.alert = {
     type: AlertType.WARNING,
     details: {
       title: 'Manual approval required',
-      description
+      description: reason ?? 'Quick Swaps could not auto-approve this swap.'
     }
   }
 }

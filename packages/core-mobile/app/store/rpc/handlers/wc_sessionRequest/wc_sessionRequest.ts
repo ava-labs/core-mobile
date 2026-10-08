@@ -25,13 +25,17 @@ import {
 import {
   CoreAccountAddresses,
   getAddressForChainId,
-  isCoreDomain,
+  getExtensionImportMethods,
+  getScanUrl,
+  isVerifiedCoreDomain,
+  VerifyContext,
   isCoreMethod,
   isNetworkSupported,
   NamespaceToApprove,
   navigateToSessionProposal,
   parseApproveData,
-  scanAndNavigateToSessionProposal
+  scanAndNavigateToSessionProposal,
+  stripCoreMethods
 } from './utils'
 import { COMMON_EVENTS, NON_EVM_OPTIONAL_NAMESPACES } from './namespaces'
 
@@ -52,15 +56,23 @@ const supportedEvmMethods = [
 class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
   methods = [RpcMethod.WC_SESSION_REQUEST]
 
-  private getApprovedEvmMethods = (dappUrl: string): RpcMethod[] => {
-    const isCoreApp = isCoreDomain(dappUrl)
+  private getApprovedEvmMethods = (
+    verifyContext: VerifyContext | undefined
+  ): RpcMethod[] => {
+    const isCoreApp = isVerifiedCoreDomain(verifyContext)
 
     // approve all methods that we support here to allow dApps
     // that use Wagmi to be able to send/access more rpc methods
     // by default, Wagmi only requests eth_sendTransaction and personal_sign
-    return isCoreApp
-      ? [...supportedEvmMethods, ...CORE_EVM_METHODS, ...CORE_WALLET_METHODS]
-      : supportedEvmMethods
+    if (isCoreApp) {
+      return [
+        ...supportedEvmMethods,
+        ...CORE_EVM_METHODS,
+        ...CORE_WALLET_METHODS
+      ]
+    }
+    // Core extension import flow: exactly the two read methods it needs.
+    return [...supportedEvmMethods, ...getExtensionImportMethods(verifyContext)]
   }
 
   private getApprovedEvents = (
@@ -206,8 +218,14 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const state = listenerApi.getState()
     const { params } = request.data
     const { proposer, requiredNamespaces, optionalNamespaces } = params
-    const dappUrl = proposer.metadata.url
-    const isCoreApp = isCoreDomain(dappUrl)
+    const isCoreApp = isVerifiedCoreDomain(request.data.verifyContext)
+    // Scan the origin WalletConnect actually attested (verifyContext), not the
+    // self-declared metadata.url, which a malicious peer can spoof to a benign
+    // site to blind Blockaid's malicious-site detection.
+    const dappUrl = getScanUrl(
+      request.data.verifyContext,
+      proposer.metadata.url
+    )
 
     const normalizedRequired = normalizeNamespaces(requiredNamespaces)
     const normalizedOptional = normalizeNamespaces(
@@ -224,20 +242,35 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     )
 
     try {
-      // make sure Core methods are only requested by either Core Web, Internal Playground or Localhost
-
-      const hasCoreMethod =
-        normalizedRequired[BlockchainNamespace.EIP155]?.methods.some(
-          isCoreMethod
-        ) ?? false
-
-      if (hasCoreMethod && !isCoreApp) {
+      // Core methods may only be REQUIRED by a verified Core peer. A non-Core
+      // peer that merely lists them as optional gets them stripped below
+      // instead of being rejected (CP-15105 B6).
+      const requiredMethods = Object.values(normalizedRequired).flatMap(
+        ns => ns.methods ?? []
+      )
+      if (!isCoreApp && requiredMethods.some(isCoreMethod)) {
         throw new Error('Requested method is not authorized')
       }
 
+      const extensionMethods = getExtensionImportMethods(
+        request.data.verifyContext
+      )
+      const strippedOptional = stripCoreMethods(
+        normalizedOptional,
+        extensionMethods
+      )
+      // drop optional namespaces left with no methods so we don't approve a chain the dApp can't use
+      const optionalForApproval = isCoreApp
+        ? normalizedOptional
+        : Object.fromEntries(
+            Object.entries(strippedOptional).filter(
+              ([, ns]) => (ns.methods ?? []).length > 0
+            )
+          )
+
       const namespaces = this.getNamespacesToApprove(
         normalizedRequired,
-        normalizedOptional,
+        optionalForApproval,
         listenerApi
       )
 
@@ -287,7 +320,8 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
 
     const requiredNamespaces = payload.request.data.params.requiredNamespaces
 
-    const dappUrl = payload.request.data.params.proposer.metadata.url
+    const verifyContext = payload.request.data.verifyContext
+    const isCoreApp = isVerifiedCoreDomain(verifyContext)
 
     const namespacesToApprove = result.data.namespaces
 
@@ -307,11 +341,18 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
           continue
         }
 
-        // Use the namespace's own methods instead of mixing them
+        // Use the namespace's own methods instead of mixing them.
+        // For non-EIP155 namespaces, strip Core methods if this isn't a verified Core app
+        // (defense-in-depth: handle() already blocks such proposals, but belt-and-suspenders).
         const methods =
           namespace === BlockchainNamespace.EIP155
-            ? this.getApprovedEvmMethods(dappUrl)
-            : namespaceToApprove.methods
+            ? this.getApprovedEvmMethods(verifyContext)
+            : isCoreApp
+            ? namespaceToApprove.methods
+            : stripCoreMethods(
+                { ns: namespaceToApprove },
+                getExtensionImportMethods(verifyContext)
+              ).ns.methods ?? []
 
         const events = this.getApprovedEvents(requiredNamespaces, namespace)
 
