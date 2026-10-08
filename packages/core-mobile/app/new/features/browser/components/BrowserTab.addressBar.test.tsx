@@ -12,7 +12,7 @@
  *    open, so onPageFinished/didFinishNavigation never fires).
  */
 import React from 'react'
-import { act, create } from 'react-test-renderer'
+import { act, create, ReactTestRenderer } from 'react-test-renderer'
 
 const ATTACKER = 'https://attacker.example/'
 const TRUSTED = 'https://metamask.io/'
@@ -34,6 +34,7 @@ const mockSetUrlEntry = jest.fn()
 const mockDispatch = jest.fn()
 const mockHandleCommittedUrl = jest.fn()
 const mockHandleProvisionalCrossOriginNavigation = jest.fn()
+const mockHandleProvisionalNavigationAborted = jest.fn()
 
 const mockTab = {
   id: TAB_ID,
@@ -87,7 +88,8 @@ jest.mock('hooks/browser/useEvmInjectedProvider', () => ({
     handleDomainMetadata: jest.fn(),
     handleCommittedUrl: mockHandleCommittedUrl,
     handleProvisionalCrossOriginNavigation:
-      mockHandleProvisionalCrossOriginNavigation
+      mockHandleProvisionalCrossOriginNavigation,
+    handleProvisionalNavigationAborted: mockHandleProvisionalNavigationAborted
   })
 }))
 
@@ -222,11 +224,23 @@ describe('BrowserTab address-bar binding', () => {
     jest.useRealTimers()
   })
 
+  let renderer: ReactTestRenderer | undefined
+
+  afterEach(() => {
+    // Unmount so a provisional deadline armed by one test cannot fire inside
+    // the next one.
+    act(() => {
+      renderer?.unmount()
+    })
+    renderer = undefined
+    jest.clearAllTimers()
+  })
+
   beforeEach(() => {
     jest.clearAllMocks()
     delete (globalThis as { __webViewProps?: unknown }).__webViewProps
     act(() => {
-      create(<BrowserTab tabId={TAB_ID} />)
+      renderer = create(<BrowserTab tabId={TAB_ID} />)
     })
     // Establish the attacker page as the committed document, then navigate to
     // the trusted origin and let it fully commit + load.
@@ -280,6 +294,71 @@ describe('BrowserTab address-bar binding', () => {
     fireLoad('https://apple.com/')
 
     expect(mockSetUrlEntry).not.toHaveBeenCalled()
+  })
+
+  // ------------------------------------------- provisional-origin restore
+  it('onLoad without a commit restores the committed origin in the provider router', () => {
+    // 204 / window.stop(): the cross-origin navigation never commits, but the
+    // WebView still reports the load as finished. onLoad must hand liveOrigin
+    // back to the document that is still on screen, not just drop the timer.
+    fireNavStateChange('https://apple.com/')
+    expect(mockHandleProvisionalNavigationAborted).not.toHaveBeenCalled()
+
+    fireLoad('https://apple.com/')
+
+    expect(mockHandleProvisionalNavigationAborted).toHaveBeenCalledTimes(1)
+    expect(mockSetUrlEntry).not.toHaveBeenCalled()
+
+    // The deadline was cleared, so it must not restore a second time.
+    act(() => {
+      jest.advanceTimersByTime(10_000)
+    })
+    expect(mockHandleProvisionalNavigationAborted).toHaveBeenCalledTimes(1)
+  })
+
+  it('a page-driven onLoad while the navigation is still in flight cannot lift the block', () => {
+    // iOS history shim: pushState/replaceState on the OLD page fires
+    // onLoadingFinish from page JS. While the cross-origin navigation is still
+    // pending, WKWebView reports loading=true, so onLoad must ignore it and
+    // leave liveOrigin on the provisional origin until the deadline or a
+    // real commit/error decides.
+    fireNavStateChange('https://apple.com:9090/')
+
+    act(() => {
+      getWebViewProps().onLoad?.({
+        nativeEvent: {
+          ...navEvent('https://apple.com:9090/', true).nativeEvent,
+          navigationType: 'other'
+        }
+      })
+    })
+
+    expect(mockHandleProvisionalNavigationAborted).not.toHaveBeenCalled()
+    expect(mockSetUrlEntry).not.toHaveBeenCalled()
+
+    act(() => {
+      jest.advanceTimersByTime(10_000)
+    })
+    expect(mockHandleProvisionalNavigationAborted).toHaveBeenCalledTimes(1)
+  })
+
+  it('onLoad after a real commit does not restore the previous origin', () => {
+    fireNavStateChange(ATTACKER)
+    fireCommit(ATTACKER)
+    fireLoad(ATTACKER)
+
+    expect(mockHandleProvisionalNavigationAborted).not.toHaveBeenCalled()
+    expect(mockHandleCommittedUrl).toHaveBeenLastCalledWith(ATTACKER)
+  })
+
+  it('the 10s deadline restores the origin when nothing fires at all', () => {
+    fireNavStateChange('https://apple.com:9090/')
+
+    act(() => {
+      jest.advanceTimersByTime(10_000)
+    })
+
+    expect(mockHandleProvisionalNavigationAborted).toHaveBeenCalledTimes(1)
   })
 
   it('same-origin SPA navigation still updates the bar', () => {

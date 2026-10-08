@@ -598,7 +598,19 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         setError(undefined)
       }
 
-      // onLoad maps to didFinishNavigation (iOS) / onPageFinished (Android)
+      // onLoad maps to didFinishNavigation (iOS) / onPageFinished (Android).
+      // It also fires after a cross-origin navigation that never committed
+      // (Android onPageFinished after a 204 or window.stop(); an iOS
+      // history-shim event once the page has cancelled the load). A real
+      // commit already cleared the provisional flag in handleCommit, so a
+      // flag that is still set here means the committed document is still
+      // live and the router's liveOrigin must be handed back to it before
+      // the deadline that would have done so is dropped. A shim event fired
+      // while the navigation is still pending carries loading=true and was
+      // returned early above, so a page cannot use it to lift the block.
+      if (isProvisionalNavigationRef.current) {
+        handleProvisionalNavigationAborted()
+      }
       clearProvisionalNavigation()
 
       const url = event.nativeEvent.url

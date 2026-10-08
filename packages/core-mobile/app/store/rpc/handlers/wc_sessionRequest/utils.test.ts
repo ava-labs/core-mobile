@@ -225,6 +225,53 @@ describe('assessDappTrust', () => {
     is_malicious: false
   } as SiteScanResponse
 
+  describe('securityOrigin (the URL VM-level checks compare against)', () => {
+    it('is the attested origin under VALID', () => {
+      const result = assessDappTrust({
+        verifyContext: makeVerifyContext('https://app.uniswap.org', 'VALID'),
+        metadataUrl: 'https://app.uniswap.org'
+      })
+      expect(result.securityOrigin).toBe('https://app.uniswap.org')
+    })
+
+    it('is the attested origin under INVALID, not the self-declared metadata URL', () => {
+      // Verify observed evil.com; the peer claims to be uniswap. The SIWE
+      // domain check must see evil.com or a message for uniswap would pass.
+      const result = assessDappTrust({
+        verifyContext: makeVerifyContext('https://evil.com', 'INVALID'),
+        metadataUrl: 'https://app.uniswap.org'
+      })
+      expect(result.level).toBe(DappTrustLevel.SUSPICIOUS)
+      expect(result.originAttested).toBe(false)
+      expect(result.displayUrl).toBe('https://app.uniswap.org')
+      expect(result.securityOrigin).toBe('https://evil.com')
+    })
+
+    it('falls back to the metadata URL under UNKNOWN (origin is only an echo)', () => {
+      const result = assessDappTrust({
+        verifyContext: makeVerifyContext('https://app.uniswap.org', 'UNKNOWN'),
+        metadataUrl: 'https://app.uniswap.org'
+      })
+      expect(result.securityOrigin).toBe('https://app.uniswap.org')
+    })
+
+    it('falls back to the metadata URL when INVALID carries no origin', () => {
+      const result = assessDappTrust({
+        verifyContext: makeVerifyContext('', 'INVALID'),
+        metadataUrl: 'https://app.uniswap.org'
+      })
+      expect(result.securityOrigin).toBe('https://app.uniswap.org')
+    })
+
+    it('falls back to the metadata URL with no verifyContext', () => {
+      const result = assessDappTrust({
+        verifyContext: undefined,
+        metadataUrl: 'https://app.uniswap.org'
+      })
+      expect(result.securityOrigin).toBe('https://app.uniswap.org')
+    })
+  })
+
   it('flags MALICIOUS when WC Verify marks the dApp as a scam', () => {
     const result = assessDappTrust({
       verifyContext: makeVerifyContext('https://scam.xyz', 'VALID', true),

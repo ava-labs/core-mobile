@@ -223,9 +223,9 @@ export const handleRequestViaVMModule = async ({
       dappInfo: {
         name: request.peerMeta.name,
         icon: request.peerMeta.icons[0] ?? '',
-        url: peerTrust?.originAttested
-          ? peerTrust.displayUrl
-          : request.peerMeta.url
+        // The origin SIWE/dApp-origin checks run against. Under INVALID this
+        // is the origin Verify observed, not the spoofable metadata URL.
+        url: peerTrust?.securityOrigin ?? request.peerMeta.url
       },
       method,
       params,

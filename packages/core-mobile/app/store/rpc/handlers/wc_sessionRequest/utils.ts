@@ -331,6 +331,16 @@ export type DappTrustAssessment = {
   originAttested: boolean
   /** metadata.url's host neither equals nor is a sub/parent of the attested host. */
   originMismatch: boolean
+  /**
+   * The origin VM-level security checks (SIWE domain match, dApp-origin
+   * gating) must compare against. Unlike `displayUrl`, this prefers the
+   * attested origin under INVALID too: that is the site Verify actually
+   * observed, which failed to match the self-declared metadata. Checking the
+   * claimed URL there would let a peer impersonating `victim.com` sign a SIWE
+   * message for `victim.com` with no mismatch alert. Under UNKNOWN `origin` is
+   * only metadata.url echoed back, so the metadata URL is used.
+   */
+  securityOrigin: string
 }
 
 const getHostname = (url: string): string | undefined => {
@@ -347,6 +357,26 @@ const getHostname = (url: string): string | undefined => {
 // that points at a completely different domain than the attested origin.
 const isSameSite = (a: string, b: string): boolean =>
   a === b || a.endsWith(`.${b}`) || b.endsWith(`.${a}`)
+
+/**
+ * The origin security checks compare against. Under INVALID the attested
+ * origin is a real observation (it is what failed to match metadata.url), so
+ * it is used even though it is never presented as a verified identity. Under
+ * UNKNOWN `origin` is only metadata.url echoed back, so metadata is used.
+ */
+const getSecurityOrigin = ({
+  attestedOrigin,
+  validation,
+  metadataUrl
+}: {
+  attestedOrigin: string
+  validation: VerifyContext['verified']['validation'] | undefined
+  metadataUrl: string
+}): string => {
+  if (attestedOrigin.length === 0) return metadataUrl
+  if (validation === 'VALID' || validation === 'INVALID') return attestedOrigin
+  return metadataUrl
+}
 
 /**
  * Folds every available signal — WalletConnect Verify (attested origin,
@@ -390,6 +420,11 @@ export const assessDappTrust = ({
   // which treatment to apply — the URL is never presented as trusted unless
   // VALID-attested.
   const displayUrl = isOriginVerified ? attestedOrigin : metadataUrl
+  const securityOrigin = getSecurityOrigin({
+    attestedOrigin,
+    validation,
+    metadataUrl
+  })
 
   const metadataHostname = getHostname(metadataUrl)
   const attestedHostname =
@@ -411,7 +446,8 @@ export const assessDappTrust = ({
     reasons,
     displayUrl,
     originAttested: isOriginVerified,
-    originMismatch
+    originMismatch,
+    securityOrigin
   })
 
   // --- MALICIOUS: definitive scam verdicts -------------------------------
