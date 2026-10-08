@@ -21,48 +21,6 @@ PODS:
     - DGSwiftUtilities (~> 0.11)
   - ContextMenuAuxiliaryPreview (0.5.2):
     - DGSwiftUtilities (~> 0.29)
-  - DatadogCore (2.30.2):
-    - DatadogInternal (= 2.30.2)
-  - DatadogCrashReporting (2.30.2):
-    - DatadogInternal (= 2.30.2)
-    - PLCrashReporter (~> 1.12.0)
-  - DatadogInternal (2.30.2)
-  - DatadogLogs (2.30.2):
-    - DatadogInternal (= 2.30.2)
-  - DatadogRUM (2.30.2):
-    - DatadogInternal (= 2.30.2)
-  - DatadogSDKReactNative (2.14.0):
-    - DatadogCore (= 2.30.2)
-    - DatadogCrashReporting (= 2.30.2)
-    - DatadogLogs (= 2.30.2)
-    - DatadogRUM (= 2.30.2)
-    - DatadogTrace (= 2.30.2)
-    - DatadogWebViewTracking (= 2.30.2)
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
-  - DatadogTrace (2.30.2):
-    - DatadogInternal (= 2.30.2)
-    - OpenTelemetrySwiftApi (= 1.13.1)
-  - DatadogWebViewTracking (2.30.2):
-    - DatadogInternal (= 2.30.2)
   - DGSwiftUtilities (0.47.0)
   - EXApplication (56.0.3):
     - ExpoModulesCore
@@ -309,7 +267,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - ExpoModulesJSI (56.0.10):
+  - ExpoModulesJSI (56.0.14):
     - React-Core
     - ReactCommon
   - ExpoModulesWorklets (56.0.17):
@@ -549,8 +507,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - OpenTelemetrySwiftApi (1.13.1)
-  - PLCrashReporter (1.12.0)
   - PromisesObjC (2.4.1)
   - PromisesSwift (2.4.1):
     - PromisesObjC (= 2.4.1)
@@ -3359,7 +3315,6 @@ PODS:
 
 DEPENDENCIES:
   - "AvalabsCryptoNitro (from `../node_modules/@avalabs/crypto-nitro`)"
-  - "DatadogSDKReactNative (from `../node_modules/@datadog/mobile-react-native`)"
   - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXJSONUtils (from `../node_modules/expo-json-utils/ios`)
@@ -3546,13 +3501,6 @@ SPEC REPOS:
     - CatCrypto
     - ComputableLayout
     - ContextMenuAuxiliaryPreview
-    - DatadogCore
-    - DatadogCrashReporting
-    - DatadogInternal
-    - DatadogLogs
-    - DatadogRUM
-    - DatadogTrace
-    - DatadogWebViewTracking
     - DGSwiftUtilities
     - Firebase
     - FirebaseAppCheck
@@ -3574,8 +3522,6 @@ SPEC REPOS:
     - MMKVCore
     - MultiplatformBleAdapter
     - nanopb
-    - OpenTelemetrySwiftApi
-    - PLCrashReporter
     - PromisesObjC
     - PromisesSwift
     - RecaptchaInterop
@@ -3590,8 +3536,6 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   AvalabsCryptoNitro:
     :path: "../node_modules/@avalabs/crypto-nitro"
-  DatadogSDKReactNative:
-    :path: "../node_modules/@datadog/mobile-react-native"
   EXApplication:
     :path: "../node_modules/expo-application/ios"
   EXConstants:
@@ -3948,14 +3892,6 @@ SPEC CHECKSUMS:
   CatCrypto: a477899b6be4954e75be4897e732da098cc0a5a8
   ComputableLayout: c50faffac4ed9f8f05b0ce5e6f3a60df1f6042c8
   ContextMenuAuxiliaryPreview: 20be0be795b783b68f8792732eed4bed9f202c1c
-  DatadogCore: 8e50ad6cb68343f701707f7eeca16e0acb52ed8c
-  DatadogCrashReporting: 34763d4276d4fce286c7e8729cfcd2ac04dca43b
-  DatadogInternal: bd8672d506a7e67936ed5f7ca612169e49029b44
-  DatadogLogs: d683aa9e0c9339f5ae679ead70bbdbe41cdc32f6
-  DatadogRUM: 8b794aa458e6323ea9b1cef3f820fd3d092cbe27
-  DatadogSDKReactNative: bfed3a327bd1da3bfda2e6a66cfaac36e6b207f8
-  DatadogTrace: 3ba194791267efa09634234749111cac95abd3e5
-  DatadogWebViewTracking: 8287d5ad06e992de5e46dd72a17e05c7513344be
   DGSwiftUtilities: 567f8d5ee618f0b7afb185b17aa45ff356315a0f
   EXApplication: e6040c92edc5522accd62852342e6b14742d42c0
   EXConstants: e836b478e4f5c835f3c77921d8162e1918e2c06e
@@ -3986,7 +3922,7 @@ SPEC CHECKSUMS:
   ExpoLocalization: cf50efc436b2ec313510131c1ee0e778366d64b0
   ExpoLogBox: 63977cf56b04547c713535d2d4e9bbf2f012e3c6
   ExpoModulesCore: 8f247b586be27ee3445df7acb11dd1badcf7b89e
-  ExpoModulesJSI: abc606cf32f6eeb4e2ad44ec3fc4b24143abd8f6
+  ExpoModulesJSI: be5366379de5036c554db5f6478fc994da8f5ece
   ExpoModulesWorklets: 25d712f4e0a4eb37397d46c0ff5b450eca897fd1
   ExpoModulesWorkletsAdapter: c141a7854ac985cda989175ae6944c1bfe3ff91b
   ExpoRouter: 5539806fcab8d38c639c9c255a6d73caa839436a
@@ -4024,8 +3960,6 @@ SPEC CHECKSUMS:
   NitroFetch: 3fb6cd75a82257b92fc5095123ddaf37428dfc6e
   NitroMmkv: 4bafc4d924d1473b3c36d5fde8a5fc1966847c21
   NitroModules: fc6c59f936853035f67ef4dc18a9559dfcb3717a
-  OpenTelemetrySwiftApi: aaee576ed961e0c348af78df58b61300e95bd104
-  PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
   QuickCrypto: 12fbadf0bd716c10ea94fdc47caffb93b2c818cf
@@ -4163,6 +4097,6 @@ SPEC CHECKSUMS:
   Yoga: 2fe23f676416a73cb4be2c15929e352c9395b9cf
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 6a22be3f5274da9dcd947bd6c0144eec6998b77d
+PODFILE CHECKSUM: 14b9d0ed671138dcab23b31785df4ef83c9920bb
 
 COCOAPODS: 1.16.2
