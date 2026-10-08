@@ -29,6 +29,14 @@ const ethereumNetwork = {
   chainId: 1
 } as unknown as Network
 
+// Bitcoin mainnet → getLedgerAppName → BITCOIN
+const bitcoinNetwork = {
+  vmName: NetworkVMType.BITCOIN,
+  chainId: 4503599627370475
+} as unknown as Network
+
+const wrongAppError = { message: 'Ledger device: (0x6a80)' } as never
+
 beforeEach(() => {
   jest.clearAllMocks()
   mockLedger.getCurrentAppVersion.mockReturnValue('1.4.4')
@@ -72,5 +80,75 @@ describe('handleLedgerErrorAndShowAlert — Avalanche blind-sign guidance', () =
     const arg = mockShowAlert.mock.calls[0][0]
     expect(arg.title).not.toBe('Enable blind signing')
     expect(arg.description).toBe('Ledger device: UNKNOWN_ERROR (0x6984)')
+  })
+})
+
+describe('handleLedgerErrorAndShowAlert — which Bitcoin app the user is sent to', () => {
+  it('does not send the user to the Bitcoin app when Bitcoin Recovery is open', () => {
+    mockLedger.getCurrentAppType.mockReturnValue(LedgerAppType.BITCOIN_RECOVERY)
+    mockLedger.getCurrentAppVersion.mockReturnValue('2.4.3')
+
+    handleLedgerErrorAndShowAlert({
+      error: wrongAppError,
+      network: bitcoinNetwork,
+      onRetry: jest.fn(),
+      onCancel: jest.fn()
+    })
+
+    const arg = mockShowAlert.mock.calls[0][0]
+    expect(arg.description).toBe(
+      'Switch to the Bitcoin Recovery app on your Ledger device to continue'
+    )
+  })
+
+  it('sends the user to Bitcoin Recovery when the open Bitcoin app is out of range', () => {
+    mockLedger.getCurrentAppType.mockReturnValue(LedgerAppType.BITCOIN)
+    mockLedger.getCurrentAppVersion.mockReturnValue('2.5.0')
+
+    handleLedgerErrorAndShowAlert({
+      error: wrongAppError,
+      network: bitcoinNetwork,
+      onRetry: jest.fn(),
+      onCancel: jest.fn()
+    })
+
+    const arg = mockShowAlert.mock.calls[0][0]
+    expect(arg.description).toBe(
+      'Switch to the Bitcoin Recovery app on your Ledger device to continue'
+    )
+  })
+
+  it('keeps naming Bitcoin when no Bitcoin app is open and the installed version is unknown', () => {
+    mockLedger.getCurrentAppType.mockReturnValue(LedgerAppType.UNKNOWN)
+    mockLedger.getCurrentAppVersion.mockReturnValue('')
+
+    handleLedgerErrorAndShowAlert({
+      error: wrongAppError,
+      network: bitcoinNetwork,
+      onRetry: jest.fn(),
+      onCancel: jest.fn()
+    })
+
+    const arg = mockShowAlert.mock.calls[0][0]
+    expect(arg.description).toBe(
+      'Switch to the Bitcoin app on your Ledger device to continue'
+    )
+  })
+
+  it('keeps naming the in-range Bitcoin app that is already open', () => {
+    mockLedger.getCurrentAppType.mockReturnValue(LedgerAppType.BITCOIN)
+    mockLedger.getCurrentAppVersion.mockReturnValue('2.4.2')
+
+    handleLedgerErrorAndShowAlert({
+      error: wrongAppError,
+      network: bitcoinNetwork,
+      onRetry: jest.fn(),
+      onCancel: jest.fn()
+    })
+
+    const arg = mockShowAlert.mock.calls[0][0]
+    expect(arg.description).toBe(
+      'Switch to the Bitcoin app on your Ledger device to continue'
+    )
   })
 })

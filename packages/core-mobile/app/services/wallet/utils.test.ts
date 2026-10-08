@@ -2,6 +2,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { RpcMethod, TypedData, MessageTypes } from '@avalabs/vm-module-types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { SignTypedDataVersion } from '@metamask/eth-sig-util'
+import { DeviceActionError } from '@avalabs/hw-app-avalanche'
 import { LedgerAppType, LEDGER_BLIND_SIGN_MESSAGE } from 'services/ledger/types'
 import {
   addBufferToCChainBaseFee,
@@ -74,25 +75,70 @@ describe('getEvmTypedDataVersion', () => {
 describe('handleLedgerError', () => {
   const err = (msg: string): Error => new Error(msg)
 
-  it('maps a bare 0x6984 from the Avalanche app to the blind-sign message', () => {
+  // Shape hw-app-avalanche's toDeviceActionError produces for kit signer
+  // failures: bare status word in the message.
+  const kitError = (statusWord: string): DeviceActionError =>
+    new DeviceActionError(
+      `Device Management Kit signer failed: EthAppCommandError: ${statusWord}: Condition not satisfied`,
+      undefined,
+      parseInt(statusWord, 16)
+    )
+
+  it('maps a kit signer rejection (6985) to the user-rejected message', () => {
     expect(() =>
       handleLedgerError({
-        error: err('Ledger device: UNKNOWN_ERROR (0x6984)'),
+        error: kitError('6985'),
+        appType: LedgerAppType.ETHEREUM
+      })
+    ).toThrow('Transaction rejected by user on Ledger device.')
+  })
+
+  it('maps a kit signer 6a80 to the wrong-app message', () => {
+    expect(() =>
+      handleLedgerError({
+        error: kitError('6a80'),
+        appType: LedgerAppType.ETHEREUM
+      })
+    ).toThrow(/Wrong app open/)
+  })
+
+  it('maps a kit signer 5515 to the device-locked message', () => {
+    expect(() =>
+      handleLedgerError({
+        error: kitError('5515'),
+        appType: LedgerAppType.ETHEREUM
+      })
+    ).toThrow(/locked/)
+  })
+
+  it('maps a transport-path rejection (Ledger device: status 0x6985)', () => {
+    expect(() =>
+      handleLedgerError({
+        error: err('Ledger device: status 0x6985'),
+        appType: LedgerAppType.ETHEREUM
+      })
+    ).toThrow('Transaction rejected by user on Ledger device.')
+  })
+
+  it('maps a kit signer 6984 from the Avalanche app to the blind-sign message', () => {
+    expect(() =>
+      handleLedgerError({
+        error: kitError('6984'),
         appType: LedgerAppType.AVALANCHE
       })
     ).toThrow(LEDGER_BLIND_SIGN_MESSAGE)
   })
 
-  it('does NOT apply the blind-sign message for 0x6984 on a non-Avalanche app', () => {
+  it('does NOT apply the blind-sign message for 6984 on a non-Avalanche app', () => {
     expect(() =>
       handleLedgerError({
-        error: err('Ledger device: UNKNOWN_ERROR (0x6984)'),
+        error: kitError('6984'),
         appType: LedgerAppType.ETHEREUM
       })
     ).not.toThrow()
   })
 
-  it('resolves an L1 network to the Avalanche app and maps 0x6984', () => {
+  it('resolves an L1 network to the Avalanche app and maps 6984', () => {
     const l1Network = {
       vmName: NetworkVMType.EVM,
       subnetId: 'orange-subnet',
@@ -100,9 +146,18 @@ describe('handleLedgerError', () => {
     } as unknown as Network
     expect(() =>
       handleLedgerError({
-        error: err('Ledger device: UNKNOWN_ERROR (0x6984)'),
+        error: kitError('6984'),
         network: l1Network
       })
     ).toThrow(LEDGER_BLIND_SIGN_MESSAGE)
+  })
+
+  it('ignores a message it does not recognise', () => {
+    expect(() =>
+      handleLedgerError({
+        error: err('something else'),
+        appType: LedgerAppType.ETHEREUM
+      })
+    ).not.toThrow()
   })
 })
