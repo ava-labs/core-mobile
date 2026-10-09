@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react-hooks'
 import { AppState, PermissionsAndroid, Platform } from 'react-native'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import * as blePlx from 'react-native-ble-plx'
 import { check, RESULTS } from 'react-native-permissions'
 import { BluetoothState } from 'services/bluetooth/types'
 import { useBluetooth } from './useBluetooth'
@@ -9,12 +9,26 @@ import { useBluetooth } from './useBluetooth'
 // Module mocks
 // ---------------------------------------------------------------------------
 
-jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
-  __esModule: true,
-  default: {
-    observeState: jest.fn()
+jest.mock('react-native-ble-plx', () => {
+  const onStateChange = jest.fn()
+  const state = jest.fn()
+  return {
+    __esModule: true,
+    BleManager: jest.fn(() => ({ onStateChange, state })),
+    // Handles for the tests; the factory closes over one instance so every
+    // `new BleManager()` shares these mocks.
+    __onStateChange: onStateChange,
+    __state: state,
+    State: {
+      PoweredOn: 'PoweredOn',
+      PoweredOff: 'PoweredOff',
+      Unauthorized: 'Unauthorized',
+      Resetting: 'Resetting',
+      Unsupported: 'Unsupported',
+      Unknown: 'Unknown'
+    }
   }
-}))
+})
 
 // react-native-permissions is mapped to its mock in jest.config.js, but the
 // mock doesn't expose `check` as a jest.fn(), so we override it here.
@@ -41,9 +55,8 @@ jest.mock('utils/Logger', () => ({
 // Typed references to mocks
 // ---------------------------------------------------------------------------
 
-const mockTransportBLE = TransportBLE as unknown as {
-  observeState: jest.Mock
-}
+const { __onStateChange: mockOnStateChange, __state: mockState } =
+  blePlx as unknown as { __onStateChange: jest.Mock; __state: jest.Mock }
 const mockCheck = check as jest.Mock
 
 // ---------------------------------------------------------------------------
@@ -69,35 +82,23 @@ function fireAppStateForeground(): void {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Sets up TransportBLE.observeState to synchronously emit the given state. */
-function setupObserveState(state: BluetoothState): void {
-  mockTransportBLE.observeState.mockImplementation(
-    ({
-      next,
-      error: onError
-    }: {
-      next?: (e: { type: string }) => void
-      error?: () => void
-      complete?: () => void
-    }) => {
-      try {
-        next?.({ type: state })
-      } catch {
-        onError?.()
-      }
-      return { unsubscribe: jest.fn() }
+/** Sets up the radio to report the given state to both read paths. */
+function setupBluetoothState(state: BluetoothState): void {
+  mockState.mockResolvedValue(state)
+  mockOnStateChange.mockImplementation(
+    (listener: (newState: string) => void) => {
+      listener(state)
+      return { remove: jest.fn() }
     }
   )
 }
 
-/** Sets up TransportBLE.observeState to fire the error callback. */
-function setupObserveStateError(): void {
-  mockTransportBLE.observeState.mockImplementation(
-    ({ error: onError }: { error?: () => void }) => {
-      onError?.()
-      return { unsubscribe: jest.fn() }
-    }
-  )
+/** Sets up the radio reads to fail, as a native BLE failure would. */
+function setupBluetoothStateError(): void {
+  mockState.mockRejectedValue(new Error('native BLE failure'))
+  mockOnStateChange.mockImplementation(() => {
+    throw new Error('native BLE failure')
+  })
 }
 
 const originalPlatformOS = Platform.OS
@@ -130,7 +131,7 @@ describe('useBluetooth', () => {
 
   describe('isBluetoothAvailable', () => {
     it('is true when radio is on and permission is granted', async () => {
-      setupObserveState(BluetoothState.POWERED_ON)
+      setupBluetoothState(BluetoothState.POWERED_ON)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -143,7 +144,7 @@ describe('useBluetooth', () => {
 
     it('is false when radio is on but permission is denied', async () => {
       mockCheck.mockResolvedValue(RESULTS.BLOCKED)
-      setupObserveState(BluetoothState.POWERED_ON)
+      setupBluetoothState(BluetoothState.POWERED_ON)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -155,7 +156,7 @@ describe('useBluetooth', () => {
     })
 
     it('is false when permission is granted but radio is off', async () => {
-      setupObserveState(BluetoothState.POWERED_OFF)
+      setupBluetoothState(BluetoothState.POWERED_OFF)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -173,7 +174,7 @@ describe('useBluetooth', () => {
       BluetoothState.UNAUTHORIZED,
       BluetoothState.UNSUPPORTED
     ])('is true when radio state is %s', async state => {
-      setupObserveState(state)
+      setupBluetoothState(state)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -186,7 +187,7 @@ describe('useBluetooth', () => {
 
     it('is true when radio is on but permission is denied', async () => {
       mockCheck.mockResolvedValue(RESULTS.BLOCKED)
-      setupObserveState(BluetoothState.POWERED_ON)
+      setupBluetoothState(BluetoothState.POWERED_ON)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -198,7 +199,7 @@ describe('useBluetooth', () => {
     })
 
     it('is false when radio is on and permission is granted', async () => {
-      setupObserveState(BluetoothState.POWERED_ON)
+      setupBluetoothState(BluetoothState.POWERED_ON)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -211,9 +212,10 @@ describe('useBluetooth', () => {
   })
 
   describe('isInitializingBluetooth', () => {
-    it('is true on initial render before observeState emits (UNKNOWN)', async () => {
-      // observeState that never calls next — simulates delayed init
-      mockTransportBLE.observeState.mockReturnValue({ unsubscribe: jest.fn() })
+    it('is true on initial render before the radio reports (UNKNOWN)', async () => {
+      // A subscription that never calls the listener — simulates delayed init
+      mockOnStateChange.mockReturnValue({ remove: jest.fn() })
+      mockState.mockReturnValue(new Promise(() => undefined))
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -229,7 +231,7 @@ describe('useBluetooth', () => {
     })
 
     it('is true when state is RESETTING', async () => {
-      setupObserveState(BluetoothState.RESETTING)
+      setupBluetoothState(BluetoothState.RESETTING)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -241,7 +243,7 @@ describe('useBluetooth', () => {
     })
 
     it('is false once POWERED_ON is received', async () => {
-      setupObserveState(BluetoothState.POWERED_ON)
+      setupBluetoothState(BluetoothState.POWERED_ON)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -254,8 +256,8 @@ describe('useBluetooth', () => {
   })
 
   describe('bluetoothState', () => {
-    it('reflects the raw state emitted by TransportBLE.observeState', async () => {
-      setupObserveState(BluetoothState.POWERED_OFF)
+    it('reflects the raw state reported by the radio', async () => {
+      setupBluetoothState(BluetoothState.POWERED_OFF)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -266,8 +268,8 @@ describe('useBluetooth', () => {
       expect(result.current.bluetoothState).toBe(BluetoothState.POWERED_OFF)
     })
 
-    it('falls back to UNKNOWN when observeState fires the error callback', async () => {
-      setupObserveStateError()
+    it('falls back to UNKNOWN when the radio subscription throws', async () => {
+      setupBluetoothStateError()
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -282,7 +284,7 @@ describe('useBluetooth', () => {
   describe('foreground re-check via AppState', () => {
     it('re-reads BT state when the app returns to the foreground', async () => {
       // Start with radio off
-      setupObserveState(BluetoothState.POWERED_OFF)
+      setupBluetoothState(BluetoothState.POWERED_OFF)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -294,7 +296,7 @@ describe('useBluetooth', () => {
 
       // User enables BT in the system settings and returns to the app.
       // The AppState 'active' event fires; re-check should read POWERED_ON.
-      setupObserveState(BluetoothState.POWERED_ON)
+      setupBluetoothState(BluetoothState.POWERED_ON)
 
       await act(async () => {
         fireAppStateForeground()
@@ -308,7 +310,7 @@ describe('useBluetooth', () => {
     it('re-checks iOS permission when the app returns to the foreground', async () => {
       // Start with permission blocked
       mockCheck.mockResolvedValue(RESULTS.BLOCKED)
-      setupObserveState(BluetoothState.POWERED_ON)
+      setupBluetoothState(BluetoothState.POWERED_ON)
 
       const { result } = renderHook(() => useBluetooth())
 
@@ -336,7 +338,7 @@ describe('useBluetooth', () => {
         configurable: true,
         value: 'android'
       })
-      setupObserveState(BluetoothState.POWERED_ON)
+      setupBluetoothState(BluetoothState.POWERED_ON)
     })
 
     it('is available when all Android permissions are already granted', async () => {

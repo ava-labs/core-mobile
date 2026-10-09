@@ -7,6 +7,7 @@ import {
   BalanceChange,
   NetworkTokenWithBalance
 } from '@avalabs/vm-module-types'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { validateFee } from 'common/hooks/send/utils/evm/validate'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { RequestContext } from 'store/rpc/types'
@@ -195,3 +196,13 @@ export const getEthSendTxValidationError = ({
     return SendErrorMessage.UNKNOWN_ERROR
   }
 }
+
+// avalanche tx signing screens show section titles and skip the alert body
+export const isAvalancheSigningData = (signingData: SigningData): boolean =>
+  signingData.type === RpcMethod.AVALANCHE_SEND_TRANSACTION ||
+  signingData.type === RpcMethod.AVALANCHE_SIGN_TRANSACTION
+
+export const isAvalancheBaseTx = (signingData: SigningData): boolean =>
+  (signingData.type === RpcMethod.AVALANCHE_SEND_TRANSACTION ||
+    signingData.type === RpcMethod.AVALANCHE_SIGN_TRANSACTION) &&
+  Avalanche.isBaseTx(signingData.data)

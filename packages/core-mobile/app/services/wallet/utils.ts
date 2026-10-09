@@ -223,7 +223,12 @@ export const handleLedgerError = ({
   } else if (message.includes(LEDGER_ERROR_CODES.USER_CANCELLED)) {
     // User cancelled, no need to show alert
     return
-  } else if (message.includes(LEDGER_ERROR_CODES.DISCONNECTED_DEVICE)) {
+  } else if (
+    [
+      LEDGER_ERROR_CODES.DISCONNECTED_DEVICE,
+      LEDGER_ERROR_CODES.DISCONNECTED_DEVICE_DMK
+    ].some(code => message.includes(code))
+  ) {
     throw new Error(
       'Ledger device disconnected. Please ensure your Ledger device is nearby and Bluetooth is enabled.'
     )
