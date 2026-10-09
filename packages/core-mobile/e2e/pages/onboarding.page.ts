@@ -238,13 +238,18 @@ class OnboardingPage {
     }
   }
 
-  async dismissUpdateAppModal() {
-    while (await actions.getVisible(this.updateAppModalTitle)) {
-      await actions.delay(1000)
-      await actions.dragAndDrop(this.updateAppModalTitle, [0, 1000])
-      console.log('Dismissed update app modal')
-    }
-    await actions.delay(1000)
+  // The app hides this modal only when E2E_MNEMONIC is baked into the build (isE2EBuild),
+  // so dev builds show it once after login when the store version is newer
+  async dismissUpdateAppModal(timeout = 10000) {
+    const isE2EBuild =
+      process.env.E2E === 'true' || !!process.env.E2E_LOCAL_PATH
+    if (isE2EBuild) return
+
+    if (!(await actions.isElementVisible(this.updateAppModalTitle, timeout)))
+      return
+    await actions.dragAndDrop(this.updateAppModalTitle, [0, 1000])
+    await actions.waitForNotVisible(this.updateAppModalTitle)
+    console.log('Dismissed update app modal')
   }
 
   // AppDelegate requests App Tracking Transparency ~1s after a fresh install's first launch,

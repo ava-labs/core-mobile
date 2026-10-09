@@ -66,6 +66,7 @@ export default async function warmup(
   await onboardingPage.tapNextBtnOnNameWallet()
   await onboardingPage.tapNextBtnOnAvatarScreen()
   await onboardingPage.tapLetsGo()
+  await onboardingPage.dismissUpdateAppModal()
   await onboardingPage.verifyLoggedIn()
 }
 
@@ -143,6 +144,7 @@ export async function warmupSeedless() {
   await onboardingPage.tapNextBtnOnNameWallet()
   await onboardingPage.tapNextBtnOnAvatarScreen()
   await onboardingPage.tapLetsGo()
+  await onboardingPage.dismissUpdateAppModal()
   await onboardingPage.verifyLoggedIn()
 }
 
