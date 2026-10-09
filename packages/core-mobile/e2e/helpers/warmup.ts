@@ -36,6 +36,7 @@ export default async function warmup(
     )
   }
 
+  await onboardingPage.dismissTrackingPrompt()
   await onboardingPage.exitMetro()
 
   const state = await detectAppState()
@@ -118,6 +119,7 @@ function generateSeedlessIdToken(): string {
 }
 
 export async function warmupSeedless() {
+  await onboardingPage.dismissTrackingPrompt()
   await onboardingPage.exitMetro()
 
   const state = await detectAppState()

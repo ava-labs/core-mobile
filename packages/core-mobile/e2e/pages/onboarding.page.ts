@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import onboardingLoc from '../locators/onboarding.loc'
@@ -113,7 +112,7 @@ class OnboardingPage {
   get verifyYourRecoveryPhraseTitle() {
     return selectors.getByText(onboardingLoc.verifyYourRecoveryPhraseTitle)
   }
-  
+
   get bottomSheet() {
     return selectors.getById(onboardingLoc.bottomSheet)
   }
@@ -161,7 +160,7 @@ class OnboardingPage {
 
     if (!isE2EBuild && !isDeviceFarm) {
       try {
-        const dismissBtn = selectors.getByText("AvaxWallet")
+        const dismissBtn = selectors.getByText('AvaxWallet')
         await actions.dragAndDrop(dismissBtn, [0, 1500])
       } catch (e) {
         console.log('Metro dev menu is not found...')
@@ -216,14 +215,14 @@ class OnboardingPage {
 
   async enterPin(pin = '000000') {
     await actions.waitFor(this.enterPinFirstScreenTitle)
-    
+
     // Disable biometrics toggle if it's enabled (to avoid biometric prompt during login)
     const isToggleOn = await actions.isBiometricToggleOn(1500)
     if (isToggleOn) {
       const toggleOn = selectors.getById('toggle_biometrics_on')
       await actions.tap(toggleOn)
     }
-    
+
     await this.tapZero(pin)
     await actions.waitFor(this.enterPinSecondScreenTitle)
     await this.tapZero(pin)
@@ -246,6 +245,38 @@ class OnboardingPage {
       console.log('Dismissed update app modal')
     }
     await actions.delay(1000)
+  }
+
+  // AppDelegate requests App Tracking Transparency ~1s after a fresh install's first launch,
+  // and appium:autoAcceptAlerts doesn't reliably catch it before the first taps
+  async dismissTrackingPrompt(timeout = 5000) {
+    if (!driver.isIOS) return
+
+    try {
+      await driver.waitUntil(
+        async () => {
+          try {
+            await driver.getAlertText()
+            return true
+          } catch {
+            return false
+          }
+        },
+        { timeout, interval: 500 }
+      )
+    } catch {
+      return
+    }
+
+    try {
+      await driver.execute('mobile: alert', {
+        action: 'accept',
+        buttonLabel: 'Allow'
+      })
+    } catch {
+      await driver.dismissAlert()
+    }
+    console.log('Dismissed App Tracking Transparency prompt')
   }
 
   async dismissBottomSheet(element = this.bottomSheet) {
@@ -292,19 +323,25 @@ class OnboardingPage {
   }
 
   async selectWord(words: string[], questionId: string) {
-    const title = await actions.getText(selectors.getById(`${questionId}_title`))
+    const title = await actions.getText(
+      selectors.getById(`${questionId}_title`)
+    )
     if (title) {
       const target = title.match(/"(.*?)"/)
       const targetIndex = target && target[1] ? words.indexOf(target[1]) : -1
       const isBefore = title.indexOf('before') > -1
       if (isBefore) {
-        await actions.click(selectors.getById(`${questionId}_${words[targetIndex - 1]}`))
+        await actions.click(
+          selectors.getById(`${questionId}_${words[targetIndex - 1]}`)
+        )
       } else {
-        await actions.click(selectors.getById(`${questionId}_${words[targetIndex + 1]}`))
+        await actions.click(
+          selectors.getById(`${questionId}_${words[targetIndex + 1]}`)
+        )
       }
     }
   }
-  
+
   async tapKeypadUpButton() {
     const upKeypad = await actions.getVisible(commonElsPage.keypadUpButton)
     if (upKeypad) {
