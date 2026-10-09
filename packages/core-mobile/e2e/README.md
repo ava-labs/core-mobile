@@ -8,12 +8,12 @@ simulator / Android emulator (or physical device) and on AWS Device Farm.
 From `packages/core-mobile`:
 
 ```bash
-yarn appium:ios          # iOS only
-yarn appium:android      # Android only
-yarn appium:smoke        # [Smoke]-tagged specs on all detected platforms
-yarn appium:smokeIos     # [Smoke]-tagged specs, iOS only
-yarn appium:smokeAndroid # [Smoke]-tagged specs, Android only
-yarn appium              # all detected platforms
+yarn appium:ios           # iOS only
+yarn appium:android       # Android only
+yarn appium:smoke         # [Smoke]-tagged specs on all detected platforms
+yarn appium:smoke:ios     # [Smoke]-tagged specs, iOS only
+yarn appium:smoke:android # [Smoke]-tagged specs, Android only
+yarn appium               # all detected platforms
 ```
 
 WDIO starts Appium itself. If you prefer to run your own Appium server on
@@ -55,6 +55,12 @@ while the tests execute. To run against a standalone release build instead,
 download an e2e binary from Bitrise and set `E2E_LOCAL_PATH` to it.
 
 ## Environment variables
+
+Local `yarn appium:*` runs load `.env.development.e2e` automatically when it
+exists (fetch it with `yarn envs`). Point `E2E_ENV_FILE` at another file to
+override, e.g. `E2E_ENV_FILE=.env.internal.e2e yarn appium:ios`. No file is
+loaded when `CI` is set. Variables already set in the shell always take
+precedence.
 
 ### Test wallet (required)
 

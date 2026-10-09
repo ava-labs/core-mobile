@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import path from 'node:path'
 
 import {
@@ -13,6 +14,20 @@ import {
   resolveDeviceCaps,
   unusedPlatformCaps
 } from './helpers/resolve-local-device'
+
+const loadE2EEnvFile = (): void => {
+  // Bitrise sets CI=true and provides E2E vars itself, so only local runs get the default file
+  if (process.env.CI) {
+    return
+  }
+
+  const explicitFile = process.env.E2E_ENV_FILE
+  const file = explicitFile ?? '.env.development.e2e'
+  if (fs.existsSync(file)) {
+    process.loadEnvFile(file)
+  }
+}
+loadE2EEnvFile()
 
 let runId: number | undefined
 const isTestRailEnabled = !!process.env.TESTRAIL_API_KEY
