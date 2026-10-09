@@ -1,18 +1,76 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import * as Sentry from '@sentry/react-native'
 import WalletService from 'services/wallet/WalletService'
+import WalletFactory from 'services/wallet/WalletFactory'
 import { WalletType } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import { streamingBalanceApiClient } from 'utils/api/clients/balanceApiClient'
 import ModuleManager from 'vmModule/ModuleManager'
+import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
+import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
+import { AddressPublicKey, Curve } from 'utils/publicKeys'
 import AccountsService from './AccountsService'
 
+jest.mock('@sentry/react-native', () => ({
+  addBreadcrumb: jest.fn(),
+  init: jest.fn(),
+  reactNavigationIntegration: jest.fn(() => ({})),
+  captureException: jest.fn(),
+  captureMessage: jest.fn(),
+  withScope: jest.fn(
+    (cb: (scope: { setContext: jest.Mock; setTags: jest.Mock }) => void) =>
+      cb({ setContext: jest.fn(), setTags: jest.fn() })
+  ),
+  getGlobalScope: jest.fn(() => ({ setUser: jest.fn() }))
+}))
+
+// The module path builders mirror the BIP44 output of the installed
+// @avalabs/{evm,avalanche,svm}-module 4.0.4 bundles, which is what
+// SeedlessWallet.getAddressPublicKey requests during address derivation.
 jest.mock('vmModule/ModuleManager', () => ({
   __esModule: true,
   default: {
     init: jest.fn(),
     loadModuleByNetwork: jest.fn(),
     deriveAddresses: jest.fn(),
-    deriveAllAddresses: jest.fn()
+    deriveAllAddresses: jest.fn(),
+    evmModule: {
+      buildDerivationPath: ({ accountIndex }: { accountIndex: number }) => ({
+        EVM: `m/44'/60'/0'/0/${accountIndex}`
+      })
+    },
+    avalancheModule: {
+      buildDerivationPath: ({
+        accountIndex,
+        addressIndex = 0
+      }: {
+        accountIndex: number
+        addressIndex?: number
+      }) => ({
+        AVM: `m/44'/9000'/${accountIndex}'/0/${addressIndex}`,
+        CoreEth: `m/44'/60'/0'/0/${accountIndex}`
+      })
+    },
+    solanaModule: {
+      buildDerivationPath: ({ accountIndex }: { accountIndex: number }) => ({
+        SVM: `m/44'/501'/${accountIndex}'/0'`
+      })
+    }
+  }
+}))
+
+jest.mock('seedless/services/wallet/SeedlessWallet')
+
+jest.mock('services/wallet/WalletFactory', () => ({
+  __esModule: true,
+  default: {
+    createWallet: jest.fn()
+  }
+}))
+
+jest.mock('seedless/services/storage/SeedlessPubKeysStorage', () => ({
+  SeedlessPubKeysStorage: {
+    retrieve: jest.fn()
   }
 }))
 
@@ -646,6 +704,207 @@ describe('AccountsService', () => {
       )
 
       discoverSpy.mockRestore()
+    })
+  })
+
+  describe('createNextAccount (seedless)', () => {
+    const secpKey = (derivationPath: string): AddressPublicKey => ({
+      curve: Curve.SECP256K1,
+      derivationPath,
+      key: 'aa'.repeat(32)
+    })
+    const evmKey = (index: number): AddressPublicKey =>
+      secpKey(`m/44'/60'/0'/0/${index}`)
+    // New-spec X/P path, what the Avalanche module requests for every index.
+    const xpKey = (index: number): AddressPublicKey =>
+      secpKey(`m/44'/9000'/${index}'/0/0`)
+    // Legacy X/P path: all addresses hang off account 0, so index N is
+    // encoded as addressIndex N. Pre-2025-11-27 backends derived only this.
+    const legacyXpKey = (addressIndex: number): AddressPublicKey =>
+      secpKey(`m/44'/9000'/0'/0/${addressIndex}`)
+    const svmKey = (index: number): AddressPublicKey => ({
+      curve: Curve.ED25519,
+      derivationPath: `m/44'/501'/${index}'/0'`,
+      key: 'bb'.repeat(32)
+    })
+    const fullKeySet = (index: number): AddressPublicKey[] => [
+      evmKey(index),
+      xpKey(index),
+      svmKey(index)
+    ]
+
+    const setup = (storedPubKeys: AddressPublicKey[]): SeedlessWallet => {
+      ;(SeedlessPubKeysStorage.retrieve as jest.Mock).mockResolvedValue(
+        storedPubKeys
+      )
+      const wallet =
+        new (SeedlessWallet as unknown as new () => SeedlessWallet)()
+      ;(wallet.addAccount as jest.Mock).mockResolvedValue(undefined)
+      ;(WalletFactory.createWallet as jest.Mock).mockResolvedValue(wallet)
+      ;(ModuleManager.deriveAllAddresses as jest.Mock).mockResolvedValue([
+        createAddresses()
+      ])
+      return wallet
+    }
+
+    const createSeedlessAccount = (index: number): Promise<unknown> =>
+      AccountsService.createNextAccount({
+        index,
+        walletType: WalletType.SEEDLESS,
+        isTestnet: false,
+        walletId: 'wallet-1',
+        name: `Account ${index + 1}`
+      })
+
+    it('calls addAccount when the EVM key exists but the new-spec X/P key is missing (CP-15068)', async () => {
+      // Accounts created before the backend derived new-spec X/P keys hold
+      // EVM + legacy X/P only, while the Avalanche module still requests
+      // m/44'/9000'/1'/0/0. An EVM-only guard cannot see that gap.
+      const wallet = setup([
+        ...fullKeySet(0),
+        evmKey(1),
+        legacyXpKey(1),
+        svmKey(1)
+      ])
+
+      await createSeedlessAccount(1)
+
+      expect(wallet.addAccount).toHaveBeenCalledWith(1)
+    })
+
+    it('calls addAccount when only the Solana key is missing for the index', async () => {
+      const wallet = setup([...fullKeySet(0), evmKey(1), xpKey(1)])
+
+      await createSeedlessAccount(1)
+
+      expect(wallet.addAccount).toHaveBeenCalledWith(1)
+    })
+
+    it('calls addAccount for an interior EVM gap instead of reading the next entry positionally', async () => {
+      // Stored set {0, 2}: a positional pubKeys[1] check would read the
+      // entry for index 2 and treat index 1 as present.
+      const wallet = setup([...fullKeySet(0), ...fullKeySet(2)])
+
+      await createSeedlessAccount(1)
+
+      expect(wallet.addAccount).toHaveBeenCalledWith(1)
+    })
+
+    it('calls addAccount when only index 0 exists', async () => {
+      const wallet = setup(fullKeySet(0))
+
+      await createSeedlessAccount(1)
+
+      expect(wallet.addAccount).toHaveBeenCalledWith(1)
+    })
+
+    it('does not call addAccount when the full key set for the index exists', async () => {
+      const wallet = setup([...fullKeySet(0), ...fullKeySet(1)])
+
+      await createSeedlessAccount(1)
+
+      expect(wallet.addAccount).not.toHaveBeenCalled()
+    })
+
+    it('does not call addAccount for a legacy account 0 whose X/P key is on the legacy path', async () => {
+      // At index 0 the legacy and new-spec X/P paths coincide, and
+      // SeedlessWallet.addAccount throws for index < 1 anyway.
+      const wallet = setup([evmKey(0), legacyXpKey(0), legacyXpKey(1)])
+
+      await createSeedlessAccount(0)
+
+      expect(wallet.addAccount).not.toHaveBeenCalled()
+    })
+
+    it('does not call addAccount for index 0 even when its keys are missing', async () => {
+      const wallet = setup([])
+
+      await createSeedlessAccount(0)
+
+      expect(wallet.addAccount).not.toHaveBeenCalled()
+    })
+
+    it('records the guard decision as a Sentry breadcrumb without key material', async () => {
+      setup([...fullKeySet(0), evmKey(1), legacyXpKey(1), svmKey(1)])
+
+      await createSeedlessAccount(1)
+
+      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(
+        expect.objectContaining({
+          category: 'seedlessAddAccount',
+          data: {
+            step: 'createNextAccount-guard',
+            index: 1,
+            invoked: true,
+            missing: ['AVM'],
+            evmIndices: [0, 1]
+          }
+        })
+      )
+      const serialized = JSON.stringify(
+        (Sentry.addBreadcrumb as jest.Mock).mock.calls
+      )
+      expect(serialized).not.toContain('aa'.repeat(32))
+      expect(serialized).not.toContain('bb'.repeat(32))
+    })
+  })
+
+  describe('getSeedlessActiveAccountCount', () => {
+    const evmKey = (index: number): AddressPublicKey => ({
+      curve: Curve.SECP256K1,
+      derivationPath: `m/44'/60'/0'/0/${index}`,
+      key: 'aa'.repeat(32)
+    })
+
+    it('returns highest EVM index + 1, so a gapped set {0, 2} covers indices 1 and 2 in one pass', async () => {
+      ;(SeedlessPubKeysStorage.retrieve as jest.Mock).mockResolvedValue([
+        evmKey(0),
+        evmKey(0),
+        evmKey(2)
+      ])
+
+      await expect(
+        AccountsService.getSeedlessActiveAccountCount()
+      ).resolves.toBe(3)
+    })
+
+    it('returns the plain count for a contiguous set', async () => {
+      ;(SeedlessPubKeysStorage.retrieve as jest.Mock).mockResolvedValue([
+        evmKey(0),
+        evmKey(1)
+      ])
+
+      await expect(
+        AccountsService.getSeedlessActiveAccountCount()
+      ).resolves.toBe(2)
+    })
+
+    it('returns 0 when there are no EVM keys', async () => {
+      ;(SeedlessPubKeysStorage.retrieve as jest.Mock).mockResolvedValue([])
+
+      await expect(
+        AccountsService.getSeedlessActiveAccountCount()
+      ).resolves.toBe(0)
+    })
+
+    it('ignores non-EVM keys', async () => {
+      ;(SeedlessPubKeysStorage.retrieve as jest.Mock).mockResolvedValue([
+        evmKey(0),
+        {
+          curve: Curve.SECP256K1,
+          derivationPath: "m/44'/9000'/0'/0/0",
+          key: 'cc'.repeat(32)
+        },
+        {
+          curve: Curve.ED25519,
+          derivationPath: "m/44'/501'/0'/0'",
+          key: 'dd'.repeat(32)
+        }
+      ])
+
+      await expect(
+        AccountsService.getSeedlessActiveAccountCount()
+      ).resolves.toBe(1)
     })
   })
 })
