@@ -37,7 +37,20 @@ const PACKAGE_EXPORTS_OPT_IN = [
   // react-native-nitro-fetch imports 'web-streams-polyfill/polyfill', a subpath
   // only exposed via the package's "exports" map (-> dist/polyfill.js). Package
   // exports is disabled globally, so opt this package in to resolve the subpath.
-  'web-streams-polyfill'
+  'web-streams-polyfill',
+  // Ledger's Device Management Kit family declares no "main" field at all —
+  // only an "exports" map. With package exports disabled globally, Metro falls
+  // back to <pkg>/index and fails to resolve them. device-signer-kit-bitcoin
+  // still has a "main", but is opted in with the rest so the whole family
+  // resolves the same way if Ledger drops it there too.
+  '@ledgerhq/context-module',
+  '@ledgerhq/device-contacts-kit',
+  '@ledgerhq/device-management-kit',
+  '@ledgerhq/device-signer-kit-bitcoin',
+  '@ledgerhq/device-signer-kit-ethereum',
+  '@ledgerhq/device-signer-kit-solana',
+  '@ledgerhq/device-transport-kit-react-native-ble',
+  '@ledgerhq/signer-utils'
 ]
 
 // Only redirect @noble/hashes subpaths that are patched for native crypto.
@@ -133,56 +146,6 @@ const baseConfig = {
         return context.resolveRequest(newContext, moduleName, platform)
       }
 
-      if (moduleName.startsWith('@ledgerhq/cryptoassets-evm-signatures')) {
-        return context.resolveRequest(
-          context,
-          moduleName.replace(
-            '@ledgerhq/cryptoassets-evm-signatures',
-            '@ledgerhq/cryptoassets-evm-signatures/lib-es'
-          ),
-          platform
-        )
-      }
-      if (moduleName.startsWith('@ledgerhq/cryptoassets')) {
-        return context.resolveRequest(
-          context,
-          moduleName.replace(
-            '@ledgerhq/cryptoassets',
-            '@ledgerhq/cryptoassets/lib-es'
-          ),
-          platform
-        )
-      }
-      if (moduleName.startsWith('@ledgerhq/domain-service')) {
-        return context.resolveRequest(
-          context,
-          moduleName.replace(
-            '@ledgerhq/domain-service',
-            '@ledgerhq/domain-service/lib-es'
-          ),
-          platform
-        )
-      }
-      if (moduleName.startsWith('@ledgerhq/evm-tools')) {
-        return context.resolveRequest(
-          context,
-          moduleName.replace(
-            '@ledgerhq/evm-tools',
-            '@ledgerhq/evm-tools/lib-es'
-          ),
-          platform
-        )
-      }
-      if (moduleName.startsWith('@ledgerhq/live-network')) {
-        return context.resolveRequest(
-          context,
-          moduleName.replace(
-            '@ledgerhq/live-network',
-            '@ledgerhq/live-network/lib-es'
-          ),
-          platform
-        )
-      }
       if (moduleName === 'crypto') {
         // when importing crypto, resolve to react-native-quick-crypto
         return context.resolveRequest(

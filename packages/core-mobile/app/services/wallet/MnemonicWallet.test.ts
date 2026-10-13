@@ -164,20 +164,17 @@ describe('MnemonicWallet', () => {
       rpcMethod?: RpcMethod
     }) => {
       return mnemonicWallet.signMessage({
-        rpcMethod,
-        data,
+        signingData: {
+          type: rpcMethod,
+          account: '0xaccount',
+          data
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
         accountIndex: 0,
         network: { vmName: 'EVM' },
         provider: mockProvider // Use mocked provider
       })
     }
-    it('should have returned error data must be string', async () => {
-      try {
-        await signMessage({})
-      } catch (e) {
-        expect((e as Error).message).toBe('data must be string')
-      }
-    })
     it('should have called personalSign', async () => {
       await signMessage({ data: 'test' })
       expect(ethSignUtil.personalSign).toHaveBeenCalled()
@@ -233,8 +230,11 @@ describe('MnemonicWallet', () => {
 
     it('should sign Solana message', async () => {
       const result = await mnemonicWallet.signMessage({
-        rpcMethod: RpcMethod.SOLANA_SIGN_MESSAGE,
-        data: MOCK_SOLANA_MESSAGE,
+        signingData: {
+          type: RpcMethod.SOLANA_SIGN_MESSAGE,
+          account: 'solanaAccount',
+          data: MOCK_SOLANA_MESSAGE
+        },
         accountIndex: 0,
         network: { vmName: 'SVM' },
         provider: mockSolanaProvider
@@ -250,18 +250,6 @@ describe('MnemonicWallet', () => {
         provider: mockSolanaProvider
       })
       expect(result).toBe('mockedSignedTx')
-    })
-
-    it('should handle invalid Solana message format', async () => {
-      await expect(
-        mnemonicWallet.signMessage({
-          rpcMethod: RpcMethod.SOLANA_SIGN_MESSAGE,
-          data: { invalid: 'format' }, // This will trigger the type check
-          accountIndex: 0,
-          network: { vmName: 'SVM' },
-          provider: mockSolanaProvider
-        })
-      ).rejects.toThrow('data must be string')
     })
   })
 

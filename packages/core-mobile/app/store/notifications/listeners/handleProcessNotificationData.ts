@@ -24,6 +24,20 @@ export const handleProcessNotificationData = async (
     if (network && network.isTestnet !== isDeveloperMode) {
       dispatch(toggleDeveloperMode())
     }
+  } else if (
+    'isDeveloperMode' in data &&
+    typeof data.isDeveloperMode === 'string'
+  ) {
+    // Stake-complete local notifications carry no chainId — they stamp the
+    // scheduling environment as an `isDeveloperMode` string instead (see
+    // NotificationsService.scheduleNotification). Toggle the same way so a
+    // testnet stake's notification actually lands on the stake that
+    // triggered it; without this the account switched but the mode didn't,
+    // and the stake surfaces (scoped to the current mode) couldn't show it.
+    const targetIsDeveloperMode = data.isDeveloperMode === 'true'
+    if (targetIsDeveloperMode !== isDeveloperMode) {
+      dispatch(toggleDeveloperMode())
+    }
   }
 
   // prioritize new approach of using accountId over accountAddress

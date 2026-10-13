@@ -201,6 +201,8 @@ const getExportPFee = async ({
       isTestnet: Boolean(avaxXPNetwork.isTestnet),
       destinationAddress: activeAccount.addressPVM,
       destinationChain: 'C',
+      // fee-estimation only — this tx is never submitted
+      shouldValidateBurnedAmount: false,
       feeState,
       xpAddresses
     })
@@ -245,6 +247,8 @@ const getExportPFee = async ({
       isTestnet: Boolean(avaxXPNetwork.isTestnet),
       destinationAddress: activeAccount.addressPVM,
       destinationChain: 'C',
+      // fee-estimation only — this tx is never submitted
+      shouldValidateBurnedAmount: false,
       feeState,
       xpAddresses
     })

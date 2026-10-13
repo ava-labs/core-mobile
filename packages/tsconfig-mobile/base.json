@@ -23,5 +23,5 @@
     "strictPropertyInitialization": false
   },
   "exclude": ["node_modules"],
-  "typeAcquisition": { "include": ["jest", "detox"] }
+  "typeAcquisition": { "include": ["jest"] }
 }

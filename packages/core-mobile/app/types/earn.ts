@@ -20,7 +20,10 @@ export type NodeValidators = NodeValidator[]
  * never silently changes `StakeTargetValidator`, and renames propagate
  * through TypeScript instead of drifting.
  */
-export type StakeTargetValidator = Pick<NodeValidator, 'nodeID' | 'endTime'>
+export type StakeTargetValidator = Pick<
+  NodeValidator,
+  'nodeID' | 'endTime' | 'delegationFee'
+>
 
 export enum AdvancedSortFilter {
   UpTimeHighToLow = 'Uptime: High to Low',

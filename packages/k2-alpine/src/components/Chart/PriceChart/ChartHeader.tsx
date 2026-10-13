@@ -17,9 +17,10 @@ import { Text } from '../../Primitives'
 import { DURATIONS } from './constants'
 import {
   crosshairInnerAnchorTarget,
+  formatCandleDisplayStringAt,
   formatCandleDisplayStrings
 } from './helpers'
-import { useActiveIndex } from './hooks'
+import { useActiveIndex, useIsFullFormatNeeded } from './hooks'
 import { OhlcCandle } from './types'
 
 const useLayoutWidthHandler = (
@@ -216,13 +217,24 @@ export const ChartHeader: FC<Props> = memo(
       isActive
     )
 
-    const formatted = useMemo(
-      () => formatCandleDisplayStrings(candles, formatPrice),
+    // Inactive state only renders the last candle, so format just that one at
+    // mount; the full array (crosshair lookups) is deferred below.
+    const lastFormatted = useMemo(
+      () =>
+        formatCandleDisplayStringAt(candles, candles.length - 1, formatPrice),
       [candles, formatPrice]
     )
 
-    const lastCandle = formatted[formatted.length - 1]
-    const active = idx !== null ? formatted[idx] : undefined
+    const needsFull = useIsFullFormatNeeded(idx)
+    const fullFormatted = useMemo(() => {
+      if (!needsFull) return undefined
+      // Full-array Intl cost (see `MONTH_ABBR` in helpers) kept off the mount
+      // path — see `useIsFullFormatNeeded`.
+      return formatCandleDisplayStrings(candles, formatPrice)
+    }, [candles, formatPrice, needsFull])
+
+    const lastCandle = lastFormatted
+    const active = idx !== null ? fullFormatted?.[idx] : undefined
 
     const priceText =
       active?.priceText ??

@@ -203,6 +203,7 @@ describe('BalanceService', () => {
       const onBalanceLoaded = jest.fn()
 
       const result = await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -239,6 +240,7 @@ describe('BalanceService', () => {
       mockLoadModuleByNetwork.mockResolvedValue(mockModule)
 
       const result = await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -301,6 +303,7 @@ describe('BalanceService', () => {
       mockLoadModuleByNetwork.mockResolvedValue(mockModule)
 
       const result = await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any, ethereumNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -354,6 +357,7 @@ describe('BalanceService', () => {
       mockLoadModuleByNetwork.mockResolvedValue(mockModule)
 
       await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any, ethereumNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -405,6 +409,7 @@ describe('BalanceService', () => {
       mockLoadModuleByNetwork.mockResolvedValue(mockModule)
 
       const result = await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any, ethereumNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -455,6 +460,7 @@ describe('BalanceService', () => {
       const onBalanceLoaded = jest.fn()
 
       const result = await balanceService.getBalancesForAccounts({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         accounts: [testAccount, testAccount2],
         currency: 'usd',
@@ -504,6 +510,7 @@ describe('BalanceService', () => {
       mockLoadModuleByNetwork.mockResolvedValue(mockModule)
 
       const result = await balanceService.getBalancesForAccounts({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         accounts: [testAccount, testAccount2],
         currency: 'usd',
@@ -565,6 +572,7 @@ describe('BalanceService', () => {
       mockLoadModuleByNetwork.mockResolvedValue(mockModule)
 
       await balanceService.getBalancesForAccounts({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any, ethereumNetwork as any],
         accounts: [testAccount],
         currency: 'usd',
@@ -612,6 +620,7 @@ describe('BalanceService', () => {
       mockLoadModuleByNetwork.mockResolvedValue(mockModule)
 
       const result = await balanceService.getBalancesForAccounts({
+        filterOutDustUtxos: false,
         networks: [ethereumNetwork as any],
         accounts: [testAccount],
         currency: 'usd',
@@ -651,6 +660,7 @@ describe('BalanceService', () => {
       const onBalanceLoaded = jest.fn()
 
       await balanceService.getBalancesForAccounts({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         accounts: [testAccount],
         currency: 'usd',
@@ -794,6 +804,7 @@ describe('BalanceService', () => {
         const onBalanceLoaded = jest.fn()
 
         const result = await balanceService.getBalancesForAccounts({
+          filterOutDustUtxos: false,
           networks: [cChainNetwork as any],
           accounts: [testAccount, importedAccount],
           currency: 'usd',
@@ -850,6 +861,7 @@ describe('BalanceService', () => {
           })
 
         const result = await balanceService.getBalancesForAccounts({
+          filterOutDustUtxos: false,
           networks: [cChainNetwork as any],
           accounts: [testAccount, importedAccount],
           currency: 'usd',
@@ -889,6 +901,7 @@ describe('BalanceService', () => {
         })
 
         const result = await balanceService.getBalancesForAccounts({
+          filterOutDustUtxos: false,
           networks: [cChainNetwork as any],
           accounts: [testAccount, importedAccount],
           currency: 'usd',
@@ -909,7 +922,7 @@ describe('BalanceService', () => {
       it('should assign VM balance to both accounts sharing the same EVM address', async () => {
         const mockModule = {
           getBalances: jest.fn().mockResolvedValue({
-            [testAccount.addressC!]: {
+            [String(testAccount.addressC)]: {
               avax: {
                 name: 'Avalanche',
                 symbol: 'AVAX',
@@ -948,7 +961,7 @@ describe('BalanceService', () => {
       it('should handle VM error for both accounts sharing an address', async () => {
         const mockModule = {
           getBalances: jest.fn().mockResolvedValue({
-            [testAccount.addressC!]: {
+            [String(testAccount.addressC)]: {
               error: new Error('VM fetch failed')
             }
           })
@@ -983,7 +996,7 @@ describe('BalanceService', () => {
 
         const mockModule = {
           getBalances: jest.fn().mockResolvedValue({
-            [testAccount.addressC!]: {
+            [String(testAccount.addressC)]: {
               avax: {
                 name: 'Avalanche',
                 symbol: 'AVAX',
@@ -1019,6 +1032,7 @@ describe('BalanceService', () => {
   describe('edge cases', () => {
     it('should handle empty networks array', async () => {
       const result = await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [],
         account: testAccount,
         currency: 'usd',
@@ -1032,6 +1046,7 @@ describe('BalanceService', () => {
 
     it('should handle empty accounts array for getBalancesForAccounts', async () => {
       const result = await balanceService.getBalancesForAccounts({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         accounts: [],
         currency: 'usd',
@@ -1077,6 +1092,7 @@ describe('BalanceService', () => {
       const onBalanceLoaded = jest.fn()
 
       const result = await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -1113,6 +1129,7 @@ describe('BalanceService', () => {
 
       // No callback provided
       const result = await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -1133,6 +1150,7 @@ describe('BalanceService', () => {
       mockLoadModuleByNetwork.mockRejectedValue(new Error('VM module failed'))
 
       const result = await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -1168,6 +1186,7 @@ describe('BalanceService', () => {
       })
 
       const result = await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -1218,6 +1237,7 @@ describe('BalanceService', () => {
       const onBalanceLoaded = jest.fn()
 
       await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -1273,6 +1293,7 @@ describe('BalanceService', () => {
       mockLoadModuleByNetwork.mockResolvedValue(mockModule)
 
       await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any, ethereumNetwork as any],
         account: testAccount,
         currency: 'usd',
@@ -1321,6 +1342,7 @@ describe('BalanceService', () => {
         })
 
       const result = await balanceService.getBalancesForAccount({
+        filterOutDustUtxos: false,
         networks: [cChainNetwork as any, btcNetwork as any],
         account: testAccount,
         currency: 'usd',

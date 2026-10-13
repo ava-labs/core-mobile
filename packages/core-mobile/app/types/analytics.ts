@@ -16,34 +16,15 @@ type DappTxEventPayload = {
 }
 
 /**
- * Transport the dApp request came through. Sent as a top-level (plaintext)
- * property — NOT inside `encrypted` — so MTU / usage dashboards can segment
- * injected-browser vs WalletConnect traffic. CP-13825.
+ * Transport the dApp request came through, so MTU / usage dashboards can
+ * segment injected-browser vs WalletConnect traffic. CP-13825.
  */
 export type DappTxProvider = 'injected' | 'walletConnect'
 
-/**
- * Wrapper for every dApp-transaction lifecycle event: a queryable `provider`
- * discriminator plus the encrypted per-tx payload.
- */
-type DappTxEvent = {
+type DappTxEvent = DappTxEventPayload & {
   provider: DappTxProvider
-  encrypted: DappTxEventPayload
 }
 
-/**
- * All analytics event payloads.
- *
- * Events with an `encrypted` field are automatically encrypted by
- * `AnalyticsService.capture` at transport time — the `encrypted` object is
- * JSON-stringified and encrypted via HPKE before being sent to PostHog.
- * Any sibling fields at the same level are forwarded as plaintext properties
- * (e.g. CAIP-2 chain IDs used for PostHog dashboard filtering).
- *
- * Rule for encrypted events: put sensitive data (addresses, tx hashes, chain
- * IDs) inside `encrypted`. Only add plaintext siblings when the field is
- * explicitly intended to be readable on the dashboard.
- */
 export type AnalyticsEvents = {
   AccountSelectorAddAccount: { accountNumber: number }
   ExplorerLinkClicked: undefined
@@ -60,12 +41,10 @@ export type AnalyticsEvents = {
     targetChainId: number
   }
   BridgeTransactionStarted: {
-    encrypted: {
-      sourceTxHash: string
-      chainId: number
-      fromAddress?: string
-      toAddress?: string
-    }
+    sourceTxHash: string
+    chainId: number
+    fromAddress?: string
+    toAddress?: string
   }
 
   HallidayBuyClicked: undefined
@@ -106,7 +85,8 @@ export type AnalyticsEvents = {
   RecoveryPhraseClicked: undefined
   SendTransactionFailed: { errorMessage: string; chainId: number }
   SendTransactionSucceeded: {
-    encrypted: { txHash: string; chainId: number }
+    txHash: string
+    chainId: number
     caip2ChainId: string
   }
   SeedlessAddMfa: { type: string }
@@ -147,32 +127,90 @@ export type AnalyticsEvents = {
      * from "fee not applicable".
      */
     convenienceFeeAvax?: number
+    /**
+     * True when the stake was reached via Restake on a completed stake
+     * (see `StakeRestakeStarted`). Only the V2 confirm sends this.
+     */
+    isRestake?: boolean
   }
   StakeDelegationFail: {
     isAdvanced: boolean
     convenienceFeeAvax?: number
+    isRestake?: boolean
   }
+  /**
+   * Stake detail screen viewed, once per visit. Fired when the stake has
+   * resolved so the variant is known. `source` attributes the entry point;
+   * in-app navigations pass it explicitly, anything unattributed (e.g. a
+   * push-notification deep link) falls back to `deeplink`.
+   */
+  StakeDetailViewed: {
+    variant: 'active' | 'completed'
+    source: 'home' | 'search' | 'deeplink'
+  }
+  /**
+   * User started a staking flow from the chooser ("Choose a way to start
+   * staking"). Mirrors the PRD's `staking_flow_started` (entry CTA tap).
+   * Fired only when the flow actually begins — a tap blocked by the AVAX
+   * balance guard does not count, so funnel conversion isn't diluted by
+   * users who never entered the flow. Restake entries bypass the chooser
+   * and are intentionally NOT counted here (they get their own events).
+   */
+  StakeFlowStarted: {
+    /** `false` = Fast Stake, `true` = advanced Delegate (matches `StakeDelegationSuccess`). */
+    isAdvanced: boolean
+  }
+  /**
+   * Stake home screen gained focus (tab switch or navigation). Successor to
+   * the legacy `StakeOpened`, which fired on the old-gen Stake tab press and
+   * was dropped with the old navigation code (#2621) without a replacement.
+   */
+  StakeHomeViewed: undefined
   StakeIssueClaim: undefined
-  StakeIssueDelegation: undefined | { convenienceFeeAvax: number }
-  StakeOpened: undefined
+  /** V1 sends no payload; the V2 confirm always sends `isRestake` and adds the fee when one applies. */
+  StakeIssueDelegation:
+    | undefined
+    | { convenienceFeeAvax?: number; isRestake?: boolean }
   StakeOpenDurationSelect: undefined
+  /**
+   * User tapped Restake on a completed stake (the card button or the detail
+   * CTA) and the flow actually started. Deliberately separate from
+   * `StakeFlowStarted` so restakes don't dilute the fresh-stake funnel; the
+   * downstream lifecycle reuses the delegation events with `isRestake`.
+   */
+  StakeRestakeStarted: {
+    /** `false` = original stake was a Fast Stake, `true` = advanced delegation. */
+    isAdvanced: boolean
+    /** Which Restake entry point was tapped. */
+    source: 'card' | 'detail'
+  }
+  /** Stake search screen opened (once per open, not re-fired on back-focus). */
+  StakeSearchOpened: undefined
+  /**
+   * User actually typed a search query, once per search-screen visit. No
+   * payload by design — the query text (node IDs) stays out of analytics.
+   */
+  StakeSearchQueryEntered: undefined
   StakeTransactionStarted: {
-    encrypted: { txHash: string; chainId: number }
+    txHash: string
+    chainId: number
   }
   SwapReviewOrder: {
     provider: string
     slippage: number
+    serviceType: string
+    caip2SourceChainId: string
+    caip2TargetChainId: string
   }
   SwapConfirmed: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash?: string
-      quoteSelectionMode: 'manual' | 'auto'
-      autoRetryAttempt?: number
-    }
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash?: string
+    quoteSelectionMode: 'manual' | 'auto'
+    autoRetryAttempt?: number
+    serviceType: string
     caip2SourceChainId: string
     caip2TargetChainId: string
     quickSwapsEnabled?: boolean
@@ -180,47 +218,51 @@ export type AnalyticsEvents = {
     quickSwapsMaxBuy?: 'unlimited' | '1000' | '5000' | '10000' | '50000'
   }
   SwapSuccessful: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash: string
-      targetTxHash?: string
-    }
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash: string
+    targetTxHash?: string
+    serviceType: string
+    caip2SourceChainId: string
+    caip2TargetChainId: string
   }
   SwapFailed: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash?: string
-      targetTxHash?: string
-      errorCode?: string
-      errorReason?: string
-      userClickedMax?: boolean
-      sourceTokenAddress?: string
-      sourceTokenSymbol?: string
-      sourceAmount?: string
-      destinationTokenAddress?: string
-      destinationTokenSymbol?: string
-      quoteAggregator?: string
-      quoteAggregatorId?: string
-    }
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash?: string
+    targetTxHash?: string
+    errorCode?: string
+    errorReason?: string
+    userClickedMax?: boolean
+    sourceTokenAddress?: string
+    sourceTokenSymbol?: string
+    sourceAmount?: string
+    destinationTokenAddress?: string
+    destinationTokenSymbol?: string
+    quoteAggregator?: string
+    quoteAggregatorId?: string
+    serviceType: string
+    caip2SourceChainId: string
+    caip2TargetChainId: string
   }
   SwapRefunded: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash: string
-      targetTxHash?: string
-      refundTxHash?: string
-    }
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash: string
+    targetTxHash?: string
+    refundTxHash?: string
+    serviceType: string
+    caip2SourceChainId: string
+    caip2TargetChainId: string
   }
   QuickSwapsToggled: { isEnabled: boolean }
+  FilterSmallUtxosToggled: { isEnabled: boolean }
   QuickSwapsBypassFired: {
     caip2SourceChainId: string
     maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'
@@ -465,7 +507,7 @@ export type AnalyticsEvents = {
   PerpetualsBalanceViewed: undefined
   PerpetualsPositionsViewed: undefined
   PerpetualsPositionsFilterChanged: {
-    filter: 'All' | 'Closed' | 'Won' | 'Ending soon'
+    filter: 'All' | 'Active' | 'Won' | 'Lost'
   }
   PerpetualsPositionExpanded: { symbol: string }
   PerpetualsPositionsSearched: { query: string; resultCount: number }
@@ -473,16 +515,14 @@ export type AnalyticsEvents = {
 
   // CP-7989 - Address and Tx Hash Analytics Collection
   AccountAddressesUpdated: {
-    encrypted: {
-      addresses: {
-        address: string
-        addressBtc: string
-        addressAVM: string
-        addressPVM: string
-        addressCoreEth: string
-        addressSVM: string
-      }[]
-    }
+    addresses: {
+      address: string
+      addressBtc: string
+      addressAVM: string
+      addressPVM: string
+      addressCoreEth: string
+      addressSVM: string
+    }[]
   }
 
   // dApp transaction lifecycle
@@ -498,57 +538,45 @@ export type AnalyticsEvents = {
   avalanche_sendTransaction_failed: DappTxEvent
   bitcoin_sendTransaction_failed: DappTxEvent
   solana_signAndSendTransaction_failed: DappTxEvent
-  solana_signTransaction_approved: {
-    encrypted: Omit<DappTxEventPayload, 'txHash'>
-  }
+  solana_signTransaction_approved: Omit<DappTxEventPayload, 'txHash'>
 
   // RECURRING SWAPS (DCA)
   RecurringSwapScheduled: {
     chainId: number
-    encrypted: {
-      scheduleUuid: string
-      fromTokenSymbol: string
-      toTokenSymbol: string
-      amountPerOrder: string
-      // Wire value Markr signs: `RECURRING_UNLIMITED_ORDERS_SENTINEL`
-      // (`-1`) for Unlimited schedules, else a finite count.
-      // Dashboards filter on `numberOfOrders === -1` for the unlimited
-      // cohort — no separate `isUnlimited` boolean is emitted.
-      numberOfOrders: number
-      intervalSeconds: number
-    }
+    scheduleUuid: string
+    fromTokenSymbol: string
+    toTokenSymbol: string
+    amountPerOrder: string
+    // Wire value Markr signs: `RECURRING_UNLIMITED_ORDERS_SENTINEL`
+    // (`-1`) for Unlimited schedules, else a finite count.
+    // Dashboards filter on `numberOfOrders === -1` for the unlimited
+    // cohort — no separate `isUnlimited` boolean is emitted.
+    numberOfOrders: number
+    intervalSeconds: number
   }
   RecurringSwapCancelledByUser: {
     chainId: number
-    encrypted: {
-      orderId: string
-    }
+    orderId: string
   }
   RecurringSwapPausedByUser: {
     chainId: number
-    encrypted: {
-      orderId: string
-    }
+    orderId: string
   }
   RecurringSwapResumedByUser: {
     chainId: number
-    encrypted: {
-      orderId: string
-    }
+    orderId: string
   }
 
   // NEST EGG CAMPAIGN
-  NestEggCampaignModalViewed: { encrypted: { addressC: string } }
-  NestEggSuccessModalViewed: { encrypted: { addressC: string } }
+  NestEggCampaignModalViewed: { addressC: string }
+  NestEggSuccessModalViewed: { addressC: string }
   NestEggQualified: {
-    encrypted: {
-      addressC: string
-      txHash: string
-      chainId: number
-      fromTokenSymbol: string
-      toTokenSymbol: string
-      fromAmountUsd: number
-      timestamp: number
-    }
+    addressC: string
+    txHash: string
+    chainId: number
+    fromTokenSymbol: string
+    toTokenSymbol: string
+    fromAmountUsd: number
+    timestamp: number
   }
 }

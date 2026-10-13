@@ -7,11 +7,13 @@ import {
   BatchApprovalParams,
   BatchApprovalResponse,
   RpcRequest,
-  RequestPublicKeyParams
+  RequestPublicKeyParams,
+  RpcMethod
 } from '@avalabs/vm-module-types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { RequestContext } from 'store/rpc/types'
 import {
   isDappOriginatedUrl,
   isInjectedDappRequest
@@ -32,6 +34,12 @@ import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
 import { ledgerParamsStore } from 'features/ledger/store'
 import { OnApproveParams } from 'services/walletconnectv2/walletConnectCache/types'
+import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { providerErrors } from '@metamask/rpc-errors'
+import {
+  isAddressApproved,
+  isAccountApproved
+} from 'store/rpc/utils/isAccountApproved/isAccountApproved'
 import { WalletType } from 'services/wallet/types'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { CONFETTI_DURATION_MS } from 'common/consts'
@@ -53,9 +61,10 @@ import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
 import {
+  evaluateBatchApproval,
   findRequestValidator,
-  runBatchApprovalBypass,
-  runRequestValidatorBypass
+  runRequestValidatorBypass,
+  signBatchRequests
 } from './quickSwapsBypass'
 
 // Max concurrently-parked cancellable approvals. Entries are removed on every
@@ -152,12 +161,10 @@ class ApprovalController implements VmModuleApprovalController {
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
       AnalyticsService.capture(eventName, {
         provider: isInjectedDappRequest(request) ? 'injected' : 'walletConnect',
-        encrypted: {
-          dAppUrl: request.dappInfo.url,
-          address,
-          chainId: request.chainId,
-          txHash
-        }
+        dAppUrl: request.dappInfo.url,
+        address,
+        chainId: request.chainId,
+        txHash
       })
     }
 
@@ -213,12 +220,10 @@ class ApprovalController implements VmModuleApprovalController {
       const eventName = `${request.method}_failed` as TxSendFailedEvent
       AnalyticsService.capture(eventName, {
         provider: isInjectedDappRequest(request) ? 'injected' : 'walletConnect',
-        encrypted: {
-          dAppUrl: request.dappInfo.url,
-          address,
-          chainId: request.chainId,
-          txHash
-        }
+        dAppUrl: request.dappInfo.url,
+        address,
+        chainId: request.chainId,
+        txHash
       })
     }
   }
@@ -348,6 +353,19 @@ class ApprovalController implements VmModuleApprovalController {
     if (!entry) return
     entry.detach()
     this.activeApprovals.delete(requestId)
+  }
+
+  // WalletConnect session for a request's topic, or undefined. getSession throws
+  // while the WC client is still initializing (and returns undefined for an
+  // unknown/expired topic); both collapse to undefined so callers fail closed.
+  private getSessionOrUndefined(
+    sessionId: string
+  ): ReturnType<typeof WalletConnectService.getSession> {
+    try {
+      return WalletConnectService.getSession(sessionId)
+    } catch {
+      return undefined
+    }
   }
 
   // Cancel a parked approval whose request was aborted. Runs the REAL reject so
@@ -502,6 +520,33 @@ class ApprovalController implements VmModuleApprovalController {
     // up; a late Approve tap must not sign/broadcast. (CP-14422)
     if (this.userCancelledMap.get(requestId)) return
 
+    // avalanche_signMessage picks its signer from LIVE state at approval time
+    // (getAccountSelector → active account or dApp-supplied index), so re-verify
+    // the account that is actually about to sign against the WC session grant.
+    // The request-time gate in handleRequestViaVMModule checks dispatch-time
+    // state and can be outrun by a mid-flight account/wallet switch; every other
+    // method pins its signer as signingData.account (already grant-checked in
+    // requestApproval). In-app requests keep their own gating; fails closed on a
+    // missing session. CP-14604.
+    if (
+      signingData.type === RpcMethod.AVALANCHE_SIGN_MESSAGE &&
+      !isInAppRequest(request)
+    ) {
+      const session = this.getSessionOrUndefined(request.sessionId)
+      if (
+        !session ||
+        !isAccountApproved(params.account, request.chainId, session.namespaces)
+      ) {
+        this.clearCancelBridge(requestId)
+        resolve({
+          error: providerErrors.unauthorized(
+            'Requested address is not authorized'
+          )
+        })
+        return
+      }
+    }
+
     // Cache the actual selected signer so onTransactionConfirmed /
     // onTransactionReverted emit the real address for dApp txs — including
     // the injected browser (which the !isInAppRequest gate excluded,
@@ -535,6 +580,39 @@ class ApprovalController implements VmModuleApprovalController {
     const { request, displayData, signingData } = params
     const requestId = request.requestId
     this.userCancelledMap.delete(requestId)
+
+    // A dApp may only sign with accounts the user granted to its WalletConnect
+    // session (session.namespaces) — enforced pre-vm-module via
+    // isAddressApproved and lost in the migration (CP-14604). signingData
+    // .account is the module-resolved signer, so this checks exactly the
+    // address that would sign. In-app and injected-browser requests
+    // (CORE_MOBILE_TOPIC) are excluded: they keep their own account gating,
+    // and getSession would throw while the WC client is still initializing.
+    // Avalanche signingData variants carry no `account`, so they aren't checked
+    // here: AVALANCHE_SEND/SIGN_TRANSACTION sign with the server-injected active
+    // account (getContext in handleRequestViaVMModule), and avalanche_signMessage
+    // — the one method whose signer is a dApp-supplied account index — is grant-
+    // checked upstream in handleRequestViaVMModule (isAvalancheSignMessageAuthorized).
+    // Fails closed: a request with no live session (deleted/expired mid-flight,
+    // or WC uninitialized) has no grants to check against, so it's rejected —
+    // its response is undeliverable anyway.
+    if ('account' in signingData && !isInAppRequest(request)) {
+      const session = this.getSessionOrUndefined(request.sessionId)
+      if (
+        !session ||
+        !isAddressApproved(
+          signingData.account,
+          request.chainId,
+          session.namespaces
+        )
+      ) {
+        return {
+          error: providerErrors.unauthorized(
+            'Requested address is not authorized'
+          )
+        }
+      }
+    }
 
     // Quick Swaps bypass — sync find then async run keeps the common
     // (no-validator) path microtask-free so the modal navigation
@@ -595,12 +673,112 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  // Batch approvals only exist for the Quick Swaps bypass — there's
-  // no batch manual-modal flow in this app. Delegate fully.
   async requestBatchApproval(
     params: BatchApprovalParams
   ): Promise<BatchApprovalResponse> {
-    return runBatchApprovalBypass(params)
+    const decision = await evaluateBatchApproval(params)
+    if (decision.kind === 'signed' || decision.kind === 'reject') {
+      return decision.response
+    }
+
+    // Manual path: open the batch approval screen (software wallets only —
+    // HW/WC never dispatch a batch; EvmSigner.signBatch throws for them).
+    const { request, displayData, signingRequests } = params
+    const requestId = request.requestId
+    this.userCancelledMap.delete(requestId)
+
+    return new Promise<BatchApprovalResponse>(resolve => {
+      if (this.registerCancelBridge(requestId, resolve as never)) return
+
+      walletConnectCache.batchApprovalParams.set({
+        request,
+        displayData,
+        signingRequests,
+        signal: getRequestSignal(requestId),
+        onApprove: (
+          spendLimitOverrides: Record<number, string>,
+          options?: { gaslessEnabled?: boolean }
+        ) =>
+          this.handleBatchApprovalApprove({
+            requestId,
+            request,
+            signingRequests,
+            spendLimitOverrides,
+            gaslessEnabled: options?.gaslessEnabled ?? false,
+            resolve
+          }),
+        onReject: (message?: string) => {
+          this.clearCancelBridge(requestId)
+          onReject({ resolve: resolve as never, message })
+        }
+      })
+
+      router.navigate({
+        pathname: '/approvalBatch',
+        // Batches are in-app only (the eth_sendTransactionBatch handler rejects
+        // any non-CORE_MOBILE_TOPIC request), so isInAppRequest is always true
+        // here. Mirror requestApproval's conditional anyway so the presentation
+        // style can't diverge if that trust boundary ever changes.
+        params: {
+          presentationMode: isInAppRequest(request)
+            ? NavigationPresentationMode.FORM_SHEET
+            : undefined
+        }
+      })
+    })
+  }
+
+  private async handleBatchApprovalApprove({
+    requestId,
+    request,
+    signingRequests,
+    spendLimitOverrides,
+    gaslessEnabled,
+    resolve
+  }: {
+    requestId: string
+    request: BatchApprovalParams['request']
+    signingRequests: BatchApprovalParams['signingRequests']
+    spendLimitOverrides: Record<number, string>
+    gaslessEnabled: boolean
+    resolve: (
+      value: BatchApprovalResponse | PromiseLike<BatchApprovalResponse>
+    ) => void
+  }): Promise<void> {
+    if (this.userCancelledMap.get(requestId)) return
+    this.clearCancelBridge(requestId)
+
+    // Capture the user's "Get free gas" choice on the request context. The
+    // batch path only signs here and returns the signed RLP to the EVM module
+    // to broadcast — there is no per-tx funding hook like the single-tx
+    // `onSigned` path — so this records intent for the broadcast path to fund
+    // once batch gasless support lands. Harmless no-op today.
+    if (gaslessEnabled) {
+      request.context = {
+        ...request.context,
+        [RequestContext.GASLESS_ENABLED]: true
+      }
+    }
+
+    // Apply per-index spend-limit overrides (re-encoded approve calldata) to
+    // each tx before signing — mirrors the single-tx overrideData path.
+    const transactions = signingRequests.map((sr, i) => {
+      const override = spendLimitOverrides[i]
+      return override
+        ? { ...sr.signingData.data, data: override }
+        : sr.signingData.data
+    })
+
+    const result = await signBatchRequests(
+      request,
+      transactions,
+      'eth_sendTransactionBatch'
+    )
+    if ('error' in result) {
+      resolve(result)
+      return
+    }
+    resolve({ result: result.signedTxs })
   }
 }
 

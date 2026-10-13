@@ -209,11 +209,11 @@ if ! curl -s http://localhost:4723/status > /dev/null 2>&1; then
 fi
 
 # Run the test using the appium:android script from package.json
-# The script expects specs relative to e2e-appium directory
+# The script expects specs relative to e2e directory
 #
-# e2e-appium/wdio.conf.ts registers @wdio/appium-service when NOT on Device Farm and
+# e2e/wdio.conf.ts registers @wdio/appium-service when NOT on Device Farm and
 # APPIUM_MANUAL is unset/false (see useWdioAppiumService and `services`). This script often
 # starts Appium above (or you start it yourself), so we set APPIUM_MANUAL=true to connect
 # to that existing server and avoid spawning a second Appium process.
 export APPIUM_MANUAL=true
-yarn appium:android --spec="e2e-appium/$TEST_SPEC"
+yarn appium:android --spec="e2e/$TEST_SPEC"

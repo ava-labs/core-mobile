@@ -7,18 +7,25 @@ export const validate = ({
   amount,
   address,
   maxFee,
-  token
+  token,
+  spendableBalance
 }: {
   amount: bigint | undefined
   address: string | undefined
   maxFee: bigint
   token: TokenWithBalanceAVM
+  /**
+   * CP-13903: dust-filtered spendable balance. When set it replaces the
+   * displayed balance, which can include dust the send tx builder will
+   * refuse to spend.
+   */
+  spendableBalance?: bigint
 }): void => {
   if (!address) throw new Error(SendErrorMessage.ADDRESS_REQUIRED)
 
   const fee = maxFee ? BigInt(GAS_LIMIT_FOR_X_CHAIN) * maxFee : 0n
 
-  const balance = token.available ?? 0n
+  const balance = spendableBalance ?? token.available ?? 0n
   const maxAmountValue = balance - fee
 
   if (

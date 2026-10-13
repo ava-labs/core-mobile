@@ -29,11 +29,7 @@ module.exports = {
     '^react-native-permissions$':
       '<rootDir>/node_modules/react-native-permissions/mock.js'
   },
-  testPathIgnorePatterns: [
-    '<rootDir>/e2e/tests/playwright/',
-    '<rootDir>/e2e-appium/',
-    '<rootDir>/scripts/'
-  ],
+  testPathIgnorePatterns: ['<rootDir>/e2e/', '<rootDir>/scripts/'],
   setupFilesAfterEnv: [
     '<rootDir>/tests/jestSetup/posthog.js',
     '<rootDir>/tests/msw/jestSetup.js',
@@ -69,6 +65,7 @@ module.exports = {
         '@avalabs/crypto-sdk',
         '@avalabs/crypto-nitro',
         '@avalabs/fusion-sdk',
+        '@avalabs/perps-sdk',
         'camelcase-keys',
         'map-obj',
         'camelcase',
@@ -76,8 +73,7 @@ module.exports = {
         'react-redux',
         'uuid',
         '@ledgerhq',
-        '@avalabs/hw-app-avalanche',
-        '@keystonehq'
+        '@avalabs/hw-app-avalanche'
       ].join('|') +
       ')'
   ]

@@ -1,5 +1,6 @@
 import type { NetworkFees } from '@avalabs/vm-module-types'
 import type { LocalTokenWithBalance } from 'store/balance'
+import { getSwappableBalance } from '../../utils/getSwappableBalance'
 
 enum ChainFamily {
   EVM = 'evm',
@@ -79,7 +80,7 @@ export const getPreQuoteAmount = (
     return minimumTransferAmount
   }
   if (!fromToken) return minimumTransferAmount
-  const halfBalance = fromToken.balance / 2n
+  const halfBalance = getSwappableBalance(fromToken) / 2n
   return halfBalance > minimumTransferAmount
     ? halfBalance
     : minimumTransferAmount
@@ -105,24 +106,37 @@ export const computeMaxAmount = ({
   isNative,
   bufferedGas,
   additiveFee,
-  hasEstimationError
+  hasEstimationError,
+  spendableBalance
 }: {
   fromToken: LocalTokenWithBalance | undefined
   isNative: boolean
   bufferedGas: bigint | undefined
   additiveFee: bigint | undefined
   hasEstimationError: boolean
+  /**
+   * CP-13903: dust-filtered spendable balance for native X/P sources.
+   * When set it replaces the displayed balance, which can include dust
+   * the CCT spend set excludes.
+   */
+  spendableBalance?: bigint
 }): bigint | undefined => {
   if (!fromToken) return undefined
 
+  // Use the swappable balance (excludes P/X-chain staked/locked funds) as the
+  // ceiling so Max can't select more than the user can actually swap (CP-14788).
+  // For native X/P sources the dust-filtered spendable balance (CP-13903), when
+  // set, takes precedence since it reflects the CCT spend set exactly.
+  const balance = spendableBalance ?? getSwappableBalance(fromToken)
+
   if (isNative) {
     // Fall back to full balance if fee estimation failed
-    if (hasEstimationError) return fromToken.balance
+    if (hasEstimationError) return balance
 
     // Wait for fee estimate before enabling Max button
     if (bufferedGas === undefined) return undefined
 
-    const max = fromToken.balance - bufferedGas - (additiveFee ?? 0n)
+    const max = balance - bufferedGas - (additiveFee ?? 0n)
     return max > 0n ? max : undefined
   }
 
@@ -131,6 +145,51 @@ export const computeMaxAmount = ({
 
   // For non-native tokens (ERC20/SPL): gas is paid in the chain's native asset, but additive fees
   // denominated in the source token must be deducted.
-  const max = fromToken.balance - additiveFee
+  const max = balance - additiveFee
   return max > 0n ? max : undefined
+}
+
+/**
+ * True while an async input the max depends on is still pending: the
+ * dust-filtered X/P spendable balance, the gas estimate (native sources), or
+ * the pre-quote's additive fee (ERC20/SPL sources). Distinguishes a
+ * *calculating* `max === undefined` from a *terminal* one (fees exceed the
+ * balance, or the spendable-balance query settled in error), which never
+ * resolves — the UI hides Max on terminal states so it can't sit disabled
+ * forever. On estimation error there is nothing left to wait for —
+ * computeMaxAmount falls back to the full balance.
+ *
+ * Requires BOTH tokens: the pre-quote (and therefore the gas/additive-fee
+ * estimates) is only ever requested for a complete pair, so with no toToken
+ * nothing is in flight — reporting "loading" there would hold the Max button
+ * in a state that can never resolve.
+ */
+export const computeIsMaxLoading = ({
+  fromToken,
+  toToken,
+  isNative,
+  bufferedGas,
+  additiveFee,
+  hasEstimationError,
+  isSpendableBalanceRequired,
+  spendableBalance,
+  hasSpendableBalanceError
+}: {
+  fromToken: LocalTokenWithBalance | undefined
+  toToken: LocalTokenWithBalance | undefined
+  isNative: boolean
+  bufferedGas: bigint | undefined
+  additiveFee: bigint | undefined
+  hasEstimationError: boolean
+  isSpendableBalanceRequired: boolean
+  spendableBalance: bigint | undefined
+  hasSpendableBalanceError: boolean
+}): boolean => {
+  if (!fromToken || !toToken) return false
+  if (isSpendableBalanceRequired && spendableBalance === undefined) {
+    // A settled query error is terminal — the balance will not arrive.
+    return !hasSpendableBalanceError
+  }
+  if (hasEstimationError) return false
+  return isNative ? bufferedGas === undefined : additiveFee === undefined
 }

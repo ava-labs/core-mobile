@@ -1,10 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { GroupList, GroupListItem, Icons, useTheme } from '@avalabs/k2-alpine'
-import {
-  BUG_REPORT_URL,
-  FEATURE_REQUEST_URL,
-  HELP_URL
-} from 'common/consts/urls'
+import { HELP_URL } from 'common/consts/urls'
 import { useUserUniqueID } from 'common/hooks/useUserUniqueID'
 import { copyToClipboard } from 'common/utils/clipboard'
 
@@ -22,46 +18,12 @@ export const Support = ({
     })
   }, [onPressItem])
 
-  const openBugReport = useCallback(() => {
-    onPressItem({
-      url: BUG_REPORT_URL
-    })
-  }, [onPressItem])
-
-  const openFeatureRequest = useCallback(() => {
-    onPressItem({
-      url: FEATURE_REQUEST_URL
-    })
-  }, [onPressItem])
-
   const handlePressUniqueUserId = useCallback(() => {
     copyToClipboard(userUniqueID, 'Unique user ID copied to clipboard')
   }, [userUniqueID])
 
   const data = useMemo(() => {
     const items: GroupListItem[] = [
-      {
-        title: 'Send feedback',
-        onPress: openFeatureRequest,
-        accessory: (
-          <Icons.Custom.Outbound
-            width={24}
-            height={24}
-            color={theme.colors.$textPrimary}
-          />
-        )
-      },
-      {
-        title: 'Report a bug',
-        onPress: openBugReport,
-        accessory: (
-          <Icons.Custom.Outbound
-            width={24}
-            height={24}
-            color={theme.colors.$textPrimary}
-          />
-        )
-      },
       {
         title: 'Help center',
         onPress: openHelpCenter,
@@ -83,9 +45,7 @@ export const Support = ({
 
     return items
   }, [
-    openFeatureRequest,
     theme.colors.$textPrimary,
-    openBugReport,
     openHelpCenter,
     userUniqueID,
     handlePressUniqueUserId

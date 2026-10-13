@@ -163,5 +163,15 @@ describe('getTokenAddress', () => {
         '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7'
       )
     })
+
+    it('should return empty string for hypercore spot tokens (no address field)', () => {
+      const hypercoreToken = {
+        type: TokenType.HYPERCORE_SPOT,
+        symbol: 'HYPE',
+        index: 150
+      } as unknown as TokenWithBalance
+
+      expect(getTokenAddress(hypercoreToken)).toBe('')
+    })
   })
 })

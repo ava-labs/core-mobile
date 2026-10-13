@@ -74,7 +74,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
 
     const evmItems = batches
@@ -113,7 +114,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
     const btcItems = batches
       .flatMap(batch => batch)
@@ -151,7 +153,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
     const svmItems = batches
       .flatMap(batch => batch)
@@ -190,7 +193,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
     const avaxItems = batches
       .flatMap(batch => batch)
@@ -220,7 +224,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
     const avaxItems = batches
       .flatMap(batch => batch)
@@ -270,7 +275,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
     const allItems = batches.flatMap(batch => batch)
 
@@ -300,7 +306,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
     const evmItems = batches
       .flatMap(batch => batch)
@@ -339,7 +346,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
     const allItems = batches.flatMap(batch => batch)
 
@@ -377,7 +385,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
 
     const avaxItems = batches
@@ -432,7 +441,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
     const avaxItems = batches
       .flatMap(batch => batch)
@@ -466,7 +476,8 @@ describe('buildRequestItemsForAccounts', () => {
       networks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos: false
     })
 
     const avaxItems = batches
@@ -500,6 +511,37 @@ describe('buildRequestItemsForAccounts', () => {
     )
     addressItems.forEach(item => {
       expect(item.extendedPublicKeyDetails).toBeUndefined()
+    })
+  })
+
+  describe('filterOutDustUtxos threading', () => {
+    const avaxNetwork = createMockNetwork(4503599627370465, NetworkVMType.AVM)
+    const account = createMockAccount()
+
+    const build = (filterOutDustUtxos: boolean) =>
+      buildRequestItemsForAccounts({
+        networks: [avaxNetwork],
+        accounts: [account],
+        xpAddressesByAccountId: new Map([
+          [account.id, [account.addressAVM as string]]
+        ]),
+        xpubByAccountId: new Map([[account.id, undefined]]),
+        filterOutDustUtxos
+      })
+
+    const avaxItemsOf = (batches: ReturnType<typeof build>) =>
+      batches.flat().filter((item: any) => item.namespace === 'avax')
+
+    it('emits filterOutDustUtxos: false on every avax item when false', () => {
+      const items = avaxItemsOf(build(false))
+      expect(items.length).toBeGreaterThan(0)
+      items.forEach((item: any) => expect(item.filterOutDustUtxos).toBe(false))
+    })
+
+    it('emits filterOutDustUtxos: true on every avax item when true', () => {
+      const items = avaxItemsOf(build(true))
+      expect(items.length).toBeGreaterThan(0)
+      items.forEach((item: any) => expect(item.filterOutDustUtxos).toBe(true))
     })
   })
 })

@@ -5,6 +5,7 @@ import type { LocalTokenWithBalance } from 'store/balance'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { xpChainToken } from 'utils/units/knownTokens'
+import { buildAvailableFields } from './buildAvailableFields'
 
 const getLocalIdFromSdkAsset = (asset: Asset): string => {
   if (asset.type === FusionTokenType.NATIVE) {
@@ -74,6 +75,9 @@ export const mapSdkAssetToLocal = (
     balanceDisplayValue,
     balanceInCurrency: balanceData?.balanceInCurrency ?? 0,
     priceInCurrency: balanceData?.priceInCurrency ?? 0,
+    // Carry P/X-chain swappable-balance fields so the rebuilt token keeps them
+    // (CP-14788). No-op for other token types.
+    ...buildAvailableFields(balanceData, decimals, symbol),
     reputation: null
   } as LocalTokenWithBalance & { decimals: number; address?: string }
 }

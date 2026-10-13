@@ -7,40 +7,56 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import React from 'react'
-import { PerpetualMarket } from '../types'
+import React, { useCallback } from 'react'
+import Animated from 'react-native-reanimated'
+import { useLiveMid } from '../hooks/usePerpsLiveMids'
+import { usePriceFlash } from '../hooks/usePriceFlash'
+import { PerpMarketView } from '../types'
+import { dexOfCoin, tickerOfCoin } from '../utils/coinDex'
+import { DexBadge } from './DexBadge'
+import { PerpsBadge } from './PerpsBadge'
+import { PerpsCoinLogo } from './PerpsCoinLogo'
 
-export const PerpetualListItem = ({
+const PerpetualListItemComponent = ({
   market,
   isFirst,
   onPress
 }: {
-  market: PerpetualMarket
+  market: PerpMarketView
   isFirst: boolean
-  onPress?: () => void
+  onPress?: (symbol: string) => void
 }): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
+
+  // Prefer the live WS mid (fed by `usePerpsLiveMidsFeed` on the list screen),
+  // falling back to the REST snapshot price until the first tick arrives. The
+  // per-coin subscription means a tick only re-renders this row.
+  const liveMid = useLiveMid(market.symbol)
+  const price = liveMid ?? market.price
+  const flashStyle = usePriceFlash(price)
 
   const formattedVolume = formatCurrency({
     amount: market.volume,
     notation: 'compact'
   })
-  const formattedPrice = formatCurrency({ amount: market.price })
+  const formattedPrice = formatCurrency({ amount: price })
   const formattedPercent = `${market.changePercent.toFixed(2)}%`
+  const handlePress = useCallback(() => {
+    onPress?.(market.symbol)
+  }, [market.symbol, onPress])
 
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={handlePress}
       style={{
         paddingHorizontal: 16,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 15
       }}>
-      <TokenLogo size={36} symbol={market.symbol} />
+      <PerpsCoinLogo size={36} symbol={market.symbol} />
       <View
         sx={{
           borderTopWidth: isFirst ? 0 : 1,
@@ -54,21 +70,12 @@ export const PerpetualListItem = ({
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
           <View>
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text variant="buttonMedium">{`${market.rank}. ${market.symbol}`}</Text>
+              <Text variant="buttonMedium">{`${market.rank}. ${tickerOfCoin(
+                market.symbol
+              )}`}</Text>
+              <DexBadge dex={dexOfCoin(market.symbol)} />
               {market.tags?.map(tag => (
-                <View
-                  key={tag}
-                  sx={{
-                    backgroundColor: alpha(theme.colors.$textPrimary, 0.1),
-                    borderRadius: 6,
-                    paddingHorizontal: 6,
-                    height: 18,
-                    justifyContent: 'center'
-                  }}>
-                  <Text variant="caption" sx={{ fontFamily: 'Inter-Medium' }}>
-                    {tag}
-                  </Text>
-                </View>
+                <PerpsBadge key={tag}>{tag}</PerpsBadge>
               ))}
             </View>
             <Text
@@ -94,7 +101,10 @@ export const PerpetualListItem = ({
             sx={{
               alignItems: 'flex-end'
             }}>
-            <Text variant="buttonMedium">{formattedPrice}</Text>
+            <Animated.View
+              style={[{ borderRadius: 4, paddingHorizontal: 3 }, flashStyle]}>
+              <Text variant="buttonMedium">{formattedPrice}</Text>
+            </Animated.View>
             <PriceChangeIndicator
               status={market.changeStatus}
               formattedPercent={formattedPercent}
@@ -113,3 +123,10 @@ export const PerpetualListItem = ({
     </TouchableOpacity>
   )
 }
+
+/**
+ * Memoized so a live-mid tick (which only notifies the subscribed row via
+ * `useLiveMid`) doesn't cascade into re-rendering every other row when the
+ * parent list re-renders with the same item props.
+ */
+export const PerpetualListItem = React.memo(PerpetualListItemComponent)

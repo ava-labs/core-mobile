@@ -233,7 +233,9 @@ export default function DeviceConnectionScreen({
   return (
     <ScrollScreen
       title={`Connect \nYour Ledger`}
+      navigationTitle="Connect Your Ledger"
       isModal
+      hasParent
       renderHeader={renderBluetoothPermissionError}
       renderFooter={renderFooter}
       contentContainerStyle={{ flex: 1, marginHorizontal: 16 }}>

@@ -252,6 +252,11 @@ export const ListScreen = <T,>({
     }
   })
 
+  // Capture only the emptiness flag — referencing `data` inside the worklet
+  // would serialize the whole array to the UI thread, which throws on
+  // non-plain values (e.g. Big instances) since react-native-worklets 0.10.
+  const isListEmpty = data.length === 0
+
   const animatedTitleStyle = useAnimatedStyle(() => {
     const scale = interpolate(
       scrollY.value,
@@ -264,7 +269,7 @@ export const ListScreen = <T,>({
     )
     return {
       opacity: 1 - targetHiddenProgress.value,
-      transform: [{ scale: data.length === 0 ? 1 : scale }],
+      transform: [{ scale: isListEmpty ? 1 : scale }],
       transformOrigin: 'bottom left'
     }
   })

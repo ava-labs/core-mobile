@@ -27,6 +27,7 @@ import {
 import { isOptimisticConfirmationEnabled } from '../utils/isOptimisticConfirmationEnabled'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
+import { evaluateBatchApproval, signBatchRequests } from './quickSwapsBypass'
 import { approvalController } from './ApprovalController'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
@@ -69,11 +70,30 @@ jest.mock('services/ledger/LedgerService', () => ({
   __esModule: true,
   default: { disconnect: jest.fn() }
 }))
+jest.mock('services/walletconnectv2/WalletConnectService', () => ({
+  __esModule: true,
+  default: { getSession: jest.fn() }
+}))
 jest.mock(
   'services/walletconnectv2/walletConnectCache/walletConnectCache',
-  () => ({
-    walletConnectCache: { approvalParams: { set: jest.fn() } }
-  })
+  () => {
+    // `get()` returns whatever `set()` was last called with — mirrors the
+    // real single-slot cache closely enough for tests that stash onApprove /
+    // onReject via `set` and later invoke them via `get`. Wired once here
+    // (not per-test) so it survives the top-level `jest.clearAllMocks()`.
+    let lastBatchApprovalParams: unknown
+    return {
+      walletConnectCache: {
+        approvalParams: { set: jest.fn() },
+        batchApprovalParams: {
+          set: jest.fn(params => {
+            lastBatchApprovalParams = params
+          }),
+          get: jest.fn(() => lastBatchApprovalParams)
+        }
+      }
+    }
+  }
 )
 jest.mock('services/wallet/WalletService', () => ({
   __esModule: true,
@@ -105,6 +125,19 @@ jest.mock('services/analytics/AnalyticsService')
 jest.mock('store/rpc/handlers/wc_sessionRequest/utils', () => ({
   getAddressForChainId: jest.fn()
 }))
+// Partial mock: `evaluateBatchApproval` / `signBatchRequests` default to the
+// REAL implementation (so the existing validator-driven batch tests below
+// keep exercising real decision logic via the mutated `approvalValidators`
+// array), but individual tests can override with `.mockResolvedValue(...)`
+// to force the manual branch without needing a real validator setup.
+jest.mock('./quickSwapsBypass', () => {
+  const actual = jest.requireActual('./quickSwapsBypass')
+  return {
+    ...actual,
+    evaluateBatchApproval: jest.fn(actual.evaluateBatchApproval),
+    signBatchRequests: jest.fn(actual.signBatchRequests)
+  }
+})
 
 // ─── Typed mock aliases ────────────────────────────────────────────────────────
 
@@ -131,6 +164,9 @@ const mockGetPublicKeyFor = jest.requireMock('services/wallet/WalletService')
   .default.getPublicKeyFor as jest.Mock
 const mockDisconnect = jest.requireMock('services/ledger/LedgerService').default
   .disconnect as jest.Mock
+const mockGetSession = jest.requireMock(
+  'services/walletconnectv2/WalletConnectService'
+).default.getSession as jest.Mock
 
 global.confetti = { restart: jest.fn() } as unknown as typeof global.confetti
 
@@ -374,10 +410,10 @@ describe('ApprovalController', () => {
 
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'eth_sendTransaction_confirmed',
-        {
+        expect.objectContaining({
           provider: 'walletConnect',
-          encrypted: expect.objectContaining({ txHash: TX_HASH })
-        }
+          txHash: TX_HASH
+        })
       )
     })
 
@@ -518,13 +554,11 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_confirmed',
           {
             provider: 'walletConnect',
-            encrypted: {
-              dAppUrl: DAPP_URL,
-              // EVM address is lowercased to a canonical form (CP-13825)
-              address: EVM_ADDRESS.toLowerCase(),
-              chainId: 'eip155:1',
-              txHash: TX_HASH
-            }
+            dAppUrl: DAPP_URL,
+            // EVM address is lowercased to a canonical form (CP-13825)
+            address: EVM_ADDRESS.toLowerCase(),
+            chainId: 'eip155:1',
+            txHash: TX_HASH
           }
         )
       })
@@ -544,10 +578,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({ txHash: TX_HASH })
-          }
+            txHash: TX_HASH
+          })
         )
       })
 
@@ -566,13 +600,11 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              chainId: AvalancheCaip2ChainId.C,
-              txHash: TX_HASH
-            })
-          }
+            chainId: AvalancheCaip2ChainId.C,
+            txHash: TX_HASH
+          })
         )
       })
 
@@ -602,13 +634,11 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_confirmed',
           {
             provider: 'injected',
-            encrypted: {
-              dAppUrl: DAPP_URL,
-              // EVM address is lowercased to a canonical form (CP-13825)
-              address: EVM_ADDRESS.toLowerCase(),
-              chainId: 'eip155:1',
-              txHash: TX_HASH
-            }
+            dAppUrl: DAPP_URL,
+            // EVM address is lowercased to a canonical form (CP-13825)
+            address: EVM_ADDRESS.toLowerCase(),
+            chainId: 'eip155:1',
+            txHash: TX_HASH
           }
         )
       })
@@ -628,12 +658,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'injected',
-            encrypted: expect.objectContaining({
-              address: NON_ACTIVE_SIGNER.toLowerCase()
-            })
-          }
+            address: NON_ACTIVE_SIGNER.toLowerCase()
+          })
         )
       })
 
@@ -656,10 +684,10 @@ describe('ApprovalController', () => {
         )
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({ address: '0xbbbb' })
-          }
+            address: '0xbbbb'
+          })
         )
       })
 
@@ -672,10 +700,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({ address: '' })
-          }
+            address: ''
+          })
         )
       })
 
@@ -692,12 +720,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              address: EVM_ADDRESS.toLowerCase()
-            })
-          }
+            address: EVM_ADDRESS.toLowerCase()
+          })
         )
 
         // Second call should get empty string (cache was cleaned up)
@@ -710,10 +736,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({ address: '' })
-          }
+            address: ''
+          })
         )
       })
 
@@ -823,13 +849,11 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_failed',
           {
             provider: 'walletConnect',
-            encrypted: {
-              dAppUrl: DAPP_URL,
-              // EVM address is lowercased to a canonical form (CP-13825)
-              address: EVM_ADDRESS.toLowerCase(),
-              chainId: 'eip155:1',
-              txHash: TX_HASH
-            }
+            dAppUrl: DAPP_URL,
+            // EVM address is lowercased to a canonical form (CP-13825)
+            address: EVM_ADDRESS.toLowerCase(),
+            chainId: 'eip155:1',
+            txHash: TX_HASH
           }
         )
       })
@@ -849,13 +873,11 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'bitcoin_sendTransaction_failed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              address: btcAddress,
-              txHash: 'btctxhash'
-            })
-          }
+            address: btcAddress,
+            txHash: 'btctxhash'
+          })
         )
       })
 
@@ -881,13 +903,11 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_failed',
           {
             provider: 'injected',
-            encrypted: {
-              dAppUrl: DAPP_URL,
-              // EVM address is lowercased to a canonical form (CP-13825)
-              address: EVM_ADDRESS.toLowerCase(),
-              chainId: 'eip155:1',
-              txHash: TX_HASH
-            }
+            dAppUrl: DAPP_URL,
+            // EVM address is lowercased to a canonical form (CP-13825)
+            address: EVM_ADDRESS.toLowerCase(),
+            chainId: 'eip155:1',
+            txHash: TX_HASH
           }
         )
       })
@@ -905,7 +925,7 @@ describe('ApprovalController', () => {
         })
 
         const call = (AnalyticsService.capture as jest.Mock).mock.calls[0]
-        expect(call[1]).toHaveProperty('encrypted.txHash', '0xrevertedtx')
+        expect(call[1]).toHaveProperty('txHash', '0xrevertedtx')
       })
     })
   })
@@ -933,6 +953,33 @@ describe('ApprovalController', () => {
         curve: 'secp256k1'
       })
       expect(result).toBe('0xpubkey')
+    })
+
+    // CP-14995: WalletFactory now throws for WalletType.KEYSTONE, but
+    // ApprovalController must still route Keystone requests through the same
+    // WalletService.getPublicKeyFor call as any other wallet type — no
+    // special-casing at this layer — since that method is where the read-side
+    // Keystone fallback lives (see WalletService.test.ts).
+    it('parses secretId for a Keystone wallet and delegates to WalletService', async () => {
+      const secretId = JSON.stringify({
+        walletId: 'keystone-1',
+        walletType: WalletType.KEYSTONE
+      })
+      mockGetPublicKeyFor.mockResolvedValue('0xkeystonepubkey')
+
+      const result = await approvalController.requestPublicKey({
+        secretId,
+        derivationPath: "m/44'/60'/0'/0/0",
+        curve: 'secp256k1'
+      })
+
+      expect(mockGetPublicKeyFor).toHaveBeenCalledWith({
+        walletId: 'keystone-1',
+        walletType: WalletType.KEYSTONE,
+        derivationPath: "m/44'/60'/0'/0/0",
+        curve: 'secp256k1'
+      })
+      expect(result).toBe('0xkeystonepubkey')
     })
   })
 
@@ -1056,6 +1103,349 @@ describe('ApprovalController', () => {
       approvalController.handleGoBackIfNeeded({ excludeApproval: true })
 
       expect(mockRouter.back).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  // ── session account authorization (CP-14604) ─────────────────────────────
+
+  describe('session account authorization', () => {
+    const displayData = {} as never
+
+    // Accept-path assertions flush pending (micro)tasks first so they keep
+    // failing loudly if navigation ever moves behind an await inside
+    // requestApproval (the returned promise itself only settles on
+    // approve/reject, so it can't be awaited here). Matches the helper in
+    // the cancel-bridge describe block.
+    const flushMicrotasks = (): Promise<void> =>
+      new Promise(resolve => setTimeout(resolve, 0))
+    const SOLANA_CHAIN_ID = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
+    const GRANTED_SVM_ADDRESS = '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW'
+    const UNGRANTED_SVM_ADDRESS = '4Nd1mYQZ6X8jY6nWn6iVrDpcLzJq9z2NKV1S1nGiqNz1'
+
+    const makeSolanaSigningData = (account: string) =>
+      ({
+        type: RpcMethod.SOLANA_SIGN_TRANSACTION,
+        account,
+        data: 'serialized-tx'
+      } as never)
+
+    const sessionWithGrantedAccounts = {
+      namespaces: {
+        solana: {
+          accounts: [`${SOLANA_CHAIN_ID}:${GRANTED_SVM_ADDRESS}`],
+          methods: ['solana_signTransaction'],
+          events: []
+        }
+      }
+    } as never
+
+    it('rejects when the signing account was never granted to the WC session', async () => {
+      mockGetSession.mockReturnValue(sessionWithGrantedAccounts)
+
+      const request = makeDappRequest(
+        RpcMethod.SOLANA_SIGN_TRANSACTION,
+        SOLANA_CHAIN_ID
+      )
+
+      const result = await approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: makeSolanaSigningData(UNGRANTED_SVM_ADDRESS)
+      })
+
+      expect(mockGetSession).toHaveBeenCalledWith(DAPP_SESSION_ID)
+      expect('error' in result && result.error).toMatchObject({
+        message: 'Requested address is not authorized'
+      })
+      expect(mockRouter.navigate).not.toHaveBeenCalled()
+      expect(mockWalletConnectCacheSet).not.toHaveBeenCalled()
+    })
+
+    it('shows the approval screen when the signing account is granted to the WC session', async () => {
+      mockGetSession.mockReturnValue(sessionWithGrantedAccounts)
+
+      const request = makeDappRequest(
+        RpcMethod.SOLANA_SIGN_TRANSACTION,
+        SOLANA_CHAIN_ID
+      )
+
+      approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: makeSolanaSigningData(GRANTED_SVM_ADDRESS)
+      })
+      await flushMicrotasks()
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approval' })
+      )
+    })
+
+    it('never queries the WC client for in-app / injected-browser requests (WC may be uninitialized)', async () => {
+      const request = makeInjectedDappRequest(
+        RpcMethod.SOLANA_SIGN_TRANSACTION,
+        SOLANA_CHAIN_ID
+      )
+
+      approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: makeSolanaSigningData(UNGRANTED_SVM_ADDRESS)
+      })
+      await flushMicrotasks()
+
+      expect(mockGetSession).not.toHaveBeenCalled()
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approval' })
+      )
+    })
+
+    it('rejects (fails closed) when no WC session exists for the topic', async () => {
+      mockGetSession.mockReturnValue(undefined)
+
+      const request = makeDappRequest(
+        RpcMethod.SOLANA_SIGN_TRANSACTION,
+        SOLANA_CHAIN_ID
+      )
+
+      const result = await approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: makeSolanaSigningData(GRANTED_SVM_ADDRESS)
+      })
+
+      expect('error' in result && result.error).toMatchObject({
+        message: 'Requested address is not authorized'
+      })
+      expect(mockRouter.navigate).not.toHaveBeenCalled()
+    })
+
+    it('rejects (fails closed) when the WC client is not initialized (getSession throws)', async () => {
+      mockGetSession.mockImplementation(() => {
+        throw new Error('WalletConnect client is not initialized')
+      })
+
+      const request = makeDappRequest(
+        RpcMethod.SOLANA_SIGN_TRANSACTION,
+        SOLANA_CHAIN_ID
+      )
+
+      const result = await approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: makeSolanaSigningData(GRANTED_SVM_ADDRESS)
+      })
+
+      expect('error' in result && result.error).toMatchObject({
+        message: 'Requested address is not authorized'
+      })
+      expect(mockRouter.navigate).not.toHaveBeenCalled()
+    })
+
+    it('rejects an EVM transaction whose from-address was never granted to the WC session', async () => {
+      mockGetSession.mockReturnValue({
+        namespaces: {
+          eip155: {
+            accounts: [`eip155:43114:${EVM_ADDRESS}`],
+            methods: ['eth_sendTransaction'],
+            events: []
+          }
+        }
+      } as never)
+
+      const request = makeDappRequest(
+        RpcMethod.ETH_SEND_TRANSACTION,
+        'eip155:43114'
+      )
+
+      const result = await approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: {
+          type: RpcMethod.ETH_SEND_TRANSACTION,
+          account: '0x341b0073b66bfc19FCB54308861f604F5Eb8f51b',
+          data: {}
+        } as never
+      })
+
+      expect('error' in result && result.error).toMatchObject({
+        message: 'Requested address is not authorized'
+      })
+      expect(mockRouter.navigate).not.toHaveBeenCalled()
+    })
+
+    it('accepts an EVM address granted under a different chain of the eip155 namespace', async () => {
+      mockGetSession.mockReturnValue({
+        namespaces: {
+          eip155: {
+            accounts: [`eip155:1:${EVM_ADDRESS}`],
+            methods: ['eth_sendTransaction'],
+            events: []
+          }
+        }
+      } as never)
+
+      const request = makeDappRequest(
+        RpcMethod.ETH_SEND_TRANSACTION,
+        'eip155:43114'
+      )
+
+      approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: {
+          type: RpcMethod.ETH_SEND_TRANSACTION,
+          // lowercased vs the checksummed EVM_ADDRESS in the session grant —
+          // dApp-supplied casing must not defeat authorization
+          account: EVM_ADDRESS.toLowerCase(),
+          data: {}
+        } as never
+      })
+      await flushMicrotasks()
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approval' })
+      )
+    })
+
+    it('skips the check for signing data that carries no account (avalanche transactions)', async () => {
+      mockGetSession.mockReturnValue(sessionWithGrantedAccounts)
+
+      const request = makeDappRequest(
+        RpcMethod.AVALANCHE_SEND_TRANSACTION,
+        AvalancheCaip2ChainId.P
+      )
+
+      approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: {
+          type: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+          unsignedTxJson: '{}',
+          data: {},
+          vm: 'PVM'
+        } as never
+      })
+      await flushMicrotasks()
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approval' })
+      )
+    })
+
+    // avalanche_signMessage's signer is resolved from LIVE state at approval
+    // time, so the request-time gate (in handleRequestViaVMModule) can be
+    // outrun by a mid-flight account/wallet switch. ApprovalController re-checks
+    // the account that is actually about to sign. CP-14604.
+    describe('avalanche_signMessage approval-time recheck (TOCTOU)', () => {
+      const X = AvalancheCaip2ChainId.X
+      const GRANTED_AVM = 'X-fuji1granted00000000000000000000000000000'
+      const UNGRANTED_AVM = 'X-fuji1ungranted000000000000000000000000000'
+
+      const avmAccount = (addressAVM: string): never =>
+        ({
+          addressC: '0xc0000000000000000000000000000000000000c0',
+          addressBTC: 'bc1qbtc',
+          addressCoreEth: '0xcoreeth',
+          addressAVM,
+          index: 1
+        } as never)
+
+      const avaxSessionGranting = (addressAVM: string): never =>
+        ({
+          namespaces: {
+            avax: {
+              accounts: [`${X}:${addressAVM}`],
+              methods: ['avalanche_signMessage'],
+              events: []
+            }
+          }
+        } as never)
+
+      const signMessageSigningData = {
+        type: RpcMethod.AVALANCHE_SIGN_MESSAGE,
+        data: 'deadbeef',
+        accountIndex: 1
+      } as never
+
+      const captureOnApprove = (): ((params: unknown) => Promise<void>) =>
+        mockWalletConnectCacheSet.mock.calls[
+          mockWalletConnectCacheSet.mock.calls.length - 1
+        ][0].onApprove
+
+      it('rejects at approval time when the live signer is not granted', async () => {
+        mockGetSession.mockReturnValue(avaxSessionGranting(GRANTED_AVM))
+        // getAddressForChainId is mocked in this suite — resolve the live
+        // signer to its (ungranted) X-chain address so real grant matching runs
+        mockGetAddressForChainId.mockReturnValue(UNGRANTED_AVM)
+
+        const resultPromise = approvalController.requestApproval({
+          request: makeDappRequest(RpcMethod.AVALANCHE_SIGN_MESSAGE, X),
+          displayData,
+          signingData: signMessageSigningData
+        })
+        await flushMicrotasks()
+
+        // user switched to an ungranted account before tapping Approve
+        await captureOnApprove()({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          account: avmAccount(UNGRANTED_AVM)
+        })
+
+        const result = await resultPromise
+        expect('error' in result && result.error).toMatchObject({
+          message: 'Requested address is not authorized'
+        })
+        expect(mockOnApprove).not.toHaveBeenCalled()
+      })
+
+      it('signs when the live signer is granted', async () => {
+        mockGetSession.mockReturnValue(avaxSessionGranting(GRANTED_AVM))
+        mockGetAddressForChainId.mockReturnValue(GRANTED_AVM)
+
+        approvalController.requestApproval({
+          request: makeDappRequest(RpcMethod.AVALANCHE_SIGN_MESSAGE, X),
+          displayData,
+          signingData: signMessageSigningData
+        })
+        await flushMicrotasks()
+
+        await captureOnApprove()({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          account: avmAccount(GRANTED_AVM)
+        })
+
+        expect(mockOnApprove).toHaveBeenCalledWith(
+          expect.objectContaining({ signingData: signMessageSigningData })
+        )
+      })
+
+      it('fails closed when the session is gone by approval time', async () => {
+        mockGetSession.mockReturnValue(avaxSessionGranting(GRANTED_AVM))
+        mockGetAddressForChainId.mockReturnValue(GRANTED_AVM)
+
+        const resultPromise = approvalController.requestApproval({
+          request: makeDappRequest(RpcMethod.AVALANCHE_SIGN_MESSAGE, X),
+          displayData,
+          signingData: signMessageSigningData
+        })
+        await flushMicrotasks()
+
+        mockGetSession.mockReturnValue(undefined) // dropped mid-flight
+        await captureOnApprove()({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          account: avmAccount(GRANTED_AVM)
+        })
+
+        const result = await resultPromise
+        expect('error' in result && result.error).toMatchObject({
+          message: 'Requested address is not authorized'
+        })
+        expect(mockOnApprove).not.toHaveBeenCalled()
+      })
     })
   })
 
@@ -1331,21 +1721,205 @@ describe('ApprovalController', () => {
       updateTx: (() => ({})) as never
     })
 
+    const actualQuickSwapsBypass = jest.requireActual('./quickSwapsBypass')
+
+    // A single `await Promise.resolve()` isn't enough to flush the manual
+    // path when going through the REAL evaluateBatchApproval — it has its
+    // own internal `await validator.validate(...)` — so use a macrotask
+    // flush (matches the existing helper in the cancel-bridge describe
+    // block below).
+    const flushMicrotasks = (): Promise<void> =>
+      new Promise(resolve => setTimeout(resolve, 0))
+
     beforeEach(() => {
       // Reset to the original baseline before each test; individual
       // tests push their own mock validator on top.
       restoreValidators()
       mockSign.mockReset()
+      // Restore the real evaluateBatchApproval/signBatchRequests implementation —
+      // the manual-path test below overrides these with mockResolvedValue,
+      // which (unlike jest.clearAllMocks()) survives between tests.
+      ;(evaluateBatchApproval as jest.Mock).mockImplementation(
+        actualQuickSwapsBypass.evaluateBatchApproval
+      )
+      ;(signBatchRequests as jest.Mock).mockImplementation(
+        actualQuickSwapsBypass.signBatchRequests
+      )
     })
 
     afterAll(restoreValidators)
 
-    it('returns error when no validator matches', async () => {
-      const result = await approvalController.requestBatchApproval(
-        baseParams() as never
+    it('opens the manual batch approval screen when no validator matches', async () => {
+      approvalController.requestBatchApproval(baseParams() as never)
+      await flushMicrotasks()
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approvalBatch' })
       )
-      expect('error' in result).toBe(true)
       expect(mockSign).not.toHaveBeenCalled()
+    })
+
+    it('navigates to /approvalBatch and resolves signed txs on approve (manual path)', async () => {
+      // Force the manual branch.
+      ;(evaluateBatchApproval as jest.Mock).mockResolvedValue({
+        kind: 'manual'
+      })
+      ;(signBatchRequests as jest.Mock).mockResolvedValue({
+        signedTxs: [{ signedData: '0xsigned0' }, { signedData: '0xsigned1' }]
+      })
+
+      const params = {
+        request: {
+          requestId: 'b1',
+          method: 'eth_sendTransactionBatch',
+          context: {
+            walletId: 'w1',
+            walletType: 'MNEMONIC',
+            accountIndex: 0,
+            network: {}
+          }
+        },
+        displayData: {},
+        signingRequests: [
+          { signingData: { data: { chainId: 43114 } } },
+          { signingData: { data: { chainId: 43114 } } }
+        ]
+      } as never
+
+      const promise = approvalController.requestBatchApproval(params)
+      await flushMicrotasks()
+
+      expect(router.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approvalBatch' })
+      )
+      const cached = walletConnectCache.batchApprovalParams.get()
+      cached.onApprove({})
+      const result = await promise
+      expect(result).toEqual({
+        result: [{ signedData: '0xsigned0' }, { signedData: '0xsigned1' }]
+      })
+    })
+
+    it('applies a per-index spend-limit override to .data only (and only for the edited index)', async () => {
+      // Force the manual branch; record what handleBatchApprovalApprove
+      // passes to signBatchRequests after applying the overrides.
+      ;(evaluateBatchApproval as jest.Mock).mockResolvedValue({
+        kind: 'manual'
+      })
+      let recordedTransactions: unknown
+      ;(signBatchRequests as jest.Mock).mockImplementation(
+        async (_request, transactions) => {
+          recordedTransactions = transactions
+          return {
+            signedTxs: [{ signedData: '0xa' }, { signedData: '0xb' }]
+          }
+        }
+      )
+
+      const params = {
+        request: {
+          requestId: 'b-override',
+          method: 'eth_sendTransactionBatch',
+          context: {
+            walletId: 'w1',
+            walletType: 'MNEMONIC',
+            accountIndex: 0,
+            network: {}
+          }
+        },
+        displayData: {},
+        signingRequests: [
+          {
+            signingData: {
+              data: {
+                chainId: 43114,
+                to: '0xTo0',
+                value: '0x0',
+                data: '0xORIG0'
+              }
+            }
+          },
+          {
+            signingData: {
+              data: {
+                chainId: 43114,
+                to: '0xTo1',
+                value: '0x0',
+                data: '0xORIG1'
+              }
+            }
+          }
+        ]
+      } as never
+
+      const promise = approvalController.requestBatchApproval(params)
+      await flushMicrotasks()
+
+      const cached = walletConnectCache.batchApprovalParams.get()
+      cached.onApprove({ 0: '0xOVERRIDE' })
+      const result = await promise
+
+      const transactions = recordedTransactions as Record<string, unknown>[]
+      // Only .data is replaced on the edited index; other fields preserved.
+      expect(transactions[0]).toEqual({
+        chainId: 43114,
+        to: '0xTo0',
+        value: '0x0',
+        data: '0xOVERRIDE'
+      })
+      // Untouched index passes through unchanged.
+      expect(transactions[1]).toEqual({
+        chainId: 43114,
+        to: '0xTo1',
+        value: '0x0',
+        data: '0xORIG1'
+      })
+      // Input is not mutated — the original signingRequest data is intact.
+      expect(
+        (
+          params as unknown as {
+            signingRequests: { signingData: { data: { data: string } } }[]
+          }
+        ).signingRequests[0]?.signingData.data.data
+      ).toBe('0xORIG0')
+      expect(result).toEqual({
+        result: [{ signedData: '0xa' }, { signedData: '0xb' }]
+      })
+    })
+
+    it('resolves the error envelope when signBatchRequests fails', async () => {
+      ;(evaluateBatchApproval as jest.Mock).mockResolvedValue({
+        kind: 'manual'
+      })
+      ;(signBatchRequests as jest.Mock).mockResolvedValue({
+        error: { code: -32603, message: 'sign failed' }
+      })
+
+      const params = {
+        request: {
+          requestId: 'b-error',
+          method: 'eth_sendTransactionBatch',
+          context: {
+            walletId: 'w1',
+            walletType: 'MNEMONIC',
+            accountIndex: 0,
+            network: {}
+          }
+        },
+        displayData: {},
+        signingRequests: [{ signingData: { data: { chainId: 43114 } } }]
+      } as never
+
+      const promise = approvalController.requestBatchApproval(params)
+      await flushMicrotasks()
+
+      const cached = walletConnectCache.batchApprovalParams.get()
+      cached.onApprove({})
+      const result = await promise
+
+      expect(result).toEqual({
+        error: { code: -32603, message: 'sign failed' }
+      })
     })
 
     it('signs each signingRequest and returns signed RLP on isValid:true', async () => {
@@ -1410,7 +1984,7 @@ describe('ApprovalController', () => {
       expect(mockSign).not.toHaveBeenCalled()
     })
 
-    it('returns error with manual-review marker when requiresManualApproval', async () => {
+    it('opens the manual batch approval screen when requiresManualApproval', async () => {
       approvalValidators.push({
         canHandle: () => true,
         validate: async () => ({
@@ -1421,20 +1995,15 @@ describe('ApprovalController', () => {
         })
       })
 
-      const result = await approvalController.requestBatchApproval(
-        baseParams() as never
-      )
-      expect('error' in result).toBe(true)
+      // Falls through to the manual screen (no marker error anymore) —
+      // the per-tx approval flow is superseded by the batch approval screen.
+      approvalController.requestBatchApproval(baseParams() as never)
+      await flushMicrotasks()
+
       expect(mockSign).not.toHaveBeenCalled()
-      // Structured marker so EvmSigner.signBatch recognises and falls
-      // back to the per-tx approval flow.
-      if ('error' in result) {
-        const data = (result.error as { data?: unknown }).data as
-          | { quickSwapsManualReview?: boolean; code?: string }
-          | undefined
-        expect(data?.quickSwapsManualReview).toBe(true)
-        expect(data?.code).toBe('slippage_exceeded')
-      }
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approvalBatch' })
+      )
     })
 
     it('injects WARNING alert into displayData on requiresManualApproval', async () => {
@@ -1449,7 +2018,8 @@ describe('ApprovalController', () => {
       })
 
       const params = baseParams()
-      await approvalController.requestBatchApproval(params as never)
+      approvalController.requestBatchApproval(params as never)
+      await flushMicrotasks()
 
       const alert = (
         params.displayData as { alert?: { type: string; details: unknown } }
@@ -1481,7 +2051,8 @@ describe('ApprovalController', () => {
           }
         } as never
       }
-      await approvalController.requestBatchApproval(params as never)
+      approvalController.requestBatchApproval(params as never)
+      await flushMicrotasks()
 
       const alert = (
         params.displayData as { alert?: { type: string; details: unknown } }

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Core Mobile is a React Native cryptocurrency wallet application built with Expo Router. It supports multiple blockchain networks including Avalanche (AVM/PVM/C-Chain), Bitcoin, Ethereum/EVM chains, and Solana. The app integrates hardware wallets (Ledger, Keystone), seedless authentication, WalletConnect, and various DeFi features.
+Core Mobile is a React Native cryptocurrency wallet application built with Expo Router. It supports multiple blockchain networks including Avalanche (AVM/PVM/C-Chain), Bitcoin, Ethereum/EVM chains, and Solana. The app integrates hardware wallets (Ledger; Keystone is deprecated — existing imported Keystone wallets are read-only: balances, receive, rename, and remove only), seedless authentication, WalletConnect, and various DeFi features.
 
 ## Common Development Commands
 
@@ -131,7 +131,7 @@ yarn appium:smoke
 
 Required for full functionality. Fetch with `yarn envs`:
 - Authentication: SEEDLESS_*, GOOGLE_OAUTH_*, APPLE_OAUTH_*
-- Analytics: POSTHOG_*, ANALYTICS_ENCRYPTION_KEY
+- Analytics: POSTHOG_*
 - Services: PROXY_URL, GLACIER_URL, GAS_STATION_URL
 - External APIs: COINBASE_APP_ID, WALLET_CONNECT_PROJECT_ID, SENTRY_DSN
 - Security: BLOCKAID via PROXY_URL
@@ -148,11 +148,11 @@ See `docs/features.md` for feature-specific env requirements.
 - MSW for API mocking
 
 **E2E Tests** (Appium/WebDriverIO)
-- Located in `e2e-appium/`
+- Located in `e2e/`
 - Smoke tests tagged with `[smoke]` or `[Smoke]`
 - Platform-specific runs: `yarn appium:android` / `yarn appium:ios` (set `APP_PATH` to your build)
-- Local device capabilities are resolved in `e2e-appium/helpers/resolve-local-device.ts` (`adb` / `simctl`; optional `ANDROID_SERIAL`, `IOS_UDID`, etc.)
-- AWS Device Farm packaging and env vars: `scripts/devicefarm/README.md`
+- Local device capabilities are resolved in `e2e/helpers/resolve-local-device.ts` (`adb` / `simctl`; optional `ANDROID_SERIAL`, `IOS_UDID`, etc.)
+- E2E env vars, wallet funding, and AWS Device Farm: `e2e/README.md` (packaging scripts in `scripts/devicefarm/`)
 
 ### Multi-Chain Support
 
@@ -173,7 +173,7 @@ Each module implements:
 Key slices and their responsibilities:
 - `app` - App state, wallet state, rehydration
 - `account` - User accounts across chains
-- `wallet` - Wallet management (mnemonic, Ledger, Keystone, seedless)
+- `wallet` - Wallet management (mnemonic, Ledger, seedless; deprecated read-only Keystone)
 - `network` - Active/custom networks
 - `bridge` - Bridge transaction state
 - `security` - Security settings, biometrics

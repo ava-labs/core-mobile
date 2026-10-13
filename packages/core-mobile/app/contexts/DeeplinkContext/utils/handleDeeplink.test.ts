@@ -31,9 +31,75 @@
 //   .spyOn(navigationUtils, 'navigateToWatchlist')
 //   .mockImplementation(mockNavigateToWatchlist)
 
-describe('handleDeeplink', () => {
-  it('should handle deeplink', () => {
-    expect(true).toBe(true)
+import * as navigateFromDeeplink from 'utils/navigateFromDeeplink'
+import { DeepLink, DeepLinkOrigin } from '../types'
+import { handleDeeplink } from './handleDeeplink'
+
+const mockNavigate = jest
+  .spyOn(navigateFromDeeplink, 'navigateFromDeeplinkUrl')
+  .mockImplementation(jest.fn())
+
+const stakeCompleteDeeplink = {
+  url: 'core://stakecomplete',
+  origin: DeepLinkOrigin.ORIGIN_NOTIFICATION
+} as DeepLink
+
+const baseArgs = {
+  deeplink: stakeCompleteDeeplink,
+  dispatch: jest.fn(),
+  isEarnBlocked: false,
+  isInAppDefiBlocked: false,
+  shouldRedirectStakeCompleteToCct: true,
+  isDeveloperMode: false,
+  shouldShowSwapOnboarding: false,
+  openUrl: jest.fn()
+}
+
+describe('handleDeeplink — stakecomplete', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('redirects to the CCT swap prefilled with the P → C AVAX pair', () => {
+    handleDeeplink(baseArgs)
+    expect(mockNavigate).toHaveBeenCalledWith({
+      pathname: '/swap/swap',
+      params: {
+        initialTokenIdFrom: 'NATIVE-avax',
+        initialFromCaip2Id: 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
+        initialTokenIdTo: 'NATIVE-avax',
+        initialToCaip2Id: 'eip155:43114'
+      }
+    })
+  })
+
+  it('routes through the swap onboarding for first-time swappers', () => {
+    handleDeeplink({ ...baseArgs, shouldShowSwapOnboarding: true })
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.objectContaining({ pathname: '/swap/onboarding' })
+    )
+  })
+
+  it('uses the Fuji P-Chain and C-Chain ids in developer mode', () => {
+    handleDeeplink({ ...baseArgs, isDeveloperMode: true })
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: expect.objectContaining({
+          initialFromCaip2Id: 'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG',
+          initialToCaip2Id: 'eip155:43113'
+        })
+      })
+    )
+  })
+
+  it('falls back to the legacy claim screen while CCT is unavailable', () => {
+    handleDeeplink({ ...baseArgs, shouldRedirectStakeCompleteToCct: false })
+    expect(mockNavigate).toHaveBeenCalledWith('/claimStakeReward')
+  })
+
+  it('does nothing when earn is blocked', () => {
+    handleDeeplink({ ...baseArgs, isEarnBlocked: true })
+    expect(mockNavigate).not.toHaveBeenCalled()
   })
 })
 // describe('handleDeeplink', () => {

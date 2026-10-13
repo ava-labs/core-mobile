@@ -10,6 +10,10 @@ import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
 import { dismissMeldStack } from 'features/meld/utils'
 import { offrampSend } from 'store/meld/slice'
 import { closeInAppBrowser } from 'utils/openInAppBrowser'
+import { Href } from 'expo-router'
+import { caip2ChainIds } from 'consts/caip2ChainIds'
+import { tokenIds } from 'consts/tokenIds'
+import { getAvalancheChainAliasCaip2 } from 'utils/caip2ChainIds'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 import { DEEPLINK_WHITELIST } from '../consts'
 
@@ -17,17 +21,57 @@ const lowercasedDeeplinkWhitelist = DEEPLINK_WHITELIST.map(url =>
   url.toLowerCase()
 )
 
+/**
+ * Where the stake-complete deeplink (a tapped stake-complete notification)
+ * lands. Claim rewards are P-Chain AVAX; with Avalanche CCT available the
+ * canonical way to move them back to C-Chain is a cross-chain swap, so the
+ * deeplink opens the swap screen prefilled with the P → C AVAX pair —
+ * mirroring the portfolio P-Chain AVAX detail's Swap action. While CCT is
+ * unavailable it falls back to the legacy claim screen. First-time swappers
+ * route through the swap onboarding, which forwards the prefill params to
+ * the swap screen.
+ */
+const getStakeCompleteHref = ({
+  shouldRedirectToCct,
+  isDeveloperMode,
+  shouldShowSwapOnboarding
+}: {
+  shouldRedirectToCct: boolean
+  isDeveloperMode: boolean
+  shouldShowSwapOnboarding: boolean
+}): Href => {
+  if (!shouldRedirectToCct) return '/claimStakeReward' as Href
+  return {
+    pathname: shouldShowSwapOnboarding ? '/swap/onboarding' : '/swap/swap',
+    params: {
+      initialTokenIdFrom: tokenIds.AVAX,
+      initialFromCaip2Id: getAvalancheChainAliasCaip2('P', isDeveloperMode),
+      initialTokenIdTo: tokenIds.AVAX,
+      initialToCaip2Id: isDeveloperMode
+        ? caip2ChainIds.FUJI
+        : caip2ChainIds.C_CHAIN
+    }
+  } as Href
+}
+
 export const handleDeeplink = ({
   deeplink,
   dispatch,
   isEarnBlocked,
   isInAppDefiBlocked,
+  shouldRedirectStakeCompleteToCct,
+  isDeveloperMode,
+  shouldShowSwapOnboarding,
   openUrl
 }: {
   deeplink: DeepLink
   dispatch: Dispatch
   isEarnBlocked: boolean
   isInAppDefiBlocked: boolean
+  /** Fusion + Avalanche CCT flags both on — see `getStakeCompleteHref`. */
+  shouldRedirectStakeCompleteToCct: boolean
+  isDeveloperMode: boolean
+  shouldShowSwapOnboarding: boolean
   openUrl: (history: Pick<History, 'url' | 'title'>) => void
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
@@ -68,7 +112,13 @@ export const handleDeeplink = ({
       } else if (action === ACTIONS.StakeComplete) {
         if (isEarnBlocked) return
         deeplink.callback?.()
-        navigateFromDeeplinkUrl('/claimStakeReward')
+        navigateFromDeeplinkUrl(
+          getStakeCompleteHref({
+            shouldRedirectToCct: shouldRedirectStakeCompleteToCct,
+            isDeveloperMode,
+            shouldShowSwapOnboarding
+          })
+        )
       } else if (action === ACTIONS.WatchList) {
         const tokenId = pathname.split('/')[1]
         if (tokenId) {

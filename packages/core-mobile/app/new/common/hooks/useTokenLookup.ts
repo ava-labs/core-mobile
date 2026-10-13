@@ -1,14 +1,13 @@
 import { useQueries } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import {
-  postV1TokenLookup,
   type Caip2IdAddressPair,
   type InternalId,
   type TokenInfo
 } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
-import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
 import { useMemo } from 'react'
-import { tokenToKey } from './useTokensWithPrice'
+import { tokenToKey } from 'common/utils/tokenLookup'
+import { enqueueTokenLookup } from 'common/utils/tokenLookupQueue'
 
 export type { TokenInfo }
 
@@ -30,13 +29,7 @@ export function useTokenLookup(
   return useQueries({
     queries: uniqueTokens.map(token => ({
       queryKey: [ReactQueryKeys.TOKEN_LOOKUP, tokenToKey(token)],
-      queryFn: async () => {
-        const response = await postV1TokenLookup({
-          client: tokenAggregatorApi,
-          body: { tokens: [token] }
-        })
-        return response.data?.data ?? {}
-      },
+      queryFn: () => enqueueTokenLookup(token),
       staleTime: STALE_TIME
     })),
     combine: results => ({

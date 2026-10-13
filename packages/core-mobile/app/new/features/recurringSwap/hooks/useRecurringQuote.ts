@@ -55,6 +55,35 @@ export function buildRecurringQuoteQueryKey(
 
 const STALE_MS = 30_000
 
+// The recurring quote carries a server-declared `expiredAt`. Unlike the
+// one-time quote (a live `quoter.subscribe` stream that stays fresh on its own),
+// this is a one-shot query, so if the user sits on the swap screen it would age
+// past `expiredAt` and the submit pre-flight (`submitRecurringSwap`) would
+// reject it as QUOTE_EXPIRED. To keep it fresh we schedule the next refetch just
+// before the *current* quote's expiry rather than on a fixed interval — that
+// self-syncs to the server's real quote lifetime and adapts if it changes.
+export const RECURRING_QUOTE_REFRESH_BUFFER_MS = 5_000
+export const RECURRING_QUOTE_REFRESH_FLOOR_MS = 5_000
+
+/**
+ * Milliseconds until the recurring quote should refetch, derived from the
+ * quote's own `expiredAt` (unix seconds). Returns `false` when there's no quote
+ * yet (nothing to keep alive). Refetches a small buffer before expiry, and never
+ * schedules below a floor so an already-expired quote refetches soon instead of
+ * busy-looping. Pure + injectable `nowMs` for testing.
+ */
+export function computeRecurringQuoteRefetchInterval(
+  expiredAtSeconds: number | undefined,
+  nowMs: number
+): number | false {
+  if (expiredAtSeconds === undefined) return false
+  const msUntilExpiry = expiredAtSeconds * 1000 - nowMs
+  return Math.max(
+    msUntilExpiry - RECURRING_QUOTE_REFRESH_BUFFER_MS,
+    RECURRING_QUOTE_REFRESH_FLOOR_MS
+  )
+}
+
 /**
  * React Query wrapper around `FusionService.markrRecurring.quote(...)`.
  *
@@ -105,6 +134,17 @@ export function useRecurringQuote(
       slippageBps: params.slippageBps
     }),
     staleTime: STALE_MS,
+    // Keep the quote fresh while the user lingers on the swap screen: schedule
+    // the next refetch just before the current quote's `expiredAt`. RQ owns the
+    // timer, re-evaluates this after every fetch (reading the new expiry), gates
+    // it to mounted observers, and cleans up on unmount. Paused in the
+    // background so we don't poll Markr while the app isn't visible.
+    refetchInterval: query =>
+      computeRecurringQuoteRefetchInterval(
+        query.state.data?.expiredAt,
+        Date.now()
+      ),
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       const markrRecurring = FusionService.markrRecurring
       if (!markrRecurring) {

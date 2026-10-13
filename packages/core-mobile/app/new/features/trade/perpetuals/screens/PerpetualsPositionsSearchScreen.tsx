@@ -1,28 +1,32 @@
 import { Image, SearchBar, Text, View } from '@avalabs/k2-alpine'
+import { ListRenderItem } from '@shopify/flash-list'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
+import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ListRenderItem } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PositionCard } from '../components/PositionCard'
+import { usePerpsPositionsView } from '../hooks/usePerpsPositionsView'
 import { usePositionActions } from '../hooks/usePositionActions'
-import { MY_POSITIONS_MOCK } from '../mocks'
 import { Position } from '../types'
 
 const cactusIcon = require('../../../../assets/icons/cactus.png')
 
 export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
+  const router = useRouter()
   const [searchText, setSearchText] = useState('')
   const positionActions = usePositionActions()
+  const { positions } = usePerpsPositionsView()
   const results = useMemo(() => {
     const trimmed = searchText.trim().toLowerCase()
     if (trimmed.length === 0) {
       return []
     }
-    return MY_POSITIONS_MOCK.filter(position =>
+    return positions.filter(position =>
       position.symbol.toLowerCase().includes(trimmed)
     )
-  }, [searchText])
+  }, [searchText, positions])
 
   useEffect(() => {
     const trimmed = searchText.trim()
@@ -54,17 +58,26 @@ export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
 
   const keyExtractor = useCallback((item: Position) => item.id, [])
 
+  const handleCancel = useCallback(async () => {
+    // Dismiss the keyboard before closing so it doesn't linger on Android.
+    await dismissKeyboardIfNeeded()
+    if (router.canGoBack()) {
+      router.back()
+    }
+  }, [router])
+
   const renderHeader = useCallback(
     () => (
       <SearchBar
         searchText={searchText}
         onTextChanged={setSearchText}
         useCancel
+        onCancel={handleCancel}
         autoFocus
         placeholder="Search"
       />
     ),
-    [searchText]
+    [searchText, handleCancel]
   )
 
   const renderEmpty = useCallback(() => {
@@ -94,9 +107,10 @@ export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
   }, [searchText])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title=""
       isModal
+      headerOutsideList
       data={results}
       renderItem={renderItem}
       keyExtractor={keyExtractor}

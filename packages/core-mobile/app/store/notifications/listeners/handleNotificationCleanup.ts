@@ -1,5 +1,6 @@
 import { AppListenerEffectAPI } from 'store/types'
 import NotificationsService from 'services/notifications/NotificationsService'
+import { stakeCompleteNotificationRecordsStore } from 'features/notifications/store/stakeCompleteNotificationRecords'
 import Logger from 'utils/Logger'
 import { selectIsEarnBlocked } from 'store/posthog'
 import { Platform } from 'react-native'
@@ -67,5 +68,10 @@ export const handleStakeCompleteNotificationCleanup = async (
 
     // TODO only cancel stake complete notifications
     await NotificationsService.cancelAllNotifications()
+
+    // The cancelled triggers will never fire, so drop their not-yet-fired
+    // records — otherwise the notification center would later list pushes
+    // the user never received. Already-fired records stay.
+    stakeCompleteNotificationRecordsStore.getState().removePending(Date.now())
   }
 }

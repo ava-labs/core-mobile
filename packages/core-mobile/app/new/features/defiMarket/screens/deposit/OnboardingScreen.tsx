@@ -66,7 +66,7 @@ export const OnboardingScreen = (): JSX.Element => {
       subtitle={`Easily earn yield by depositing crypto into lending protocols and withdraw anytime.`}
       onPressNext={handlePressNext}
       footerAccessory={renderFooterAccessory()}
-      scrollEnabled={true}
+      scrollEnabled={false}
     />
   )
 }

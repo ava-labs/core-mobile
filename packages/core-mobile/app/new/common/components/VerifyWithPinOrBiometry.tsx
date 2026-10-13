@@ -112,6 +112,7 @@ export const VerifyWithPinOrBiometry = ({
       title={`Enter your\ncurrent PIN`}
       navigationTitle="Enter your current PIN"
       isModal
+      disableHeaderSnap
       shouldAvoidKeyboard
       contentContainerStyle={{
         padding: 16,

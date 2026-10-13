@@ -16,7 +16,14 @@ export async function gqlQuery(
   })
 
   if (!response.ok) {
-    throw new Error(`GraphQL error: ${response.statusText}`)
+    // React Native's fetch returns an empty statusText, so include the
+    // status code — otherwise the error reads "GraphQL error: " and a 429
+    // is indistinguishable from a 500.
+    throw new Error(
+      `GraphQL error: HTTP ${response.status}${
+        response.statusText ? ` ${response.statusText}` : ''
+      }`
+    )
   }
 
   return response.json()

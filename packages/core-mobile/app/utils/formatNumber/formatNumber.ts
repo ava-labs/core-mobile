@@ -45,8 +45,8 @@ export function formatNumber(
 
   const rawValue = Math.abs(number)
 
-  if (rawValue > 1e6) {
-    // handle big numbers
+  if (rawValue >= 1e6) {
+    // handle big numbers (≥ 1 million, matching the JSDoc above)
     return bigNumberFormatter.format(rawValue)
   } else if (rawValue === 0) {
     // handle 0

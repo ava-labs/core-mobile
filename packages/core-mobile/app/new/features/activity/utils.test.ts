@@ -1,4 +1,4 @@
-import { ChainId } from '@avalabs/core-chains-sdk'
+import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { TokenType, TransactionType, TxToken } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
 import { Transaction } from 'store/transaction'
@@ -7,11 +7,15 @@ import {
   findPaymentToken,
   getNftLabel,
   isCollectibleTransaction,
+  isInputOnlyContractCall,
   isNftTransaction,
   isPaymentTokenType,
   isPotentiallySwap,
   resolvePaymentSymbol,
-  resolveUserIsRecipient
+  resolveTxUserAddress,
+  resolveUserIsRecipient,
+  selectSwapTokens,
+  transactionInvolvesTokenSymbol
 } from './utils'
 
 const USER_ADDRESS = '0xUser'
@@ -546,5 +550,326 @@ describe('getNftLabel', () => {
       getNftLabel({ type: TokenType.ERC721, name: '', symbol: '' } as TxToken)
     ).toBe('NFT')
     expect(getNftLabel(undefined)).toBe('NFT')
+  })
+})
+
+describe('selectSwapTokens', () => {
+  const ROUTER = '0xRouter'
+  const POOL = '0xPool'
+
+  const usdc = (from: string, to: string): TxToken => ({
+    type: TokenType.ERC20,
+    address: '0xUSDC',
+    name: 'USD Coin',
+    symbol: 'USDC',
+    amount: '1',
+    from: { address: from },
+    to: { address: to }
+  })
+
+  const usdt = (from: string, to: string): TxToken => ({
+    type: TokenType.ERC20,
+    address: '0xUSDT',
+    name: 'TetherToken',
+    symbol: 'USDT',
+    amount: '0.9914',
+    from: { address: from },
+    to: { address: to }
+  })
+
+  const avax = (from: string, to: string): TxToken => ({
+    type: TokenType.NATIVE,
+    name: 'Avalanche',
+    symbol: 'AVAX',
+    amount: '0.05',
+    from: { address: from },
+    to: { address: to }
+  })
+
+  it('prefers the ERC-20 input leg over a native fee leg (recurring-swap fill)', () => {
+    // Recurring USDC→USDT fill: the user sends BOTH a 0.05 AVAX native fee leg
+    // and the 1 USDC swap input; the native leg must not be chosen as the input.
+    const tokens = [
+      avax(USER_ADDRESS, ROUTER),
+      usdt(POOL, USER_ADDRESS),
+      usdc(USER_ADDRESS, ROUTER)
+    ]
+
+    const { inputToken, outputToken } = selectSwapTokens(tokens, USER_ADDRESS)
+
+    expect(inputToken?.symbol).toBe('USDC')
+    expect(inputToken?.amount).toBe('1')
+    expect(outputToken?.symbol).toBe('USDT')
+  })
+
+  it('keeps the native leg as input for a genuine native-input swap', () => {
+    // AVAX→USDT: the only leg from the user is native, so it IS the input.
+    const tokens = [avax(USER_ADDRESS, ROUTER), usdt(POOL, USER_ADDRESS)]
+
+    const { inputToken, outputToken } = selectSwapTokens(tokens, USER_ADDRESS)
+
+    expect(inputToken?.symbol).toBe('AVAX')
+    expect(outputToken?.symbol).toBe('USDT')
+  })
+
+  it('resolves a plain ERC-20 → ERC-20 swap', () => {
+    const tokens = [usdc(USER_ADDRESS, ROUTER), usdt(POOL, USER_ADDRESS)]
+
+    const { inputToken, outputToken } = selectSwapTokens(tokens, USER_ADDRESS)
+
+    expect(inputToken?.symbol).toBe('USDC')
+    expect(outputToken?.symbol).toBe('USDT')
+  })
+
+  it('returns input with no output when the destination leg is not to the user (cross-chain)', () => {
+    const tokens = [usdc(USER_ADDRESS, ROUTER)]
+
+    const { inputToken, outputToken } = selectSwapTokens(tokens, USER_ADDRESS)
+
+    expect(inputToken?.symbol).toBe('USDC')
+    expect(outputToken).toBeUndefined()
+  })
+
+  it('returns undefined for both when no leg involves the user', () => {
+    const tokens = [usdc(POOL, ROUTER), usdt(POOL, ROUTER)]
+
+    const { inputToken, outputToken } = selectSwapTokens(tokens, USER_ADDRESS)
+
+    expect(inputToken).toBeUndefined()
+    expect(outputToken).toBeUndefined()
+  })
+})
+
+describe('isInputOnlyContractCall', () => {
+  const ROUTER = '0xRouter'
+  const POOL = '0xPool'
+
+  const leg = (from: string, to: string): TxToken =>
+    ({
+      type: TokenType.ERC20,
+      symbol: 'USDC',
+      amount: '1',
+      from: { address: from },
+      to: { address: to }
+    } as TxToken)
+
+  it('is true when a leg leaves the user with nothing coming back', () => {
+    // e.g. an ERC-20 approval or a cross-chain swap output on another chain
+    expect(
+      isInputOnlyContractCall([leg(USER_ADDRESS, ROUTER)], USER_ADDRESS)
+    ).toBe(true)
+  })
+
+  it('is false for a genuine swap with an output leg back to the user', () => {
+    expect(
+      isInputOnlyContractCall(
+        [leg(USER_ADDRESS, ROUTER), leg(POOL, USER_ADDRESS)],
+        USER_ADDRESS
+      )
+    ).toBe(false)
+  })
+
+  it('is false when no leg involves the user', () => {
+    expect(isInputOnlyContractCall([leg(POOL, ROUTER)], USER_ADDRESS)).toBe(
+      false
+    )
+  })
+
+  it('is false when the user address is unknown', () => {
+    expect(
+      isInputOnlyContractCall([leg(USER_ADDRESS, ROUTER)], undefined)
+    ).toBe(false)
+  })
+})
+
+describe('resolveTxUserAddress', () => {
+  const account = { addressC: '0xEvmAddress' } as Account
+  const evmNetwork = { vmName: NetworkVMType.EVM } as Network
+
+  it('returns the per-network account address when account and network resolve', () => {
+    const tx = makeTx({ tokens: [], from: '0xTxFrom' })
+    expect(resolveTxUserAddress(tx, account, evmNetwork)).toBe('0xEvmAddress')
+  })
+
+  it('falls back to tx.from when the network is missing', () => {
+    const tx = makeTx({ tokens: [], from: '0xTxFrom' })
+    expect(resolveTxUserAddress(tx, account, undefined)).toBe('0xTxFrom')
+  })
+
+  it('falls back to tx.from when the account is missing', () => {
+    const tx = makeTx({ tokens: [], from: '0xTxFrom' })
+    expect(resolveTxUserAddress(tx, undefined, evmNetwork)).toBe('0xTxFrom')
+  })
+})
+
+describe('transactionInvolvesTokenSymbol', () => {
+  const ROUTER = '0xRouter'
+  const POOL = '0xPool'
+
+  const leg = (
+    from: string,
+    to: string,
+    overrides: Partial<TxToken>
+  ): TxToken =>
+    ({
+      type: TokenType.ERC20,
+      amount: '1',
+      from: { address: from },
+      to: { address: to },
+      ...overrides
+    } as TxToken)
+
+  const avaxFee = (from: string, to: string): TxToken =>
+    leg(from, to, { type: TokenType.NATIVE, symbol: 'AVAX', amount: '0.05' })
+
+  const wavax = (from: string, to: string): TxToken =>
+    leg(from, to, { address: '0xWAVAX', symbol: 'WAVAX', amount: '0.01' })
+
+  const pepe = (from: string, to: string): TxToken =>
+    leg(from, to, { address: '0xPEPE', symbol: 'PEPE', amount: '26000' })
+
+  // A recurring/DCA fill of WAVAX→PEPE: the native AVAX carries only the
+  // protocol/gas fee, WAVAX is the real swap input, PEPE the output.
+  const dcaFill = [
+    avaxFee(USER_ADDRESS, ROUTER),
+    wavax(USER_ADDRESS, ROUTER),
+    pepe(POOL, USER_ADDRESS)
+  ]
+
+  it('files a recurring fill under its ERC-20 input (WAVAX) screen', () => {
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: dcaFill,
+        tokenSymbol: 'WAVAX',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('files a recurring fill under its output (PEPE) screen', () => {
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: dcaFill,
+        tokenSymbol: 'PEPE',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('does NOT file a recurring fill under the native AVAX screen (fee leg only)', () => {
+    // The native leg is just the fee — matching the title, which reads
+    // "WAVAX swapped for PEPE", the row must not appear on the AVAX screen.
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: dcaFill,
+        tokenSymbol: 'AVAX',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(false)
+  })
+
+  it('finds the ERC-20 leg even when it is ordered after the first two legs', () => {
+    // WAVAX at index 2 — the old positional match (tokens[0]/tokens[1]) missed it.
+    const reordered = [
+      avaxFee(USER_ADDRESS, ROUTER),
+      pepe(POOL, USER_ADDRESS),
+      wavax(USER_ADDRESS, ROUTER)
+    ]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: reordered,
+        tokenSymbol: 'WAVAX',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('keeps a genuine native-input swap (AVAX→WAVAX) on the AVAX screen', () => {
+    const nativeSwap = [
+      avaxFee(USER_ADDRESS, ROUTER),
+      wavax(POOL, USER_ADDRESS)
+    ]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: nativeSwap,
+        tokenSymbol: 'AVAX',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('resolves an empty native symbol via the network token symbol', () => {
+    const nativeSend: TxToken[] = [
+      {
+        type: TokenType.NATIVE,
+        symbol: '',
+        amount: '1',
+        from: { address: USER_ADDRESS },
+        to: { address: ROUTER }
+      } as TxToken
+    ]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: nativeSend,
+        tokenSymbol: 'AVAX',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('falls back to positional symbol match when the user address is unknown', () => {
+    const tokens = [wavax(POOL, ROUTER), pepe(ROUTER, POOL)]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens,
+        tokenSymbol: 'WAVAX',
+        userAddress: undefined,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens,
+        tokenSymbol: 'PEPE',
+        userAddress: undefined,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('does not match an unrelated token via the positional fallback', () => {
+    const tokens = [wavax(POOL, ROUTER), pepe(ROUTER, POOL)]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens,
+        tokenSymbol: 'USDC',
+        userAddress: undefined,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(false)
+  })
+
+  it('resolves an empty native symbol on the positional fallback path', () => {
+    // No from/to info, so selectSwapTokens can't resolve legs -> fallback path.
+    // Glacier returned an empty symbol for the native leg; it must still map to
+    // the network token so the native (AVAX) screen lists the tx.
+    const tokens: TxToken[] = [
+      { type: TokenType.NATIVE, symbol: '', amount: '1' } as TxToken,
+      pepe(ROUTER, POOL)
+    ]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens,
+        tokenSymbol: 'AVAX',
+        userAddress: undefined,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
   })
 })

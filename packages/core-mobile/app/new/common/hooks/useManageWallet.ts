@@ -233,9 +233,7 @@ export const useManageWallet = (): {
       if (walletsWithAccountsCount <= 1) return false
 
       const isLastRemovableMnemonic =
-        removableWallets.length === 1 &&
-        (wallet.type === WalletType.MNEMONIC ||
-          wallet.type === WalletType.KEYSTONE)
+        removableWallets.length === 1 && wallet.type === WalletType.MNEMONIC
 
       return !isLastRemovableMnemonic
     },
@@ -254,11 +252,7 @@ export const useManageWallet = (): {
       }
 
       if (
-        [
-          WalletType.MNEMONIC,
-          WalletType.SEEDLESS,
-          WalletType.KEYSTONE
-        ].includes(wallet.type) ||
+        [WalletType.MNEMONIC, WalletType.SEEDLESS].includes(wallet.type) ||
         canAddAccount
       ) {
         baseItems.push({

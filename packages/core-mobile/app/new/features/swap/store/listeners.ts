@@ -5,7 +5,10 @@ import {
   selectQuickSwapsMaxBuy,
   toggleDeveloperMode
 } from 'store/settings/advanced/slice'
-import { selectIsQuickSwapsActive } from 'store/settings/advanced/quickSwapsActive'
+import {
+  selectIsQuickSwapsActive,
+  selectIsBatchSigningSupported
+} from 'store/settings/advanced/quickSwapsActive'
 import { isAnyOf } from '@reduxjs/toolkit'
 import {
   selectIsFusionEnabled,
@@ -193,7 +196,12 @@ export const initFusionService = async (
         const liveState = listenerApi.getState()
         return {
           isQuickSwapsActive: selectIsQuickSwapsActive(liveState),
-          maxBuy: selectQuickSwapsMaxBuy(liveState)
+          maxBuy: selectQuickSwapsMaxBuy(liveState),
+          // Recurring batches gate on this to decide whether `signBatch`
+          // can return a signed array (software wallets) or must throw
+          // `BatchSigningUnsupportedError` so the SDK falls back to the
+          // per-tx path (hardware / WalletConnect).
+          isBatchSigningSupported: selectIsBatchSigningSupported(liveState)
         }
       },
       async (chainId, txHash) => {
@@ -296,41 +304,48 @@ export const createCaptureSwapAnalytics = (
       targetChainId: concludedTransfer.targetChain.chainId
     }
 
+    // Route metadata the data team segments on. Read straight off the
+    // concluded Transfer — `type` is the ServiceType and the chain ids are
+    // CAIP-2 — so this works on the resume-tracking path too, where the
+    // original `context.quote` is gone.
+    const route = {
+      serviceType: concludedTransfer.type,
+      caip2SourceChainId: concludedTransfer.sourceChain.chainId,
+      caip2TargetChainId: concludedTransfer.targetChain.chainId
+    }
+
     if (isCompletedTransfer(concludedTransfer)) {
       AnalyticsService.capture('SwapSuccessful', {
-        encrypted: {
-          ...addresses,
-          sourceTxHash: concludedTransfer.source.txHash,
-          targetTxHash: concludedTransfer.target?.txHash
-        }
+        ...addresses,
+        sourceTxHash: concludedTransfer.source.txHash,
+        targetTxHash: concludedTransfer.target?.txHash,
+        ...route
       })
     } else if (isFailedTransfer(concludedTransfer)) {
       // source is optional on FailedTransfer — tx may not have been submitted
       AnalyticsService.capture('SwapFailed', {
-        encrypted: {
-          ...addresses,
-          sourceTxHash: concludedTransfer.source?.txHash,
-          targetTxHash: concludedTransfer.target?.txHash,
-          errorCode: concludedTransfer.errorCode?.toString(),
-          errorReason: concludedTransfer.errorReason ?? undefined,
-          userClickedMax: context.userClickedMax,
-          sourceTokenAddress: context.sourceTokenAddress,
-          sourceTokenSymbol: context.sourceTokenSymbol,
-          sourceAmount: context.quote?.amountIn.toString(),
-          destinationTokenAddress: context.destinationTokenAddress,
-          destinationTokenSymbol: context.destinationTokenSymbol,
-          quoteAggregator: context.quote?.aggregator.name,
-          quoteAggregatorId: context.quote?.aggregator.id
-        }
+        ...addresses,
+        sourceTxHash: concludedTransfer.source?.txHash,
+        targetTxHash: concludedTransfer.target?.txHash,
+        errorCode: concludedTransfer.errorCode?.toString(),
+        errorReason: concludedTransfer.errorReason ?? undefined,
+        userClickedMax: context.userClickedMax,
+        sourceTokenAddress: context.sourceTokenAddress,
+        sourceTokenSymbol: context.sourceTokenSymbol,
+        sourceAmount: context.quote?.amountIn.toString(),
+        destinationTokenAddress: context.destinationTokenAddress,
+        destinationTokenSymbol: context.destinationTokenSymbol,
+        quoteAggregator: context.quote?.aggregator.name,
+        quoteAggregatorId: context.quote?.aggregator.id,
+        ...route
       })
     } else if (isRefundedTransfer(concludedTransfer)) {
       AnalyticsService.capture('SwapRefunded', {
-        encrypted: {
-          ...addresses,
-          sourceTxHash: concludedTransfer.source.txHash,
-          targetTxHash: concludedTransfer.target?.txHash,
-          refundTxHash: concludedTransfer.refund.txHash ?? undefined
-        }
+        ...addresses,
+        sourceTxHash: concludedTransfer.source.txHash,
+        targetTxHash: concludedTransfer.target?.txHash,
+        refundTxHash: concludedTransfer.refund.txHash ?? undefined,
+        ...route
       })
     }
   }

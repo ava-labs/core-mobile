@@ -149,7 +149,7 @@ class NotificationsService {
     isDeveloperMode = false
   }: {
     txHash: string
-    timestamp: number // unix timestamp in milliseconds
+    timestamp: number // unix timestamp in SECONDS (fromUnixTime converts to ms below)
     channelId: ChannelId
     accountId: string
     isDeveloperMode?: boolean
@@ -433,7 +433,10 @@ class NotificationsService {
   cleanupNotifications = async (): Promise<void> => {
     const pendings = await notifee.getTriggerNotifications()
     for (const pending of pendings) {
-      const timestamp = fromUnixTime(
+      // TimestampTrigger.timestamp is in MILLISECONDS — running it through
+      // fromUnixTime (which expects seconds) mapped every trigger to the far
+      // future, so this cleanup silently never cancelled anything.
+      const timestamp = new Date(
         (pending.trigger as TimestampTrigger).timestamp
       )
       if (isPast(timestamp) && pending.notification?.id) {

@@ -27,6 +27,7 @@ import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 import { useSwapTokens } from '../hooks/useSwapTokens'
 import { getTokenKey } from '../utils/tokenKey'
 import { tokenMatchesSearch } from '../utils/tokenMatchesSearch'
+import { getSwappableBalanceDisplayValue } from '../utils/getSwappableBalance'
 
 type UnverifiedDivider = { type: 'unverifiedDivider' }
 type SwapTokenListItem = LocalTokenWithBalance | UnverifiedDivider
@@ -338,7 +339,7 @@ export const SelectToSwapTokenScreen = ({
                   {item.name}
                 </Text>
                 <Text variant="subtitle2">
-                  {item.balanceDisplayValue} {item.symbol}
+                  {getSwappableBalanceDisplayValue(item)} {item.symbol}
                 </Text>
               </View>
             </View>

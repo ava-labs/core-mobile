@@ -155,9 +155,7 @@ describe('useResumeRecurringSchedule', () => {
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapResumedByUser', {
       chainId: RESUME_ARGS.chainId,
-      encrypted: {
-        orderId: RESUME_ARGS.orderId
-      }
+      orderId: RESUME_ARGS.orderId
     })
   })
 

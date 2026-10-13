@@ -6,9 +6,15 @@ import {
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
-import { BtcTransactionRequest, WalletType } from 'services/wallet/types'
+import {
+  BtcTransactionRequest,
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType,
+  isUnsupportedWalletTypeError
+} from 'services/wallet/types'
 import { BitcoinInputUTXO, createTransferTx } from '@avalabs/core-wallets-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
+import Logger from 'utils/Logger'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
 export const btcSendTransaction = async ({
@@ -67,9 +73,16 @@ export const btcSendTransaction = async ({
       signedData: signedTx
     })
   } catch (error) {
+    // The cause is flattened into a generic rpc error below and the alert only
+    // ever renders `cause.message`, so anything without one (kit errors are
+    // `{ _tag, errorCode }`) leaves no trace of why signing failed.
+    Logger.error('Failed to sign btc transaction', error)
+
     resolve({
       error: rpcErrors.internal({
-        message: 'Failed to sign btc transaction',
+        message: isUnsupportedWalletTypeError(error)
+          ? UNSUPPORTED_WALLET_TYPE_ERROR
+          : 'Failed to sign btc transaction',
         data: { cause: error }
       })
     })

@@ -47,10 +47,8 @@ export const SendScreen = (): JSX.Element => {
     (txHash: string): void => {
       network &&
         AnalyticsService.capture('SendTransactionSucceeded', {
-          encrypted: {
-            chainId: network.chainId,
-            txHash
-          },
+          chainId: network.chainId,
+          txHash,
           caip2ChainId: getCaip2ChainId(network.chainId)
         })
       audioFeedback(Audios.Send)

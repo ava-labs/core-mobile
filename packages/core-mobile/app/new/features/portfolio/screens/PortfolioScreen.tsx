@@ -15,7 +15,6 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -31,6 +30,7 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { BalanceHeaderSection } from 'features/portfolio/components/BalanceHeaderSection'
+import { KeystoneDeprecationBanner } from 'features/portfolio/components/KeystoneDeprecationBanner'
 import { StuckFundsBanner } from 'features/swap/components/StuckFundsBanner'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { ActivityScreen } from 'features/activity/screens/ActivityScreen'
@@ -40,7 +40,7 @@ import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/u
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
@@ -103,8 +103,20 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
-  const { navigate, push } = useRouter()
+  const { navigate, push, prefetch } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
+
+  // Prefetches `/tokenDetail` once per Portfolio-tab lifetime. NOT inert --
+  // a preloaded route is never frozen (native-stack excludes preloaded
+  // routes from `shouldFreeze`); inertness comes from `TokenDetailScreen`'s
+  // `hasRouteParams` gate instead. No `getId` on this route, so the later
+  // real push reuses this same instance. CP-14918.
+  useEffect(() => {
+    const handle = InteractionManager.runAfterInteractions(() => {
+      prefetch('/tokenDetail')
+    })
+    return () => handle.cancel()
+  }, [prefetch])
 
   const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -116,10 +128,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const erc20ContractTokens = useErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens
-  })
+  const { filteredTokenList } = useSearchableTokenList({})
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isDeveloperMode = useFocusedSelector(selectIsDeveloperMode)
@@ -351,6 +360,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
           backgroundColor={theme.colors.$surfacePrimary}
         />
 
+        {/* Self-hides unless the active wallet is a (deprecated) Keystone
+            wallet. */}
+        <KeystoneDeprecationBanner
+          sx={{ marginHorizontal: 16, marginTop: 12 }}
+        />
+
         {/* Stuck-funds banner — stranded cross-chain AVAX. Self-hides (and
             reserves no space) when none. */}
         <StuckFundsBanner sx={{ marginHorizontal: 16, marginTop: 21 }} />
@@ -481,19 +496,24 @@ const PortfolioHomeScreen = (): JSX.Element => {
     }, [activeAccount?.id, handleScrollResync, scrollToTop])
   )
 
-  const tabHeight = useMemo(() => {
-    return Platform.select({
+  // Single `useMemo` with a flat, complete dependency array -- splitting
+  // `tabHeight` back out from `contentContainerStyle` reintroduces a React
+  // Compiler bailout on this component. CP-14918.
+  const contentContainerStyle = useMemo(() => {
+    const tabHeight = Platform.select({
       ios: frame.height - headerHeight,
       android: frame.height - headerHeight + (stickyHeaderLayout?.height ?? 0)
     })
-  }, [frame.height, headerHeight, stickyHeaderLayout?.height])
-
-  const contentContainerStyle = useMemo(() => {
     return {
       paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
       minHeight: tabHeight
     }
-  }, [segmentedControlLayout?.height, tabHeight])
+  }, [
+    frame.height,
+    headerHeight,
+    stickyHeaderLayout?.height,
+    segmentedControlLayout?.height
+  ])
 
   const tabs = useMemo(() => {
     const baseTabs = [
@@ -592,7 +612,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
       </View>
 
-      {/* 
+      {/*
         This is a workaround to display the header background + separator on Android.
         Android returns a header height of 0, so we need to display the background + separator manually.
       */}

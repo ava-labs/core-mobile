@@ -83,16 +83,23 @@ function useBrowserContextValue(): BrowserContextType {
 
   const openUrl = (url: string): void => {
     setUrlEntry(url)
-    if (activeTab?.id && browserRefs.current[activeTab.id]?.current) {
-      dispatch(
-        addHistoryForActiveTab({
-          title: url,
-          url: url
-        })
-      )
+    if (!activeTab?.id) return
 
-      browserRefs.current[activeTab.id]?.current?.loadUrl(url)
-    }
+    // Drive navigation through Redux history: BrowserTab renders its WebView off
+    // the active history entry, so this alone loads the page. This must NOT be
+    // gated on the imperative tab ref — on the first submit (notably Android)
+    // the per-tab ref hasn't attached yet, and gating here dropped the whole
+    // navigation, so nothing happened until a second submit.
+    dispatch(
+      addHistoryForActiveTab({
+        title: url,
+        url: url
+      })
+    )
+
+    // Best-effort imperative load for the already-mounted WebView. Redundant
+    // with the history-driven path above, so it's fine when the ref is absent.
+    browserRefs.current[activeTab.id]?.current?.loadUrl(url)
   }
 
   const handleClearAndFocus = (): void => {

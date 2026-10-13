@@ -1,4 +1,4 @@
-import { formatCurrency } from 'utils/FormatCurrency'
+import { formatCurrency, formatIntegerCurrency } from 'utils/FormatCurrency'
 
 describe('formats normal numbers', () => {
   it('should display any number with max 2 fraction digits', () => {
@@ -182,6 +182,56 @@ describe('formats negative numbers', () => {
         showLessThanThreshold: true
       })
     ).toBe('<$0.001')
+  })
+})
+
+describe('formats multi-character currency symbols', () => {
+  // k2-alpine's getCurrencySymbol splits this output's leading symbol from
+  // the digits for separate styling; a single-char match there previously
+  // truncated 'R$' to '$'. Guards that this output keeps the full prefix.
+  it('keeps the full "R$" prefix for BRL (standard format)', () => {
+    expect(
+      formatCurrency({
+        amount: 200,
+        currency: 'BRL',
+        boostSmallNumberPrecision: false
+      })
+    ).toBe('R$200.00')
+  })
+
+  it('keeps the full "R$" prefix for BRL (integer format, used by preset chips)', () => {
+    expect(
+      formatIntegerCurrency({
+        amount: 200,
+        currency: 'BRL'
+      })
+    ).toBe('R$200')
+  })
+
+  it('keeps the full "R$" prefix for BRL across boostSmallNumberPrecision and edge amounts', () => {
+    expect(
+      formatCurrency({
+        amount: 0,
+        currency: 'BRL',
+        boostSmallNumberPrecision: false
+      })
+    ).toBe('R$0.00')
+
+    expect(
+      formatCurrency({
+        amount: 0.005,
+        currency: 'BRL',
+        boostSmallNumberPrecision: false
+      })
+    ).toBe('R$0.005')
+
+    expect(
+      formatCurrency({
+        amount: 1234.56,
+        currency: 'BRL',
+        boostSmallNumberPrecision: true
+      })
+    ).toBe('R$1,234.56')
   })
 })
 

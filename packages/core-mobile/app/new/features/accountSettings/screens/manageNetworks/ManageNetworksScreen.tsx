@@ -19,6 +19,7 @@ import { ListRenderItem } from 'react-native'
 import { ChainName, defaultEnabledL2ChainIds } from 'services/network/consts'
 import { alwaysEnabledChainIds } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
+import { isHyperliquidNetwork } from 'utils/network/isHyperliquidNetwork'
 
 enum SectionTypeEnum {
   HEADER = 'header',
@@ -115,7 +116,18 @@ export const ManageNetworksScreen = (): JSX.Element => {
           !alwaysEnabledChainIds.includes(network.chainId) &&
           !custom.some(item => item.chainId === network.chainId) &&
           !defaultEnabledL2ChainIds.includes(network.chainId) &&
-          !isXChain(network.chainId)
+          !isXChain(network.chainId) &&
+          !isHyperliquidNetwork(network)
+      )
+    )
+    // Hyperliquid networks are not Avalanche L1s. Backend-provided ones are
+    // stripped upstream while the hyperliquid-support feature flag is off;
+    // user-added custom networks always render in the Custom networks section
+    const hyperliquidNetworks = filterNetworks(
+      Object.values(networks).filter(
+        network =>
+          isHyperliquidNetwork(network) &&
+          !custom.some(item => item.chainId === network.chainId)
       )
     )
 
@@ -135,11 +147,19 @@ export const ManageNetworksScreen = (): JSX.Element => {
       })
     }
 
+    if (hyperliquidNetworks.length) {
+      sectionedNetworks.push({
+        title: 'Hyperliquid',
+        key: 'hyperliquid',
+        data: hyperliquidNetworks
+      })
+    }
+
     if (layer1Networks.length) {
       sectionedNetworks.push({
         title: 'Avalanche L1s',
         key: 'avalanche-l1s',
-        data: filterNetworks(layer1Networks)
+        data: layer1Networks
       })
     }
 

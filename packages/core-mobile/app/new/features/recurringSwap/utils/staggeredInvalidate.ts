@@ -48,7 +48,20 @@ export function scheduleStaggeredInvalidate(queryKey: QueryKey): void {
       if (set.size === 0 && pending.get(k) === set) {
         pending.delete(k)
       }
-      queryClient.invalidateQueries({ queryKey })
+      // `refetchType: 'all'` rather than the default `'active'`: the whole point
+      // of this batch is to catch up with Markr's indexer AFTER the flow that
+      // scheduled it has finished, and those flows tear down their own
+      // observers on the way out (`SwapScreen` calls `dismissAll()` the moment
+      // `submitRecurringSwap` resolves). With the default, every timer here fired
+      // against zero observers, marked the query stale and refetched nothing — so
+      // a newly created order never landed in the cache, the schedules cache
+      // subscriber never fired, and `ensureOrderSubscriptions` never subscribed
+      // the device for that order's push notifications. Net effect (CP-14651):
+      // every leg executing between order creation and the user's next visit to
+      // Activity / Swap / the schedules screen was silently dropped — no push and
+      // no notification-center row — because the notification-history row is
+      // written per subscribed device.
+      queryClient.invalidateQueries({ queryKey, refetchType: 'all' })
     }, delayMs)
     set.add(id)
   }

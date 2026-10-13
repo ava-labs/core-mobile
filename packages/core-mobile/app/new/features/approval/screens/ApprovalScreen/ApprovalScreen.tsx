@@ -1,6 +1,6 @@
 import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { RpcMethod } from '@avalabs/vm-module-types'
-import { NetworkTokenSymbols } from 'common/components/TokenIcon'
+import { getNetworkSymbol } from 'consts/chainIdsWithIncorrectSymbol'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
@@ -8,7 +8,6 @@ import { useRecurringApprovalContext } from 'features/approval/hooks/useRecurrin
 import { RecurrenceDetails } from 'features/approval/components/RecurrenceDetails'
 import { useDismissOnCancelledRequest } from 'features/approval/hooks/useDismissOnCancelledRequest'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
-import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -41,12 +40,15 @@ import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
 import {
   getAccountSelector,
   getAccountUnavailableMessage,
+  getDisplayAccountAddress,
   getEthSendTxValidationError,
   getHasBalanceChange,
   getInitialGasLimit,
   isRequestedAccountUnavailable,
   overrideContractItem,
-  removeWebsiteItemIfNecessary
+  removeWebsiteItemIfNecessary,
+  isAvalancheSigningData,
+  isAvalancheBaseTx
 } from './utils'
 
 // Tiny outer gate that hosts the malformed-RECURRING_SWAP short-circuit.
@@ -104,12 +106,19 @@ const ApprovalScreenInner = ({
   const { renderLedgerFooter, cancelLedger, dismissLedger, isLedgerActive } =
     useLedgerApproval(isLedger)
 
-  const symbol = chainId
-    ? (L2_NETWORK_SYMBOL_MAPPING[chainId] as NetworkTokenSymbols)
-    : undefined
+  const symbol = getNetworkSymbol(chainId)
 
   const accountSelector = getAccountSelector(signingData, activeWallet.id)
   const account = useSelector(accountSelector)
+  // Address shown in the Account row. Falls back to the resolved signer for
+  // methods whose module omits `displayData.account` (avalanche_signMessage),
+  // so the sheet always names the account that will sign. CP-14604.
+  const displayAccountAddress = getDisplayAccountAddress({
+    displayAccount: displayData.account,
+    signingData,
+    caip2ChainId,
+    resolvedAccount: account
+  })
   // The request targets an account that isn't in the active wallet, so it can't
   // be signed — surface a clear reason rather than just a disabled button.
   const requestedAccountUnavailable = isRequestedAccountUnavailable(
@@ -178,6 +187,8 @@ const ApprovalScreenInner = ({
     })
   }, [displayData.details, request])
 
+  const isAvalancheTx = isAvalancheSigningData(signingData)
+  const isBaseTx = isAvalancheBaseTx(signingData)
   const balanceChange = displayData.balanceChange
   const hasBalanceChange = getHasBalanceChange(balanceChange)
 
@@ -410,14 +421,14 @@ const ApprovalScreenInner = ({
   }, [displayData.dAppInfo, renderDappInfo])
 
   const renderAccountAndNetwork = useCallback((): JSX.Element | undefined => {
-    if (displayData.account && displayData.network) {
+    if (displayAccountAddress && displayData.network) {
       return (
         <View
           sx={{
             backgroundColor: '$surfaceSecondary',
             borderRadius: 12
           }}>
-          <Account address={displayData.account} />
+          <Account address={displayAccountAddress} />
           <Separator sx={{ marginHorizontal: 16 }} />
           <Network
             logoUri={displayData.network.logoUri}
@@ -440,20 +451,34 @@ const ApprovalScreenInner = ({
       )
     }
 
-    if (displayData.account) {
-      return <Account address={displayData.account} />
+    if (displayAccountAddress) {
+      return <Account address={displayAccountAddress} />
     }
-  }, [displayData.account, displayData.network, symbol, chainId])
+  }, [displayAccountAddress, displayData.network, symbol, chainId])
 
   const renderDetails = useCallback((): JSX.Element => {
     return (
+      // `Details` no longer carries its own top margin (removed so it doesn't
+      // double-space against the spend-limit block on the batch screen), so the
+      // 12px gap is supplied here at the composition level. It must sit on each
+      // section — not just the wrapper — otherwise multi-section approvals (e.g.
+      // an Avalanche CCT export/import, which emits Source/Target, Amount and
+      // Network Fee cards) render flush against one another. This restores the
+      // pre-batch-screen behaviour where every section card was 12px apart.
       <View>
         {filteredSections.map((detailSection, index) => (
-          <Details key={index} detailSection={detailSection} symbol={symbol} />
+          <View key={index} sx={{ marginTop: 12 }}>
+            <Details
+              detailSection={detailSection}
+              symbol={symbol}
+              title={isAvalancheTx ? detailSection.title : undefined}
+              areGroupsOpenByDefault={isBaseTx}
+            />
+          </View>
         ))}
       </View>
     )
-  }, [filteredSections, symbol])
+  }, [filteredSections, symbol, isAvalancheTx, isBaseTx])
 
   const renderBalanceChange = useCallback((): JSX.Element | null => {
     if (!hasBalanceChange || !balanceChange) return null
@@ -516,10 +541,10 @@ const ApprovalScreenInner = ({
 
   const renderAlertBody = useCallback((): JSX.Element | null => {
     const body = displayData.alert?.details.body
-    if (!body || body.length === 0) return null
+    if (isAvalancheTx || !body || body.length === 0) return null
 
     return <AlertBody reasons={body} />
-  }, [displayData.alert?.details.body])
+  }, [displayData.alert?.details.body, isAvalancheTx])
 
   return (
     <ActionSheet

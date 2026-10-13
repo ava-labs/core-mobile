@@ -8,6 +8,7 @@ import {
 } from '@avalabs/fusion-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { FusionQuoteError, fusionErrors } from '../../utils/fusionErrors'
+import { getSwappableBalance } from '../../utils/getSwappableBalance'
 
 export const getFeeEstimationError = (error: unknown): FusionQuoteError => {
   if (isEstimateNativeFeeError(error)) {
@@ -80,13 +81,17 @@ export const validateNativeToken = ({
     6
   )} ${fromToken.symbol}`
 
-  if (fromToken.balance < totalFee) {
+  // Use the swappable balance so P/X-chain staked/locked funds aren't counted
+  // as covering the amount + fee (CP-14788).
+  const swappableBalance = getSwappableBalance(fromToken)
+
+  if (swappableBalance < totalFee) {
     return !hasBridgeFee
       ? fusionErrors.networkFeeExceedsBalance(formattedFee) // Case 1: gas alone exceeds balance
       : fusionErrors.feesExceedBalance(formattedFee) // Case 2: gas + bridge fees exceed balance
   }
 
-  if (amount !== undefined && fromToken.balance < amount + totalFee) {
+  if (amount !== undefined && swappableBalance < amount + totalFee) {
     return !hasBridgeFee
       ? fusionErrors.amountExceedsBalanceAfterNetworkFee(formattedFee) // Case 3: gas + swap amount exceed balance
       : fusionErrors.amountExceedsBalanceAfterFees(formattedFee) // Case 4: gas + bridge fees + swap amount exceed balance
@@ -150,15 +155,20 @@ export const validateNonNativeToken = ({
       6
     )} ${fromToken.symbol}`
 
+    // Use the swappable balance so P/X-chain staked/locked funds aren't counted
+    // as covering the source-token bridge fee + amount (CP-14788). No-op for the
+    // ERC20/SPL tokens this path normally handles.
+    const swappableBalance = getSwappableBalance(fromToken)
+
     // Case 3: bridge fee alone exceeds token balance
-    if (fromToken.balance < bufferedAdditiveFee) {
+    if (swappableBalance < bufferedAdditiveFee) {
       return fusionErrors.bridgeFeeExceedsBalance(formattedFee)
     }
 
     // Case 4: balance covers the fee but not fee + swap amount
     if (
       amount !== undefined &&
-      fromToken.balance < amount + bufferedAdditiveFee
+      swappableBalance < amount + bufferedAdditiveFee
     ) {
       return fusionErrors.amountExceedsBalanceAfterBridgeFee(formattedFee)
     }

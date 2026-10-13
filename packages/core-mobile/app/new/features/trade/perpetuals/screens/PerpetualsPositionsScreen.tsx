@@ -34,12 +34,31 @@ import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
+import { ClosedPositionCard } from '../components/ClosedPositionCard'
 import { PositionCard } from '../components/PositionCard'
+import { usePerpsPositionsView } from '../hooks/usePerpsPositionsView'
+import { usePerpsUserFills } from '../hooks/usePerpsUserFills'
 import { usePositionActions } from '../hooks/usePositionActions'
-import { MY_POSITIONS_MOCK, POSITIONS_SUMMARY_MOCK } from '../mocks'
-import { Position } from '../types'
+import { toNumber } from '../utils/format'
+import { toPositionEntries, toPositionsSummary } from '../utils/toPosition'
+import { Position, PositionEntry } from '../types'
 
-const FILTERS: TradeFilterChip[] = ['All', 'Closed', 'Won', 'Ending soon']
+const FILTERS: TradeFilterChip[] = ['All', 'Active', 'Won', 'Lost']
+
+/** How many rows to reveal per lazy-load page as the user scrolls. */
+const PAGE_SIZE = 15
+
+/** Rolling window for the "24h change" stat. */
+const MS_24H = 24 * 60 * 60 * 1000
+
+/** Union row so the list can render both open positions and closed history. */
+type PositionRow =
+  | { readonly kind: 'open'; readonly id: string; readonly position: Position }
+  | {
+      readonly kind: 'closed'
+      readonly id: string
+      readonly entry: PositionEntry
+    }
 
 export const PerpetualsPositionsScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -47,9 +66,7 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
   const headerHeight = useEffectiveHeaderHeight()
   const router = useRouter()
   const insets = useSafeAreaInsets()
-  const [selectedFilter, setSelectedFilter] = useState<string>(
-    FILTERS[0] as string
-  )
+  const [selectedFilter, setSelectedFilter] = useState<string>('Active')
   const filterScrollOffsetRef = useRef(0)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
 
@@ -69,7 +86,7 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
   const handleSelectFilter = useCallback((chip: string) => {
     setSelectedFilter(chip)
     AnalyticsService.capture('PerpetualsPositionsFilterChanged', {
-      filter: chip as 'All' | 'Closed' | 'Won' | 'Ending soon'
+      filter: chip as 'All' | 'Active' | 'Won' | 'Lost'
     })
   }, [])
 
@@ -90,18 +107,104 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
     [handleHistoryPress, theme.colors.$textPrimary]
   )
 
-  const positions = MY_POSITIONS_MOCK
+  const { positions, rawPositions } = usePerpsPositionsView()
+  const summary = useMemo(
+    () => toPositionsSummary(rawPositions),
+    [rawPositions]
+  )
 
-  const formattedOpen = String(POSITIONS_SUMMARY_MOCK.openPositions)
-  const formattedPnl = formatCurrency({ amount: POSITIONS_SUMMARY_MOCK.pnl })
-  const pnlSign = POSITIONS_SUMMARY_MOCK.pnl >= 0 ? '+' : ''
-  const formattedChange = `${POSITIONS_SUMMARY_MOCK.changePercent.toFixed(2)}%`
-  const pnlColor =
-    POSITIONS_SUMMARY_MOCK.pnlStatus === PriceChangeStatus.Up
+  // Closed positions come from trade history (fills that closed a position),
+  // not the clearinghouse — HL only keeps *open* positions in clearinghouse
+  // state. Keep the closing fills so they can be listed alongside open ones.
+  const { fills } = usePerpsUserFills()
+  const closedEntries = useMemo(
+    () =>
+      toPositionEntries(fills).filter(entry =>
+        entry.outcome.toLowerCase().includes('close')
+      ),
+    [fills]
+  )
+
+  const rows = useMemo<PositionRow[]>(() => {
+    const openRows: PositionRow[] = positions.map(position => ({
+      kind: 'open',
+      id: `open-${position.id}`,
+      position
+    }))
+    const toClosedRows = (entries: PositionEntry[]): PositionRow[] =>
+      entries.map(entry => ({
+        kind: 'closed',
+        id: `closed-${entry.id}`,
+        entry
+      }))
+
+    switch (selectedFilter) {
+      case 'Active':
+        // Open positions only.
+        return openRows
+      case 'Won':
+        // Closed positions that realized a profit.
+        return toClosedRows(closedEntries.filter(e => (e.pnl ?? 0) > 0))
+      case 'Lost':
+        // Closed positions that realized a loss.
+        return toClosedRows(closedEntries.filter(e => (e.pnl ?? 0) < 0))
+      default:
+        // 'All' → open positions first, then closed history.
+        return [...openRows, ...toClosedRows(closedEntries)]
+    }
+  }, [positions, closedEntries, selectedFilter])
+
+  // Lazy-load: only render the first N rows and reveal more on scroll-end.
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  // Reset the window when the filter (and thus the dataset) changes.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [selectedFilter])
+  const displayedRows = useMemo(
+    () => rows.slice(0, visibleCount),
+    [rows, visibleCount]
+  )
+  const hasMore = visibleCount < rows.length
+  const handleEndReached = useCallback(() => {
+    setVisibleCount(prev => (prev < rows.length ? prev + PAGE_SIZE : prev))
+  }, [rows.length])
+
+  // Realized P&L from positions closed within the last 24h (from fills).
+  const realized24hPnl = useMemo(() => {
+    const cutoff = Date.now() - MS_24H
+    return fills.reduce(
+      (sum, fill) =>
+        fill.time >= cutoff ? sum + toNumber(fill.closedPnl) : sum,
+      0
+    )
+  }, [fills])
+
+  // 24h account change = realized P&L from the last 24h of closes + the current
+  // unrealized P&L on open positions.
+  const change24h = realized24hPnl + summary.pnl
+  const change24hStatus =
+    change24h > 0
+      ? PriceChangeStatus.Up
+      : change24h < 0
+      ? PriceChangeStatus.Down
+      : PriceChangeStatus.Neutral
+
+  const colorForStatus = (status: PriceChangeStatus): string =>
+    status === PriceChangeStatus.Up
       ? theme.colors.$textSuccess
-      : POSITIONS_SUMMARY_MOCK.pnlStatus === PriceChangeStatus.Down
+      : status === PriceChangeStatus.Down
       ? theme.colors.$textDanger
       : theme.colors.$textPrimary
+
+  const formattedOpen = String(summary.openPositions)
+  const formattedPnl = formatCurrency({ amount: summary.pnl })
+  const pnlSign = summary.pnl >= 0 ? '+' : ''
+  const change24hSign = change24h >= 0 ? '+' : ''
+  const formattedChange = `${change24hSign}${formatCurrency({
+    amount: change24h
+  })}`
+  const change24hColor = colorForStatus(change24hStatus)
+  const pnlColor = colorForStatus(summary.pnlStatus)
 
   const header = useMemo(
     () => <NavigationTitleHeader title="My positions" />,
@@ -142,15 +245,11 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
             <SummaryStat
               label="24h change"
               value={formattedChange}
-              leftIcon={
-                <StatusArrow
-                  status={POSITIONS_SUMMARY_MOCK.changeStatus}
-                  size={14}
-                />
-              }
+              valueColor={change24hColor}
+              leftIcon={<StatusArrow status={change24hStatus} size={14} />}
             />
             <SummaryStat
-              label="Total P&L"
+              label="Unrealized P&L"
               value={`${pnlSign}${formattedPnl}`}
               valueColor={pnlColor}
             />
@@ -170,6 +269,8 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
       theme.colors.$surfaceSecondary,
       formattedOpen,
       formattedChange,
+      change24hStatus,
+      change24hColor,
       pnlSign,
       formattedPnl,
       pnlColor,
@@ -181,35 +282,75 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
 
   const positionActions = usePositionActions()
 
-  const renderItem: ListRenderItem<Position> = useCallback(
-    ({ item, index }) => (
-      <View sx={{ paddingHorizontal: 16, marginTop: index === 0 ? 0 : 10 }}>
-        <PositionCard
-          position={item}
-          fullWidth
-          expandable
-          onMarketClose={() => positionActions.marketClose(item)}
-          onLimitClose={() => positionActions.limitClose(item)}
-          onManage={() => positionActions.manage(item)}
-        />
-      </View>
-    ),
+  const renderItem: ListRenderItem<PositionRow> = useCallback(
+    ({ item, index }) => {
+      if (item.kind === 'closed') {
+        // Same card style as an active position, minus the chevron / TP-SL —
+        // shows the closing time instead (can't be expanded / managed / closed).
+        return (
+          <View
+            sx={{
+              paddingHorizontal: 16,
+              marginTop: index === 0 ? 0 : 10
+            }}>
+            <ClosedPositionCard entry={item.entry} />
+          </View>
+        )
+      }
+      return (
+        <View sx={{ paddingHorizontal: 16, marginTop: index === 0 ? 0 : 10 }}>
+          <PositionCard
+            position={item.position}
+            fullWidth
+            expandable
+            onMarketClose={() => positionActions.marketClose(item.position)}
+            onLimitClose={() => positionActions.limitClose(item.position)}
+            onManage={() => positionActions.manage(item.position)}
+          />
+        </View>
+      )
+    },
     [positionActions]
   )
 
-  const keyExtractor = useCallback((item: Position) => item.id, [])
+  const keyExtractor = useCallback((item: PositionRow) => item.id, [])
+
+  const emptyState = useMemo(() => {
+    switch (selectedFilter) {
+      case 'Active':
+        return {
+          title: 'No open positions',
+          description: 'Open a position from the Perps tab to see it here'
+        }
+      case 'Won':
+        return {
+          title: 'No winning trades yet',
+          description: 'Positions you close in profit will show up here'
+        }
+      case 'Lost':
+        return {
+          title: 'No losing trades yet',
+          description: 'Positions you close at a loss will show up here'
+        }
+      default:
+        return {
+          title: 'No positions yet',
+          description: 'Open a position from the Perps tab to see it here'
+        }
+    }
+  }, [selectedFilter])
 
   const renderEmpty = useCallback(
     () => (
       <CollapsibleTabs.ContentWrapper>
         <ErrorState
           icon={undefined}
-          title="No positions yet"
-          description="Open a position from the Perps tab to see it here"
+          title={emptyState.title}
+          description={emptyState.description}
         />
       </CollapsibleTabs.ContentWrapper>
     ),
-    []
+    [emptyState]
   )
 
   const frame = useSafeAreaFrame()
@@ -241,7 +382,7 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
             entering={getListItemEnteringAnimation(10)}
             style={{ flex: 1 }}>
             <CollapsibleTabList
-              data={positions}
+              data={displayedRows}
               renderItem={renderItem}
               keyExtractor={keyExtractor}
               renderEmpty={renderEmpty}
@@ -249,18 +390,22 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
               containerStyle={contentContainerStyle}
               contentContainerStyle={contentContainerStyle}
               listKey="my-positions"
+              onEndReached={handleEndReached}
+              isFetchingNextPage={hasMore}
             />
           </Animated.View>
         )
       }
     ],
     [
-      positions,
+      displayedRows,
       renderItem,
       keyExtractor,
       renderEmpty,
       selectedFilter,
-      contentContainerStyle
+      contentContainerStyle,
+      handleEndReached,
+      hasMore
     ]
   )
 

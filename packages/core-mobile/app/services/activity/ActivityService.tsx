@@ -4,17 +4,23 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import {
-  Module,
   Transaction as InternalTransaction,
   TxToken
 } from '@avalabs/vm-module-types'
 import Logger from 'utils/Logger'
-import { getCachedTokenList } from 'hooks/networks/useTokenList'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import GlacierService from 'services/glacier/GlacierService'
+import type { Transaction } from 'store/transaction/types'
+import { getSolanaCaip2ChainId } from 'utils/caip2ChainIds'
+import { type Caip2IdAddressPair } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
+import { tokenLookupKey } from 'common/utils/tokenLookup'
+import { lookupTokens } from 'common/utils/tokenLookupRequest'
 import { ActivityResponse, GetActivitiesForAccountParams } from './types'
 import { convertTransaction } from './utils/convertTransaction'
+import { convertCChainAtomicTransaction } from './utils/convertCChainAtomicTransaction'
 
 const UNKNOWN_TOKEN_SYMBOL = 'Unknown'
 
@@ -34,13 +40,21 @@ export class ActivityService {
       )
     }
 
-    // Populate network with tokens for SVM networks if needed
-    const networkWithTokens = await this.enrichNetworkWithTokens(network)
+    // Kick off the C-Chain atomic fetch concurrently with the EVM history
+    // fetch below — it doesn't depend on the EVM result, and both are
+    // separate Glacier round-trips, so starting them in parallel avoids
+    // serializing the C-Chain activity critical path.
+    const atomicPromise = this.fetchCChainAtomicTransactions({
+      network,
+      address,
+      nextPageToken,
+      pageSize
+    })
 
-    const module = await ModuleManager.loadModuleByNetwork(networkWithTokens)
+    const module = await ModuleManager.loadModuleByNetwork(network)
 
     const rawTxHistory = await module.getTransactionHistory({
-      network: mapToVmNetwork(networkWithTokens),
+      network: mapToVmNetwork(network),
       address,
       nextPageToken,
       offset: pageSize
@@ -49,71 +63,85 @@ export class ActivityService {
     // Resolve any tokens that the SVM module couldn't match (symbol === "Unknown")
     const enrichedTxs = await this.resolveUnknownTokenSymbols(
       rawTxHistory.transactions,
-      networkWithTokens,
-      module
+      network
     )
 
     const transactions = enrichedTxs.map(tx =>
       convertTransaction(tx, shouldAnalyzeBridgeTxs)
     )
 
+    const atomicTxs = await atomicPromise
+    const withAtomic = atomicTxs.length
+      ? this.mergeAtomicTransactions(transactions, atomicTxs)
+      : transactions
+
     return {
-      transactions,
+      transactions: withAtomic,
       nextPageToken: rawTxHistory.nextPageToken
     }
   }
 
   /**
-   * Enriches SVM networks with SPL token metadata for proper transaction history display.
-   *
-   * Unlike EVM networks which include token metadata in the main /networks endpoint,
-   * Solana networks return empty tokens arrays and require fetching from /tokenlist?includeSolana.
-   * This ensures SPL tokens show proper symbols (e.g., "ORCA") instead of "Unknown" in activity.
-   *
-   * TODO: when integrating with networks api v2, recheck this to see if it is still needed
+   * C-Chain atomic import/export txs come from a separate Glacier endpoint the
+   * EVM module never calls (CP-14760). Fetch them for the first page only,
+   * sized to the caller's `pageSize` so the atomic request stays aligned with
+   * the EVM page instead of always pulling Glacier's 100-item default; this
+   * covers the token detail + activity tab. Best-effort: a failure here must
+   * not break the primary EVM history, so all errors are swallowed and logged,
+   * which also makes it safe to kick off this fetch before awaiting the EVM
+   * history fetch (the returned promise never rejects).
    */
-  private async enrichNetworkWithTokens(network: Network): Promise<Network> {
-    if (network.vmName !== NetworkVMType.SVM) {
-      return network
-    }
+  private async fetchCChainAtomicTransactions({
+    network,
+    address,
+    nextPageToken,
+    pageSize
+  }: {
+    network: Network
+    address: string
+    nextPageToken?: string
+    pageSize?: number
+  }): Promise<Transaction[]> {
+    if (nextPageToken !== undefined) return []
+    if (!isAvalancheCChainId(network.chainId)) return []
 
     try {
-      const tokens = await getCachedTokenList()
-      const tokenListTokens = tokens[network.chainId]?.tokens ?? []
+      const atomic = await GlacierService.listCChainAtomicTransactions({
+        address,
+        isTestnet: Boolean(network.isTestnet),
+        pageSize
+      })
 
-      if (tokenListTokens.length === 0) {
-        return network
-      }
-
-      // Always merge token list tokens with any existing tokens on the network,
-      // rather than skipping when network.tokens is non-empty.
-      // The /networks endpoint may return a partial list, so we need to
-      // supplement it with tokens from /tokenlist.
-      const existingTokens = network.tokens ?? []
-      const existingAddresses = new Set(
-        existingTokens.map(t => t.address.toLowerCase())
-      )
-
-      const mergedTokens = [
-        ...existingTokens,
-        ...tokenListTokens.filter(
-          t => !existingAddresses.has(t.address.toLowerCase())
+      return atomic.transactions
+        .map(tx =>
+          convertCChainAtomicTransaction(tx, {
+            chainId: network.chainId,
+            explorerUrl: network.explorerUrl
+          })
         )
-      ]
-
-      return {
-        ...network,
-        tokens: mergedTokens
-      }
+        .filter((tx): tx is Transaction => tx !== null)
     } catch (error) {
-      Logger.error('Failed to fetch SPL token metadata', error)
-      return network
+      Logger.error('Failed to fetch C-Chain atomic transactions', error)
+      return []
     }
+  }
+
+  private mergeAtomicTransactions(
+    transactions: Transaction[],
+    atomicTxs: Transaction[]
+  ): Transaction[] {
+    const seen = new Set(transactions.map(t => t.hash))
+    const merged = [
+      ...transactions,
+      ...atomicTxs.filter(t => !seen.has(t.hash))
+    ]
+    merged.sort((a, b) => b.timestamp - a.timestamp)
+    return merged
   }
 
   /**
    * Resolves "Unknown" token symbols in transactions using multiple data sources:
-   * 1. Module's token registry (/solana-tokens endpoint)
+   * 1. Token-aggregator lookup, scoped to just the unresolved addresses
    * 2. User's cached balance data (React Query cache)
    *
    * The SVM module falls back to symbol: "Unknown" when a token's mint address
@@ -121,8 +149,7 @@ export class ActivityService {
    */
   private async resolveUnknownTokenSymbols(
     transactions: InternalTransaction[],
-    network: Network,
-    module: Module
+    network: Network
   ): Promise<InternalTransaction[]> {
     if (network.vmName !== NetworkVMType.SVM) {
       return transactions
@@ -137,8 +164,7 @@ export class ActivityService {
     // Build a combined token metadata map from multiple sources
     const tokenMap = new Map<string, { symbol: string; name: string }>()
 
-    // Source 1: Module's token registry
-    await this.populateFromModuleTokens(tokenMap, network, module)
+    await this.populateFromTokenLookup(tokenMap, network, unknownAddresses)
 
     // Source 2: User's cached balance data
     this.populateFromBalanceCache(tokenMap, network.chainId)
@@ -146,24 +172,45 @@ export class ActivityService {
     return this.applyTokenMetadata(transactions, tokenMap)
   }
 
-  private async populateFromModuleTokens(
+  private async populateFromTokenLookup(
     tokenMap: Map<string, { symbol: string; name: string }>,
     network: Network,
-    module: Module
+    addresses: Set<string>
   ): Promise<void> {
     try {
-      const moduleTokens = await module.getTokens(mapToVmNetwork(network))
+      // `caip2Id` is optional on Network -- the hardcoded consts set it, but
+      // proxy- and DeBank-sourced networks may not, so derive it as a fallback.
+      const caip2Id = network.caip2Id ?? getSolanaCaip2ChainId(network.chainId)
+      // Addresses are sent in their original case -- Solana mint addresses
+      // are base58 and case-sensitive, unlike the EVM hex addresses the
+      // lookup endpoint otherwise deals with.
+      const tokens: Caip2IdAddressPair[] = Array.from(addresses, address => ({
+        caip2Id,
+        address
+      }))
 
-      for (const token of moduleTokens) {
-        if ('address' in token && 'symbol' in token && token.symbol) {
-          tokenMap.set(token.address, {
-            symbol: token.symbol,
-            name: 'name' in token && token.name ? token.name : token.symbol
+      const { data, failedTokens } = await lookupTokens(tokens)
+
+      if (failedTokens.length > 0) {
+        // `lookupTokens` resolves on a chunk failure instead of throwing, so a
+        // partial outage never reaches the catch below. Left unlogged, those
+        // mints would just render as "Unknown" with nothing in telemetry.
+        Logger.warn(
+          `Token lookup failed for ${failedTokens.length} of ${tokens.length} tokens; their symbols stay unresolved`
+        )
+      }
+
+      for (const address of addresses) {
+        const info = data[tokenLookupKey(caip2Id, address)]
+        if (info?.symbol) {
+          tokenMap.set(address, {
+            symbol: info.symbol,
+            name: info.name || info.symbol
           })
         }
       }
     } catch (error) {
-      Logger.warn('Failed to fetch module tokens for resolution', error)
+      Logger.warn('Failed to fetch token lookup for resolution', error)
     }
   }
 

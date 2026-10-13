@@ -49,6 +49,7 @@ const FidoNameInput = ({
       title={title}
       subtitle={description}
       shouldAvoidKeyboard
+      disableHeaderSnap
       contentContainerStyle={{ padding: 16, flex: 1 }}
       renderFooter={renderFooter}>
       <View

@@ -17,6 +17,16 @@ import { QUICK_SWAPS_SOFTWARE_WALLET_TYPES } from './types'
 export const selectIsQuickSwapsActive = (state: RootState): boolean => {
   if (!selectIsQuickSwapsAvailable(state)) return false
   if (!state.settings.advanced.quickSwaps.isEnabled) return false
+  return selectIsBatchSigningSupported(state)
+}
+
+// True only for wallets that can return signed txs without a per-tx approval
+// (MNEMONIC / SEEDLESS / PRIVATE_KEY). Hardware / WalletConnect wallets can't
+// batch-sign, so `EvmSigner.signBatch` throws `BatchSigningUnsupportedError`
+// for them and the SDK must fall back to the per-tx path. Shared so the signer,
+// the Quick Swaps gate, and the recurring-swap fallback decision all read the
+// same allowlist and can't drift.
+export const selectIsBatchSigningSupported = (state: RootState): boolean => {
   const wallet = selectActiveWallet(state)
   if (!wallet) return false
   return QUICK_SWAPS_SOFTWARE_WALLET_TYPES.has(wallet.type)

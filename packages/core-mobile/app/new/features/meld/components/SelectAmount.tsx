@@ -19,7 +19,6 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { ServiceProviderCategories } from '../consts'
-import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
 import { getErrorMessage } from '../utils'
@@ -44,8 +43,6 @@ export const SelectAmount = ({
   } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark })
   const { animating } = useOfframpActivityIndicator()
-
-  useResetMeldTokenList()
 
   const {
     formatInSubTextNumber,
@@ -203,6 +200,10 @@ export const SelectAmount = ({
       )
     }
 
+    const balanceInCurrency = Number(
+      token?.tokenWithBalance.balanceCurrencyDisplayValue
+    )
+
     return (
       <View
         sx={{
@@ -220,8 +221,7 @@ export const SelectAmount = ({
           }}>
           Balance:{' '}
           {formatCurrency({
-            amount:
-              Number(token?.tokenWithBalance.balanceCurrencyDisplayValue) ?? 0
+            amount: Number.isFinite(balanceInCurrency) ? balanceInCurrency : 0
           })}{' '}
           {selectedCurrency}
         </Text>

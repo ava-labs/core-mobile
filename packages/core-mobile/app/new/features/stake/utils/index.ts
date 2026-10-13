@@ -143,3 +143,26 @@ export const convertToDurationInSeconds = (date: UTCDate): Seconds => {
 
   return convertToSeconds(BigInt(stakeDurationMs) as MilliSeconds)
 }
+
+/**
+ * Formats a whole-day count with the correctly pluralized unit
+ * ("1 day", "14 days") — several staking surfaces used to render "1 days".
+ */
+export const formatDurationInDays = (numberOfDays: number): string =>
+  `${numberOfDays} ${numberOfDays === 1 ? 'day' : 'days'}`
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+/**
+ * Day distance between two instants, rounded to the NEAREST whole day —
+ * deliberately not date-fns's `differenceInDays`, which truncates. Display
+ * surfaces anchored at "now" would otherwise read one day short the moment
+ * `now` passes the end date's time-of-day (a 34d 23h 59m custom stake
+ * showing "34 days"), while the presets' ±1h slack still rounds back to the
+ * labeled day count (180d + 1h → 180, 365d − 1h → 365).
+ */
+export const getRoundedDurationInDays = (
+  earlierDate: Date | number,
+  laterDate: Date | number
+): number =>
+  Math.round(differenceInMilliseconds(laterDate, earlierDate) / MS_PER_DAY)

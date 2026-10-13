@@ -62,6 +62,9 @@ const METHOD_NAME_TO_ICON: Record<
   SetL1ValidatorWeightTx: Icons.Custom.Psychiatry,
   DisableL1ValidatorTx: Icons.Custom.Psychiatry,
   IncreaseL1ValidatorBalanceTx: Icons.Custom.Psychiatry,
+  AddAutoRenewedValidatorTx: Icons.Custom.TxTypeAdd,
+  SetAutoRenewedValidatorConfigTx: Icons.Custom.Psychiatry,
+  RewardAutoRenewedValidatorTx: Icons.Custom.Psychiatry,
 
   NFTBuy: undefined,
   NFTReceive: undefined,

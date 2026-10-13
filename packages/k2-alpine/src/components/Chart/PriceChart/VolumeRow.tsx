@@ -1,30 +1,45 @@
-import { Canvas, RoundedRect } from '@shopify/react-native-skia'
-import React, { FC, useMemo } from 'react'
+import { Canvas, Path, RoundedRect, Skia } from '@shopify/react-native-skia'
+import React, { FC, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
 import {
-  makeMutable,
   SharedValue,
-  useAnimatedReaction
+  useAnimatedReaction,
+  useDerivedValue,
+  useSharedValue
 } from 'react-native-reanimated'
 import { useTheme } from '../../../hooks'
 import { CHART_INSET } from './constants'
-import { indexToX } from './helpers'
+import {
+  crossfadeRectOpacity,
+  IDLE_VOLUME_CROSSFADE,
+  indexToX,
+  NO_HIGHLIGHT_INDEX,
+  VOLUME_IDLE_OPACITY,
+  volumeCrosshairWeights
+} from './helpers'
 import { OhlcCandle } from './types'
 
 type Props = {
   candles: OhlcCandle[]
   width: number
   height: number
-  /** When provided, each bar's opacity tracks the crosshair X — closest bars
-   * pop to full opacity, falling off linearly within one candle's distance. */
+  /** When provided, the two candles nearest the crosshair X crossfade —
+   * the closer one pops toward full opacity, the other falls back toward
+   * idle, linearly within one candle's distance. */
   crosshairX?: SharedValue<number>
   isActive?: SharedValue<boolean>
 }
 
 const BAR_WIDTH_RATIO = 0.6
-const IDLE_OPACITY = 0.1
-const ACTIVE_OPACITY = 1
 
+type BarGeom = { x: number; barHeight: number; radius: number }
+
+/**
+ * One static Path for all idle bars + two RoundedRects for the bars
+ * bracketing the crosshair, replacing one makeMutable and one rect per
+ * candle. Rect opacity is compositing-compensated (`crossfadeRectOpacity`)
+ * because it paints over bars the idle Path already drew. CP-14918.
+ */
 export const VolumeRow: FC<Props> = ({
   candles,
   width,
@@ -34,44 +49,7 @@ export const VolumeRow: FC<Props> = ({
 }) => {
   const { theme } = useTheme()
 
-  // One SharedValue per bar so opacity updates stay on the UI thread.
-  const opacities = useMemo(
-    () =>
-      Array.from({ length: candles.length }, () => makeMutable(IDLE_OPACITY)),
-    [candles.length]
-  )
-
   const innerWidth = Math.max(0, width - 2 * CHART_INSET)
-
-  useAnimatedReaction(
-    () => ({
-      x: crosshairX?.value ?? 0,
-      active: isActive?.value ?? false
-    }),
-    ({ x, active }) => {
-      if (!active || candles.length <= 1 || innerWidth === 0) {
-        for (const o of opacities) {
-          o.value = IDLE_OPACITY
-        }
-        return
-      }
-      const last = candles.length - 1
-      const fracIndex = Math.max(
-        0,
-        Math.min(last, ((x - CHART_INSET) / innerWidth) * last)
-      )
-      for (let i = 0; i < opacities.length; i++) {
-        const o = opacities[i]
-        if (!o) continue
-        const distance = Math.abs(fracIndex - i)
-        o.value =
-          distance >= 1
-            ? IDLE_OPACITY
-            : ACTIVE_OPACITY - (ACTIVE_OPACITY - IDLE_OPACITY) * distance
-      }
-    },
-    [candles.length, innerWidth]
-  )
 
   const allNull = useMemo(
     () => candles.every(c => c.volume === null),
@@ -82,36 +60,147 @@ export const VolumeRow: FC<Props> = ({
     [candles]
   )
 
-  if (allNull || maxVolume === 0 || candles.length === 0) return null
-
-  const slotWidth = innerWidth / candles.length
+  const slotWidth = candles.length > 0 ? innerWidth / candles.length : 0
   const barWidth = slotWidth * BAR_WIDTH_RATIO
   const barColor = theme.colors.$textPrimary ?? '#28282E'
+
+  // Static per-bar geometry + one path covering every bar at
+  // VOLUME_IDLE_OPACITY.
+  const { barGeom, idlePath } = useMemo(() => {
+    const geom: BarGeom[] = []
+    const path = Skia.Path.Make()
+    if (maxVolume > 0) {
+      candles.forEach((c, i) => {
+        if (c.volume == null) {
+          geom.push({ x: 0, barHeight: 0, radius: 0 })
+          return
+        }
+        const xCenter = indexToX(i, candles.length, innerWidth) + CHART_INSET
+        const barHeight = (c.volume / maxVolume) * height
+        const x = xCenter - barWidth / 2
+        const y = height - barHeight
+        const radius = Math.min(barWidth, barHeight) / 2
+        geom.push({ x, barHeight, radius })
+        path.addRRect(
+          Skia.RRectXY(Skia.XYWHRect(x, y, barWidth, barHeight), radius, radius)
+        )
+      })
+    }
+    return { barGeom: geom, idlePath: path }
+  }, [candles, innerWidth, height, barWidth, maxVolume])
+
+  // Worklets capture by value: closing over `barGeom` would copy all N geoms
+  // into the UI runtime once per derived value, per render. One SharedValue
+  // copies once per geometry change — written in an effect, not during
+  // render, because Reanimated doesn't support SharedValue writes mid-render.
+  const barGeomSV = useSharedValue<BarGeom[]>(barGeom)
+  useEffect(() => {
+    barGeomSV.value = barGeom
+  }, [barGeom, barGeomSV])
+
+  const crossfadeSV = useSharedValue(IDLE_VOLUME_CROSSFADE)
+
+  useAnimatedReaction(
+    () => ({
+      x: crosshairX?.value ?? 0,
+      active: isActive?.value ?? false
+    }),
+    ({ x, active }) => {
+      crossfadeSV.value = active
+        ? volumeCrosshairWeights(x, candles.length, innerWidth)
+        : IDLE_VOLUME_CROSSFADE
+    },
+    [candles.length, innerWidth]
+  )
+
+  // Low/high bar = the two candles bracketing the crosshair. Opacity goes
+  // through `crossfadeRectOpacity` because these paint over `idlePath`.
+  const lowOpacity = useDerivedValue(() => {
+    const c = crossfadeSV.value
+    return c.lowIndex === NO_HIGHLIGHT_INDEX
+      ? 0
+      : crossfadeRectOpacity(c.lowWeight)
+  })
+  const lowX = useDerivedValue(() => {
+    const c = crossfadeSV.value
+    if (c.lowIndex === NO_HIGHLIGHT_INDEX) return 0
+    const g = barGeomSV.value[c.lowIndex]
+    return g ? g.x : 0
+  })
+  const lowY = useDerivedValue(() => {
+    const c = crossfadeSV.value
+    if (c.lowIndex === NO_HIGHLIGHT_INDEX) return 0
+    const g = barGeomSV.value[c.lowIndex]
+    return g ? height - g.barHeight : 0
+  })
+  const lowHeight = useDerivedValue(() => {
+    const c = crossfadeSV.value
+    if (c.lowIndex === NO_HIGHLIGHT_INDEX) return 0
+    const g = barGeomSV.value[c.lowIndex]
+    return g ? g.barHeight : 0
+  })
+  const lowRadius = useDerivedValue(() => {
+    const c = crossfadeSV.value
+    if (c.lowIndex === NO_HIGHLIGHT_INDEX) return 0
+    const g = barGeomSV.value[c.lowIndex]
+    return g ? g.radius : 0
+  })
+
+  const highOpacity = useDerivedValue(() => {
+    const c = crossfadeSV.value
+    return c.highIndex === NO_HIGHLIGHT_INDEX
+      ? 0
+      : crossfadeRectOpacity(c.highWeight)
+  })
+  const highX = useDerivedValue(() => {
+    const c = crossfadeSV.value
+    if (c.highIndex === NO_HIGHLIGHT_INDEX) return 0
+    const g = barGeomSV.value[c.highIndex]
+    return g ? g.x : 0
+  })
+  const highY = useDerivedValue(() => {
+    const c = crossfadeSV.value
+    if (c.highIndex === NO_HIGHLIGHT_INDEX) return 0
+    const g = barGeomSV.value[c.highIndex]
+    return g ? height - g.barHeight : 0
+  })
+  const highHeight = useDerivedValue(() => {
+    const c = crossfadeSV.value
+    if (c.highIndex === NO_HIGHLIGHT_INDEX) return 0
+    const g = barGeomSV.value[c.highIndex]
+    return g ? g.barHeight : 0
+  })
+  const highRadius = useDerivedValue(() => {
+    const c = crossfadeSV.value
+    if (c.highIndex === NO_HIGHLIGHT_INDEX) return 0
+    const g = barGeomSV.value[c.highIndex]
+    return g ? g.radius : 0
+  })
+
+  if (allNull || maxVolume === 0 || candles.length === 0) return null
 
   return (
     <View style={{ width, height }}>
       <Canvas style={{ width, height }}>
-        {candles.map((c, i) => {
-          if (c.volume == null) return null
-          const xCenter = indexToX(i, candles.length, innerWidth) + CHART_INSET
-          const x = xCenter - barWidth / 2
-          const barHeight = (c.volume / maxVolume) * height
-          const y = height - barHeight
-          const radius = Math.min(barWidth, barHeight) / 2
-          const opacity = opacities[i] ?? IDLE_OPACITY
-          return (
-            <RoundedRect
-              key={c.ts}
-              x={x}
-              y={y}
-              width={barWidth}
-              height={barHeight}
-              r={radius}
-              color={barColor}
-              opacity={opacity}
-            />
-          )
-        })}
+        <Path path={idlePath} color={barColor} opacity={VOLUME_IDLE_OPACITY} />
+        <RoundedRect
+          x={lowX}
+          y={lowY}
+          width={barWidth}
+          height={lowHeight}
+          r={lowRadius}
+          color={barColor}
+          opacity={lowOpacity}
+        />
+        <RoundedRect
+          x={highX}
+          y={highY}
+          width={barWidth}
+          height={highHeight}
+          r={highRadius}
+          color={barColor}
+          opacity={highOpacity}
+        />
       </Canvas>
     </View>
   )

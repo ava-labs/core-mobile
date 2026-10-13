@@ -5,12 +5,16 @@ import {
 import { DropdownGroup } from 'common/components/DropdownMenu'
 import { DropdownSelection } from 'common/types'
 import { sortUndefined } from 'common/utils/sortUndefined'
-import { isCollectibleTransaction } from 'features/activity/utils'
+import {
+  isCollectibleTransaction,
+  resolveTxUserAddress
+} from 'features/activity/utils'
 import { useCallback, useMemo, useState } from 'react'
 import { Transaction } from 'store/transaction'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { isTxSentFromAccount } from 'features/portfolio/utils'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { fixUnknownTxType } from '../components/TokenActivityListItem'
 
 export const useTokenDetailFilterAndSort = ({
@@ -26,6 +30,7 @@ export const useTokenDetailFilterAndSort = ({
   resetFilter: () => void
 } => {
   const account = useSelector(selectActiveAccount)
+  const { getNetwork } = useNetworks()
   const [selectedFilter, setSelectedFilter] = useState<TokenDetailFilter>(
     TokenDetailFilter.All
   )
@@ -44,6 +49,11 @@ export const useTokenDetailFilterAndSort = ({
     }
     return transactions.filter(tx => {
       const isFromAccount = isTxSentFromAccount(tx.from, account)
+      const userAddress = resolveTxUserAddress(
+        tx,
+        account,
+        getNetwork(Number(tx.chainId))
+      )
       switch (selectedFilter) {
         case TokenDetailFilter.Imported:
           return tx.txType === PChainTransactionType.IMPORT_TX
@@ -62,7 +72,10 @@ export const useTokenDetailFilterAndSort = ({
           if (isCollectibleTransaction(tx)) {
             return !tx.isSender
           }
-          return fixUnknownTxType(tx, isFromAccount) === TransactionType.RECEIVE
+          return (
+            fixUnknownTxType(tx, isFromAccount, userAddress) ===
+            TransactionType.RECEIVE
+          )
         case TokenDetailFilter.Sent:
           if (tx.txType === PChainTransactionType.BASE_TX) {
             return tx.isOutgoing
@@ -70,20 +83,24 @@ export const useTokenDetailFilterAndSort = ({
           if (isCollectibleTransaction(tx)) {
             return tx.isSender
           }
-          return fixUnknownTxType(tx, isFromAccount) === TransactionType.SEND
+          return (
+            fixUnknownTxType(tx, isFromAccount, userAddress) ===
+            TransactionType.SEND
+          )
         case TokenDetailFilter.Bridge:
           return tx.txType === TransactionType.BRIDGE
         case TokenDetailFilter.Swap:
           return (
             tx.txType === TransactionType.SWAP ||
-            fixUnknownTxType(tx, isFromAccount) === TransactionType.SWAP
+            fixUnknownTxType(tx, isFromAccount, userAddress) ===
+              TransactionType.SWAP
           )
 
         default:
           return true
       }
     })
-  }, [selectedFilter, transactions])
+  }, [selectedFilter, transactions, account, getNetwork])
 
   const getSorted = useCallback(
     (txs: Transaction[]) => {

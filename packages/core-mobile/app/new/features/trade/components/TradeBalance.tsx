@@ -31,10 +31,13 @@ export const TradeBalance = ({
   const { isGeoBlocked } = usePerpsAvailability()
 
   const hasFunds = balance !== undefined && balance > 0
-  const formattedBalance = formatCurrency({
-    amount: balance ?? 0,
-    notation: 'compact'
-  })
+  const formattedBalance =
+    balance === undefined
+      ? '—'
+      : formatCurrency({
+          amount: balance,
+          notation: 'compact'
+        })
 
   const { createParentPressHandler, createChildPressHandler } =
     usePreventParentPress()
@@ -89,7 +92,7 @@ export const TradeBalance = ({
         </Text>
       </View>
 
-      {!isGeoBlocked ? (
+      {!isGeoBlocked && balance !== undefined ? (
         hasFunds ? (
           <View style={{ flexDirection: 'row', gap: 3 }}>
             <Button

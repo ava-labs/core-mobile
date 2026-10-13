@@ -91,6 +91,34 @@ describe('buildWalletListRows', () => {
     ])
   })
 
+  it('expanded KEYSTONE wallet -> no addAccount row, last account is bottom', () => {
+    const rows = buildWalletListRows({
+      wallets: [wallet('keystone', ['a1', 'a2'], WalletType.KEYSTONE)],
+      expanded: { keystone: true },
+      isActiveWalletId: noneActive
+    })
+    expect(rows.map(r => [r.kind, r.cardPos])).toEqual([
+      ['walletHeader', 'top'],
+      ['account', 'middle'],
+      ['account', 'bottom']
+    ])
+  })
+
+  it('expanded MNEMONIC/SEEDLESS wallets still get the addAccount row', () => {
+    for (const type of [WalletType.MNEMONIC, WalletType.SEEDLESS]) {
+      const rows = buildWalletListRows({
+        wallets: [wallet('w1', ['a1'], type)],
+        expanded: { w1: true },
+        isActiveWalletId: noneActive
+      })
+      expect(rows.map(r => r.kind)).toEqual([
+        'walletHeader',
+        'account',
+        'addAccount'
+      ])
+    }
+  })
+
   it('marks the active wallet header isActive', () => {
     const rows = buildWalletListRows({
       wallets: [wallet('w1', ['a1'])],

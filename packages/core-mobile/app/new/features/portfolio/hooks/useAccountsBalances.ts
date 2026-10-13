@@ -16,6 +16,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import Logger from 'utils/Logger'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
 
 /**
  * Stale time in milliseconds
@@ -32,11 +33,13 @@ const refetchInterval = __DEV__ ? 30_000 : 5_000
 export const balancesKey = (params: {
   currency: string
   enabledChainIdsKey: string
+  filterOutDustUtxos: boolean
 }) =>
   [
     ReactQueryKeys.ACCOUNTS_BALANCES,
     params.currency.toLowerCase(),
-    params.enabledChainIdsKey
+    params.enabledChainIdsKey,
+    params.filterOutDustUtxos
   ] as const
 
 /**
@@ -61,6 +64,7 @@ export function useAccountsBalances(
   const currency = useSelector(selectSelectedCurrency)
   const wallets = useSelector(selectWallets)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const filterOutDustUtxos = useSelector(selectIsFilterSmallUtxosActive)
 
   const enabledChainIdsKey = useMemo(() => {
     // Stable + order-independent key
@@ -74,9 +78,10 @@ export function useAccountsBalances(
     () =>
       balancesKey({
         currency,
-        enabledChainIdsKey
+        enabledChainIdsKey,
+        filterOutDustUtxos
       }),
-    [currency, enabledChainIdsKey]
+    [currency, enabledChainIdsKey, filterOutDustUtxos]
   )
 
   const isNotReady = accounts.length === 0 || enabledNetworks.length === 0
@@ -150,6 +155,7 @@ export function useAccountsBalances(
         currency: currency.toLowerCase(),
         xpAddressesByAccountId,
         xpubByAccountId,
+        filterOutDustUtxos,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
             queryKey,

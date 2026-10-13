@@ -32,14 +32,20 @@ export const QUICK_SWAPS_DEFAULT: QuickSwapsSettings = {
   maxBuy: 'unlimited'
 }
 
+// Matches core-extension's default (SettingsService.ts: filterSmallUtxos: true)
+// and core-web's userPreferencesSchema prefault(true). CP-13903.
+export const FILTER_SMALL_UTXOS_DEFAULT = true
+
 export type AdvancedState = {
   developerMode: boolean
   isLeftHanded: boolean
   quickSwaps: QuickSwapsSettings
+  filterSmallUtxos: boolean
 }
 
 export const initialState: AdvancedState = {
   developerMode: false,
   isLeftHanded: false,
-  quickSwaps: QUICK_SWAPS_DEFAULT
+  quickSwaps: QUICK_SWAPS_DEFAULT,
+  filterSmallUtxos: FILTER_SMALL_UTXOS_DEFAULT
 }

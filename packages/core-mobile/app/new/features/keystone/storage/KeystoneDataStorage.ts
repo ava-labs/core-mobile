@@ -34,6 +34,8 @@ export class KeystoneDataStorage {
     assertNotUndefined(walletInfo.mfp, 'no mfp found')
     assertNotUndefined(walletInfo.evm, 'no evm found')
 
+    this.cache = walletInfo
+
     return walletInfo
   }
 }

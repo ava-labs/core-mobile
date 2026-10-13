@@ -1,16 +1,11 @@
-import {
-  MAINNET_API_URL,
-  MAINNET_WS_URL,
-  createHyperliquidWsClient,
-  createInfoClient,
-  type PerpUniverseEntry,
-  type PerpsAssetCtx
-} from '@avalabs/perps-sdk'
+import { type PerpUniverseEntry, type PerpsAssetCtx } from '@avalabs/perps-sdk'
 import { useEffect, useState } from 'react'
-
-// Hyperliquid perp prices are quoted with `MAX_PERP_DECIMALS - szDecimals`
-// fractional digits.
-const MAX_PERP_DECIMALS = 6
+import {
+  createPerpsWsClient,
+  getPerpsInfoClient
+} from '../services/perpsClients'
+import { dexOfCoin, tickerOfCoin } from '../utils/coinDex'
+import { pxDecimalsFor } from '../utils/format'
 
 export interface HyperliquidMarketContext {
   /** Live mark/oracle/volume snapshot, refreshed over the WS `activeAssetCtx` channel. */
@@ -21,17 +16,27 @@ export interface HyperliquidMarketContext {
   pxDecimals?: number
 }
 
-const pxDecimalsFor = (
-  entry: PerpUniverseEntry | undefined
-): number | undefined =>
-  entry === undefined
-    ? undefined
-    : Math.max(0, MAX_PERP_DECIMALS - entry.szDecimals)
-
 interface ActiveAssetCtxPayload {
   coin: string
   ctx: PerpsAssetCtx
 }
+
+/**
+ * Live market context for a single coin: seeds from REST `metaAndAssetCtxs`
+ * (so universe + first snapshot are present before the first WS tick) then
+ * keeps `assetCtx` fresh over the `activeAssetCtx` WebSocket channel.
+ *
+ * Resolves HIP-3 (builder-deployed) coins, which are namespaced as `dex:TICKER`
+ * (e.g. `xyz:GOLD`): the builder dex's universe is fetched via `dexOfCoin(coin)`.
+ * HIP-3 `meta.universe[].name` values are already namespaced (`xyz:GOLD`), while
+ * main-dex names are bare tickers — match either the full coin id or the bare
+ * ticker so both layouts resolve.
+ */
+const universeNameMatchesCoin = (name: string, coin: string): boolean =>
+  name === coin || name === tickerOfCoin(coin)
+
+const wsCoinMatches = (msgCoin: string, coin: string): boolean =>
+  msgCoin === coin || msgCoin === tickerOfCoin(coin)
 
 export const useHyperliquidMarketContext = (
   coin: string
@@ -41,31 +46,43 @@ export const useHyperliquidMarketContext = (
   useEffect(() => {
     let cancelled = false
     setState({})
-    const info = createInfoClient({ baseUrl: MAINNET_API_URL })
-    const ws = createHyperliquidWsClient({ url: MAINNET_WS_URL })
-    // Seed from REST so universe + assetCtx are populated before the first WS tick.
-    info
-      .getMetaAndAssetCtxs()
+
+    getPerpsInfoClient()
+      .getMetaAndAssetCtxs(dexOfCoin(coin))
       .then(([meta, ctxs]) => {
-        if (cancelled) return
-        const idx = meta.universe.findIndex(u => u.name === coin)
-        if (idx < 0) return
+        if (cancelled) {
+          return
+        }
+        const idx = meta.universe.findIndex(u =>
+          universeNameMatchesCoin(u.name, coin)
+        )
+        if (idx < 0) {
+          return
+        }
         const universe = meta.universe[idx]
         setState({
           universe,
           assetCtx: ctxs[idx],
-          pxDecimals: pxDecimalsFor(universe)
+          pxDecimals:
+            universe !== undefined
+              ? pxDecimalsFor(universe.szDecimals)
+              : undefined
         })
       })
       .catch(() => {
         // Silent — state stays empty so consumers render skeletons.
       })
 
+    const ws = createPerpsWsClient()
     ws.connect()
     const unsubscribe = ws.subscribe({ type: 'activeAssetCtx', coin }, data => {
-      if (cancelled) return
+      if (cancelled) {
+        return
+      }
       const msg = data as ActiveAssetCtxPayload | undefined
-      if (!msg || msg.coin !== coin || !msg.ctx) return
+      if (!msg || !msg.ctx || !wsCoinMatches(msg.coin, coin)) {
+        return
+      }
       setState(prev => ({ ...prev, assetCtx: msg.ctx }))
     })
 

@@ -47,6 +47,21 @@ const erc20Token = (balance: bigint): LocalTokenWithBalance =>
     symbol: 'USDC'
   })
 
+// Native P/X-chain AVAX: `balance` includes staked/locked funds, `available` is
+// the swappable portion (CP-14788).
+const stakedNativeToken = (
+  balance: bigint,
+  available: bigint
+): LocalTokenWithBalance =>
+  ({
+    type: TokenType.NATIVE,
+    balance,
+    available,
+    decimals: AVAX_DECIMALS,
+    symbol: 'AVAX',
+    address: ''
+  } as unknown as LocalTokenWithBalance)
+
 // Mirror the gate's own formatting so assertions verify the *amount* passed
 // (principal vs principal+fee) without hard-coding formatTokenAmount's output.
 const fmt = (amount: bigint, decimals: number, symbol: string): string =>
@@ -130,6 +145,28 @@ describe('computeRecurringBalanceError — native source', () => {
       params({ fromToken: nativeToken(AVAX(0)) })
     )
     expect(err?.isWarning).toBeUndefined()
+  })
+
+  it('checks against available, not total balance, for staked P/X-chain AVAX (CP-14788)', () => {
+    // Total balance (10) covers principal + fee (5.05), but only 3 is available
+    // (rest staked) — the schedule must not pass validation on staked funds.
+    const err = computeRecurringBalanceError(
+      params({ fromToken: stakedNativeToken(AVAX(10), AVAX(3)) })
+    )
+    expect(err?.message).toBe(
+      `Insufficient balance — 5 orders require ${fmt(
+        FIVE_AVAX_PLUS_FEE,
+        AVAX_DECIMALS,
+        'AVAX'
+      )}.`
+    )
+  })
+
+  it('is null when available covers principal + fee for staked P/X-chain AVAX', () => {
+    const err = computeRecurringBalanceError(
+      params({ fromToken: stakedNativeToken(AVAX(100), FIVE_AVAX_PLUS_FEE) })
+    )
+    expect(err).toBeNull()
   })
 })
 

@@ -6,6 +6,15 @@ import {
   getRemainingReadableTime
 } from '../../utils'
 
+// Card titles show up to four decimals so small (dust-sized) rewards don't
+// collapse to "0.00"; trailing zeros beyond the usual two decimals are
+// trimmed so common amounts keep their familiar "1.75" shape.
+const TITLE_REWARD_DECIMALS = 4
+
+/** "1.7500" → "1.75", "0.0000" → "0.00", "0.0001" stays — min two decimals. */
+const trimTrailingZeros = (value: string): string =>
+  value.replace(/(\.\d{2}\d*?)0+$/, '$1')
+
 /**
  * V2 stake card title.
  *
@@ -25,13 +34,18 @@ export const getStakeTitle = ({
 }): string => {
   if (isActive) {
     const remainingTime = getRemainingReadableTime(stake)
-    const estimatedRewardInAvaxDisplay = formattedEstimatedRewardInAvax(
-      stake,
-      pChainNetworkToken
+    const estimatedRewardInAvaxDisplay = trimTrailingZeros(
+      formattedEstimatedRewardInAvax(
+        stake,
+        pChainNetworkToken,
+        TITLE_REWARD_DECIMALS
+      )
     )
     return `${estimatedRewardInAvaxDisplay} AVAX reward unlocked in ${remainingTime}`
   }
 
-  const rewardAmountInAvaxDisplay = formattedRewardAmountInAvax(stake)
+  const rewardAmountInAvaxDisplay = trimTrailingZeros(
+    formattedRewardAmountInAvax(stake, TITLE_REWARD_DECIMALS)
+  )
   return `${rewardAmountInAvaxDisplay} AVAX rewarded`
 }

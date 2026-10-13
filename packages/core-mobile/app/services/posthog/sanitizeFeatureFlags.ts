@@ -14,6 +14,14 @@ const allowedKeys: (FeatureGates | FeatureVars)[] = [
 const featureVars = Object.values(FeatureVars) as string[]
 const featureGates = Object.values(FeatureGates) as string[]
 
+// Gates that may arrive as a multivariate variant string instead of a plain
+// boolean — the variant carries a value (convenience-fee rate in basis
+// points) on top of acting as the on/off switch. See `FeatureGates`.
+const variantGates: string[] = [
+  FeatureGates.FAST_STAKE_FEE_ENABLED,
+  FeatureGates.DELEGATION_FEE_ENABLED
+]
+
 function isFeatureGate(key: string): key is FeatureGates {
   return featureGates.includes(key)
 }
@@ -43,7 +51,9 @@ export const sanitizeFeatureFlags = (
   const rawFlags = allowedKeys.reduce((acc, k) => {
     if (
       (featureVars.includes(k) && typeof value.featureFlags[k] === 'string') ||
-      (featureGates.includes(k) && typeof value.featureFlags[k] === 'boolean')
+      (featureGates.includes(k) &&
+        typeof value.featureFlags[k] === 'boolean') ||
+      (variantGates.includes(k) && typeof value.featureFlags[k] === 'string')
     ) {
       acc[k] = value.featureFlags[k]
     }
@@ -77,7 +87,14 @@ export const sanitizeFeatureFlags = (
               return [flagName, false]
             }
 
-            return [flagName, satisfies(version, versionRange)]
+            // Preserve the raw flag value (a variant string for the
+            // multivariate gates, `true` otherwise) when the version
+            // qualifies — collapsing it to a boolean would drop the value
+            // the variant carries.
+            return [
+              flagName,
+              satisfies(version, versionRange) && rawFlags[flagName]
+            ]
           } catch {
             return [flagName, false]
           }

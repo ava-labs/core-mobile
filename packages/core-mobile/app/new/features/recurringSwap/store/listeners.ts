@@ -3,7 +3,8 @@ import { showSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 import type { QueryCacheNotifyEvent } from '@tanstack/react-query'
-import { onAppUnlocked } from 'store/app/slice'
+import { onAppUnlocked, onRehydrationComplete } from 'store/app/slice'
+import { selectIsRecurringSwapsBlocked } from 'store/posthog'
 import type { AppStartListening } from 'store/types'
 import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
@@ -349,12 +350,19 @@ function reconcilePendingActions(
  * (see `useRecurringSchedules`). We pluck both out so the seen-failures
  * persistence can be scoped per (account, chain).
  */
-function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
+function handleQueryCacheEvent(
+  event: QueryCacheNotifyEvent,
+  getIsRecurringSubscriptionBlocked: () => boolean
+): void {
   if (
     event.query.queryKey?.[0] !== RECURRING_SCHEDULES_QK[0] ||
     event.type !== 'updated' ||
     event.query.state.status !== 'success'
   ) {
+    // Early-return BEFORE reading the kill-switch: this subscriber fires for
+    // every query in the app's cache, so the `getState()`/selector read is
+    // deferred to the use site below — only paid on RECURRING_SCHEDULES
+    // success events, not on every unrelated high-frequency cache update.
     return
   }
 
@@ -387,15 +395,26 @@ function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
     // path normally.
     processAllSchedules(ownerAddress, chainId, schedules ?? [])
 
-    // Fire-and-forget the per-order push subscription pass. Kept out of the
-    // synchronous cache-subscriber call path; failures inside the function are
-    // logged but never bubble up — the next refetch retries any order that
-    // didn't make it into the persisted subscribed-set.
-    void ensureOrderSubscriptions(ownerAddress, chainId, schedules ?? []).catch(
-      err => {
+    // Fire-and-forget the per-order push subscription pass. Gated on the
+    // SWAP_RECURRING kill-switch, read LIVE here per event (see
+    // `startRecurringFailureWatcher`): when recurring swaps are blocked the
+    // toggle, banner and management screen are all hidden, so there's nothing
+    // to keep the device subscribed for. Kept out of the synchronous
+    // cache-subscriber call path; failures inside the function are logged but
+    // never bubble up — the next refetch retries any order that didn't make it
+    // into the persisted subscribed-set.
+    if (!getIsRecurringSubscriptionBlocked()) {
+      // `void` marks the intentional fire-and-forget so the trailing `.catch`
+      // promise doesn't float.
+      // eslint-disable-next-line no-void
+      void ensureOrderSubscriptions(
+        ownerAddress,
+        chainId,
+        schedules ?? []
+      ).catch(err => {
         Logger.error('[RecurringSwap] ensureOrderSubscriptions threw', err)
-      }
-    )
+      })
+    }
   } catch (err) {
     Logger.error('[RecurringSwap] Failure watcher error', err)
   }
@@ -408,9 +427,36 @@ function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
  * Call once at app startup. The returned unsubscribe function exists so tests
  * (and any future hot-reload teardown) can drop the listener — production
  * doesn't currently invoke it.
+ *
+ * `getIsRecurringSubscriptionBlocked` is a reader invoked LIVE (per matching
+ * cache event) — NOT a boolean snapshotted at wire time. It gates the per-order
+ * push-notification subscription pass on the SWAP_RECURRING kill-switch, and
+ * reading live matches how every other recurring-swap gate consumes the flag
+ * (the swap toggle, the Activity banner, the management-screen route guard all
+ * read it via `useSelector`). The watcher is wired on `onRehydrationComplete`,
+ * before the first live PostHog fetch lands — snapshotting there would freeze
+ * whatever `selectIsRecurringSwapsBlocked` returned from the previously
+ * persisted PostHog state. On a fresh install nothing is persisted yet, so the
+ * `SWAP_RECURRING` gate reads as off and the selector returns `true` (blocked);
+ * a wire-time snapshot would then stay blocked for the whole session even after
+ * the periodic fetch enables the feature. Reading live re-evaluates on every
+ * matching event so a schedule created after the flag flips is subscribed
+ * without an app restart. The failure snackbar and pending-action
+ * reconciliation still run regardless of the flag.
+ *
+ * The reader is passed un-invoked and called at the use site inside
+ * `handleQueryCacheEvent`, after its early-returns — so the `getState()` read
+ * is only paid on RECURRING_SCHEDULES success events, not on every unrelated
+ * cache update this subscriber sees.
  */
-export function startRecurringFailureWatcher(): () => void {
-  return queryClient.getQueryCache().subscribe(handleQueryCacheEvent)
+export function startRecurringFailureWatcher(
+  getIsRecurringSubscriptionBlocked: () => boolean
+): () => void {
+  return queryClient
+    .getQueryCache()
+    .subscribe(event =>
+      handleQueryCacheEvent(event, getIsRecurringSubscriptionBlocked)
+    )
 }
 
 /**
@@ -444,5 +490,24 @@ export function addRecurringSwapListeners(
     }
   })
 
-  startRecurringFailureWatcher()
+  // Wire the React Query cache subscriber (failure watcher + pending-action
+  // reconciler) once, on rehydration — matching how `addAppListeners`
+  // bootstraps its `init` effect. `unsubscribe()` drops this listener after
+  // the first fire so the cache subscriber is attached exactly once even if
+  // `onRehydrationComplete` were ever re-dispatched.
+  startListening({
+    actionCreator: onRehydrationComplete,
+    effect: (_, listenerApi) => {
+      listenerApi.unsubscribe()
+      // Pass a LIVE reader for the kill-switch, not a wire-time snapshot:
+      // this effect runs on rehydration, before the first PostHog fetch, so a
+      // captured boolean would freeze the previous session's persisted value
+      // and never re-read. `listenerApi.getState()` returns current state on
+      // each call, so the subscribe pass re-evaluates the flag on every cache
+      // event — matching how the UI gates read it live.
+      startRecurringFailureWatcher(() =>
+        selectIsRecurringSwapsBlocked(listenerApi.getState())
+      )
+    }
+  })
 }

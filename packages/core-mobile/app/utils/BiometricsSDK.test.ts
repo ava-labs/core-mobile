@@ -8,7 +8,10 @@ import BiometricsSDK, {
   passcodeSetOptions,
   walletSecretOptions
 } from 'utils/BiometricsSDK'
-import Keychain, { BIOMETRY_TYPE } from 'react-native-keychain'
+import Keychain, {
+  BIOMETRY_TYPE,
+  hasGenericPassword
+} from 'react-native-keychain'
 import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
@@ -18,6 +21,7 @@ import * as LocalAuthentication from 'expo-local-authentication'
 jest.mock('react-native-keychain', () => ({
   setGenericPassword: jest.fn(),
   getGenericPassword: jest.fn(),
+  hasGenericPassword: jest.fn(),
   resetGenericPassword: jest.fn(),
   getAllGenericPasswordServices: jest.fn(),
   getSupportedBiometryType: jest.fn(),
@@ -73,6 +77,9 @@ jest.mock('expo-local-authentication', () => ({
 
 // Cast mocks for type safety
 const mockKeychain = Keychain as jest.Mocked<typeof Keychain>
+const mockHasGenericPassword = hasGenericPassword as jest.MockedFunction<
+  typeof hasGenericPassword
+>
 const mockCommonStorage = commonStorage as jest.Mocked<typeof commonStorage>
 const mockEncrypt = encrypt as jest.Mock
 const mockDecrypt = decrypt as jest.Mock
@@ -183,25 +190,49 @@ describe('BiometricsSDK', () => {
         passcodeGetOptions
       )
       expect(mockDecrypt).toHaveBeenCalledWith(mockEncryptedData, mockPin)
-      expect(result).toBe(true)
+      expect(result).toBe('success')
     })
 
-    it('should return false if loading with PIN fails at decryption', async () => {
+    it('should return wrong-pin when decrypt throws BAD_DECRYPT (Android)', async () => {
       mockKeychain.getGenericPassword.mockResolvedValue({
         ...mockKeychainResult,
         password: mockEncryptedData
       })
-      mockDecrypt.mockResolvedValue(false)
+      mockDecrypt.mockRejectedValue(new Error('BAD_DECRYPT'))
 
       const result = await BiometricsSDK.loadEncryptionKeyWithPin(mockPin)
 
-      expect(result).toBe(false)
+      expect(result).toBe('wrong-pin')
     })
 
-    it('should return false if no credentials found for PIN', async () => {
+    it('should return wrong-pin when decrypt throws Decrypt failed (iOS)', async () => {
+      mockKeychain.getGenericPassword.mockResolvedValue({
+        ...mockKeychainResult,
+        password: mockEncryptedData
+      })
+      mockDecrypt.mockRejectedValue(new Error('Decrypt failed'))
+
+      const result = await BiometricsSDK.loadEncryptionKeyWithPin(mockPin)
+
+      expect(result).toBe('wrong-pin')
+    })
+
+    it('should rethrow non-wrong-pin decrypt errors (e.g. corrupt data)', async () => {
+      mockKeychain.getGenericPassword.mockResolvedValue({
+        ...mockKeychainResult,
+        password: mockEncryptedData
+      })
+      mockDecrypt.mockRejectedValue(new Error('data has no salt'))
+
+      await expect(
+        BiometricsSDK.loadEncryptionKeyWithPin(mockPin)
+      ).rejects.toThrow('data has no salt')
+    })
+
+    it('should return no-credentials if no encryption key exists for PIN', async () => {
       mockKeychain.getGenericPassword.mockResolvedValue(false)
       const result = await BiometricsSDK.loadEncryptionKeyWithPin(mockPin)
-      expect(result).toBe(false)
+      expect(result).toBe('no-credentials')
     })
 
     it('should load encryption key with biometry', async () => {
@@ -325,6 +356,56 @@ describe('BiometricsSDK', () => {
         error: new Error('No credentials found'),
         success: false
       })
+    })
+  })
+
+  describe('hasAnyWalletData', () => {
+    const LEGACY_SERVICE_KEY_BIO = 'sec-storage-service-bio'
+    const LEGACY_SERVICE_KEY = 'sec-storage-service'
+
+    it('returns true as soon as the PIN encryption key exists', async () => {
+      mockHasGenericPassword.mockResolvedValueOnce(true)
+
+      await expect(BiometricsSDK.hasAnyWalletData()).resolves.toBe(true)
+      expect(mockHasGenericPassword).toHaveBeenCalledTimes(1)
+      expect(mockHasGenericPassword).toHaveBeenCalledWith(passcodeGetOptions)
+    })
+
+    it('returns true when only a legacy entry exists', async () => {
+      mockHasGenericPassword
+        .mockResolvedValueOnce(false) // pin encryption key
+        .mockResolvedValueOnce(false) // bio encryption key
+        .mockResolvedValueOnce(false) // legacy pin entry
+        .mockResolvedValueOnce(true) // legacy bio entry
+
+      await expect(BiometricsSDK.hasAnyWalletData()).resolves.toBe(true)
+      expect(mockHasGenericPassword).toHaveBeenCalledTimes(4)
+      expect(mockHasGenericPassword).toHaveBeenNthCalledWith(2, {
+        ...bioGetOptions
+      })
+      expect(mockHasGenericPassword).toHaveBeenNthCalledWith(3, {
+        service: LEGACY_SERVICE_KEY_BIO
+      })
+      expect(mockHasGenericPassword).toHaveBeenNthCalledWith(4, {
+        service: LEGACY_SERVICE_KEY
+      })
+    })
+
+    it('returns false when no wallet credential exists anywhere', async () => {
+      mockHasGenericPassword.mockResolvedValue(false)
+
+      await expect(BiometricsSDK.hasAnyWalletData()).resolves.toBe(false)
+      expect(mockHasGenericPassword).toHaveBeenCalledTimes(4)
+    })
+
+    it('throws on a keychain failure instead of reporting missing data', async () => {
+      mockHasGenericPassword.mockRejectedValue(
+        new Error('keychain unavailable')
+      )
+
+      await expect(BiometricsSDK.hasAnyWalletData()).rejects.toThrow(
+        'keychain unavailable'
+      )
     })
   })
 

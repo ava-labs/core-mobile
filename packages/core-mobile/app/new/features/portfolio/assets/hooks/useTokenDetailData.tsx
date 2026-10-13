@@ -268,13 +268,22 @@ export const useTokenDetailData = (
   const { refetch: refetchBalances, isRefetching: isRefetchingBalances } =
     useAccountBalances(activeAccount)
 
+  // NOTE: depend on `activityRaw.refresh` specifically, not the whole
+  // `activityRaw` object. useTokenDetailData.tsx fails React Compiler
+  // compilation too (bailout at the formattedBalance useMemo below), so this
+  // dependency array is doing the real memoization work here, not the
+  // compiler. Depending on the whole object meant refreshAll (and, through
+  // it, `activity`) got a new identity on every activityRaw change (e.g.
+  // every 15s poll tick or isLoading/isRefreshing toggle) even though
+  // refreshAll only ever calls the `refresh` function.
+  const { refresh: activityRefresh } = activityRaw
   const refreshAll = useCallback(() => {
-    activityRaw.refresh()
+    activityRefresh()
     refetchBalances()
     queryClient.invalidateQueries({
       queryKey: [ReactQueryKeys.TOKEN_CHART_DATA]
     })
-  }, [activityRaw, refetchBalances, queryClient])
+  }, [activityRefresh, refetchBalances, queryClient])
 
   const activity = useMemo<TokenActivity>(
     () => ({

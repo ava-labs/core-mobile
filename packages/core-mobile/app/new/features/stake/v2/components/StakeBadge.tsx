@@ -17,11 +17,13 @@ const BADGES: Record<StakeBadgeType, BadgeConfig> = {
     label: 'Fast stake',
     renderIcon: color => <Icons.Custom.ElectricBolt color={color} />
   },
+  // Noun-form labels, matching web's stake-table type column ("Delegation" /
+  // "Validation" regardless of active vs completed).
   delegating: {
-    label: 'Delegating'
+    label: 'Delegation'
   },
   validating: {
-    label: 'Validating'
+    label: 'Validation'
   }
 }
 

@@ -11,6 +11,7 @@ import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
+  MessageSigningRequest,
   SolanaTransactionRequest,
   Wallet
 } from 'services/wallet/types'
@@ -150,29 +151,26 @@ export class PrivateKeyWallet implements Wallet {
 
   /** WALLET INTERFACE IMPLEMENTATION **/
   public async signMessage({
-    rpcMethod,
-    data,
+    signingData,
     accountIndex,
     network,
     provider
   }: {
-    rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    signingData: MessageSigningRequest
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal
   }): Promise<string> {
-    switch (rpcMethod) {
+    switch (signingData.type) {
       case RpcMethod.SOLANA_SIGN_MESSAGE: {
-        if (typeof data !== 'string') throw new Error('data must be string')
-        return this.signSolanaMessage(data, accountIndex)
+        return this.signSolanaMessage(signingData.data, accountIndex)
       }
       case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
         const chainAlias = getChainAliasFromNetwork(network)
         if (!chainAlias) throw new Error('invalid chain alias')
 
         return await this.signAvalancheMessage(
-          data,
+          signingData.data,
           chainAlias,
           network.isTestnet ?? false
         )
@@ -184,11 +182,11 @@ export class PrivateKeyWallet implements Wallet {
       case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4:
         return this.signEvmMessage({
-          data,
+          data: signingData.data,
           accountIndex,
           network,
           provider,
-          rpcMethod
+          rpcMethod: signingData.type
         })
       default:
         throw new Error('unknown method')

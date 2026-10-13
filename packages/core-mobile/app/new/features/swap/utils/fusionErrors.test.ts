@@ -375,6 +375,18 @@ describe('getSwapErrorMessage', () => {
     )
   })
 
+  it('maps the no-atomic-UTXOs recovery reason to clear copy (CP-14364)', () => {
+    // Reaches here via the swap-screen import-only recovery: a failed transfer
+    // re-thrown as "Transfer failed: <reason>".
+    expect(
+      getSwapErrorMessage(
+        new Error(
+          'Transfer failed: No atomic UTXOs available to import for this route.'
+        )
+      )
+    ).toBe('Nothing to recover for this route.')
+  })
+
   it('should return original message for unrecognized errors', () => {
     expect(getSwapErrorMessage(new Error('something unexpected'))).toBe(
       'something unexpected'

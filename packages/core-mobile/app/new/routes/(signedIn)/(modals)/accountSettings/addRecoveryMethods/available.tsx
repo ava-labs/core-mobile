@@ -57,6 +57,7 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
       isModal
       title="Add a recovery method"
       subtitle="Add recovery methods to securely restore access in case you lose your credentials."
+      disableHeaderSnap
       contentContainerStyle={{ flex: 1, padding: 16 }}>
       {isLoading ? (
         <Loader />

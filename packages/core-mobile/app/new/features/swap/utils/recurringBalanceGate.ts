@@ -10,6 +10,7 @@ import { TokenType } from '@avalabs/vm-module-types'
 import type { LocalTokenWithBalance } from 'store/balance'
 import type { NumberOfOrders } from 'features/recurringSwap/types'
 import { fusionErrors, type FusionQuoteError } from './fusionErrors'
+import { getSwappableBalance } from './getSwappableBalance'
 
 const formatTokenWithSymbol = (
   amount: bigint,
@@ -76,10 +77,14 @@ export function computeRecurringBalanceError({
     return null
   }
 
+  // Use the swappable balance so P/X-chain staked/locked funds aren't counted as
+  // funding a recurring schedule (CP-14788). No-op for the EVM/ERC-20 sources
+  // and C-chain native gas token this path normally handles (they have no
+  // `available` field, so it falls back to `balance`).
   if (fromToken.type === TokenType.NATIVE) {
     // Principal + native schedule fee both come out of the native balance.
     const required = totalAmountIn + additiveNativeFee
-    if (required > fromToken.balance) {
+    if (required > getSwappableBalance(fromToken)) {
       return fusionErrors.recurringTotalExceedsBalance(
         numberOfOrders,
         formatTokenWithSymbol(required, fromToken)
@@ -92,11 +97,11 @@ export function computeRecurringBalanceError({
   // schedule fee from the native balance — independent shortfalls. Surface both
   // in one message when both fail so the user isn't asked to fix one, then
   // discover the other.
-  const principalShort = totalAmountIn > fromToken.balance
+  const principalShort = totalAmountIn > getSwappableBalance(fromToken)
   const feeShort =
     additiveNativeFee > 0n &&
     nativeFromToken !== undefined &&
-    additiveNativeFee > nativeFromToken.balance
+    additiveNativeFee > getSwappableBalance(nativeFromToken)
 
   if (principalShort && feeShort && nativeFromToken !== undefined) {
     return fusionErrors.recurringInsufficientForTotalAndFee(

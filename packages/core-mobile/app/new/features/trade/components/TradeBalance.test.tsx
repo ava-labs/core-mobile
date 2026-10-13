@@ -88,4 +88,11 @@ describe('<TradeBalance /> geo-restriction', () => {
     const instance = await render(0)
     expect(hasText(instance, 'Deposit funds')).toBe(true)
   })
+
+  it('shows an unavailable placeholder without funding actions while unknown', async () => {
+    const instance = await render(undefined)
+    expect(hasText(instance, '—')).toBe(true)
+    expect(hasText(instance, '$0')).toBe(false)
+    expect(hasText(instance, 'Deposit funds')).toBe(false)
+  })
 })

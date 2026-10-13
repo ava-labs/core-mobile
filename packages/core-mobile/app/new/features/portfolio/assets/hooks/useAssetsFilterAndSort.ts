@@ -9,7 +9,6 @@ import {
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { DropdownSelection } from 'common/types'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network'
 import { usePrevious } from 'common/hooks/usePrevious'
@@ -29,13 +28,10 @@ export const useAssetsFilterAndSort = (): {
 } => {
   const { selectedView, setSelectedView } = usePortfolioView()
 
-  const erc20ContractTokens = useErc20ContractTokens()
   const enabledNetworks = useSelector(selectEnabledNetworks)
 
   const { filteredTokenList, refetch, isRefetching, isLoading } =
-    useSearchableTokenList({
-      tokens: erc20ContractTokens
-    })
+    useSearchableTokenList({})
 
   const networkFilters = useMemo(() => {
     const enabledNetworksFilter = enabledNetworks.map(network => {

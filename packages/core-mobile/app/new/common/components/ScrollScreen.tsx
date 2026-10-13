@@ -2,7 +2,8 @@ import {
   BlurViewWithFallback,
   NavigationTitleHeader,
   Separator,
-  SxProp
+  SxProp,
+  Text
 } from '@avalabs/k2-alpine'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -19,6 +20,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
+  ScrollView as RNScrollView,
   StyleProp,
   View,
   ViewStyle
@@ -31,12 +33,12 @@ import {
 } from 'react-native-keyboard-controller'
 import Animated, {
   interpolate,
-  useAnimatedStyle
+  useAnimatedStyle,
+  useSharedValue
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Grabber from './Grabber'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
-import ScreenHeader from './ScreenHeader'
 
 // Extra padding bottom so the gradient doesnt cover the bottom of the screen
 const EXTRA_PADDING_BOTTOM = 48
@@ -74,6 +76,11 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   shouldAvoidKeyboard?: boolean
   /** Whether the screen should avoid the footer when the keyboard appears */
   disableStickyFooter?: boolean
+  /** Opt out of the release snap that commits the collapsible title to fully
+   * collapsed/expanded when a drag ends inside the header region. Also drops
+   * the extra scroll range reserved for that snap, so short content is no
+   * longer scrollable by the title height. */
+  disableHeaderSnap?: boolean
   /** Title to be displayed in the navigation header */
   navigationTitle?: string
   /** Custom header component to be rendered */
@@ -102,7 +109,19 @@ const KeyboardScrollView = Animated.createAnimatedComponent(
   KeyboardAwareScrollView
 )
 
+function assignForwardedRef<T>(
+  ref: React.ForwardedRef<T>,
+  node: T | null
+): void {
+  if (typeof ref === 'function') {
+    ref(node)
+  } else if (ref) {
+    ref.current = node
+  }
+}
+
 export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   function ScrollScreen(
     {
       title,
@@ -122,6 +141,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       // per-screen change with its own QA.
       mode = 'layout',
       disableStickyFooter,
+      disableHeaderSnap,
       showNavigationHeaderTitle = true,
       hideHeaderBackground,
       headerCenterOverlay,
@@ -131,6 +151,11 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       renderFooter,
       renderHeaderRight,
       onScrolledToEnd,
+      // Pulled out of `...props` so the internal size/layout tracking can be
+      // composed with them rather than silently overriding them.
+      onContentSizeChange: onContentSizeChangeProp,
+      onLayout: onLayoutProp,
+      onScrollEndDrag: onScrollEndDragProp,
       ...props
     },
     ref
@@ -138,12 +163,65 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     const insets = useSafeAreaInsets()
     const headerHeight = useEffectiveHeaderHeight()
 
+    const [headerLayout, setHeaderLayout] = useState<
+      LayoutRectangle | undefined
+    >()
+
+    const [headerTitleLayout, setHeaderTitleLayout] = useState<
+      LayoutRectangle | undefined
+    >()
+
+    const [footerLayout, setFooterLayout] = useState<
+      LayoutRectangle | undefined
+    >()
+
+    // Internal handle for the header snap's `scrollTo`, composed with the
+    // forwarded ref so callers keep their handle.
+    const scrollViewRef = useRef<ScrollView | null>(null)
+    const setScrollViewRef = useCallback(
+      (node: ScrollView | null) => {
+        scrollViewRef.current = node
+        assignForwardedRef(ref, node)
+      },
+      [ref]
+    )
+
     // scroll to end tracking
     const scrollContentHeight = useRef(0)
     const scrollViewHeight = useRef(0)
     const hasReachedEndRef = useRef(false)
+    // Measured height of the scroll viewport, mirrored into state so it can
+    // drive the content container's `minHeight` (see below).
+    const [scrollViewLayoutHeight, setScrollViewLayoutHeight] = useState(0)
+    const titleHeight = useSharedValue<number>(0)
+    const subtitleHeight = useSharedValue<number>(0)
 
     const SCROLL_END_THRESHOLD = 20
+
+    // Android `nestedScrollEnabled` (both branches, see each branch's
+    // `scrollBelowHeader`) is a STATIC flag, not gated on content overflow
+    // or scroll offset. Two narrower attempts (offset-gated, then
+    // overflow-gated) both still let every downward drag dismiss the sheet,
+    // because Android's `BottomSheetBehavior` resolves its nested-scrolling
+    // child only during native layout passes — in `onLayoutChild`, by caching
+    // whichever child reports `isNestedScrollingEnabled() === true` at that
+    // moment (`findScrollingChild`). A later change to this prop does not
+    // trigger a layout pass, so it never refreshes that cache; both gated
+    // versions derive from `onLayout`/`onContentSizeChange`,
+    // which only fire AFTER the ScrollView's own first native layout is
+    // reported back across the bridge — so they cannot possibly be `true`
+    // yet at whatever layout pass the sheet last resolved its child in, and
+    // the cache locked in "no scrolling child" permanently (CP-14976).
+    // Static-`true` from mount is the only way to guarantee the flag is set
+    // before that resolution runs — the same pattern `ListScreenV2` already
+    // uses unconditionally for its Android nested scroll (CP-14376). From
+    // there the scroll-vs-dismiss split is arbitrated natively in two layers
+    // (CP-14679, CP-14765, CP-14976): our react-native-screens patch
+    // (`GestureAwareBottomSheetBehavior`, see patches/) first declines the
+    // whole gesture for the sheet when it starts with the content scrolled,
+    // and for gestures that do start at the top, Android's own
+    // `onNestedPreScroll` only hands the sheet a downward drag while the
+    // child reports `canScrollVertically(-1) === false`.
 
     const checkScrolledToEnd = useCallback(
       (contentOffsetY: number) => {
@@ -190,20 +268,57 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
 
     const handleScrollViewLayout = useCallback(
       (e: LayoutChangeEvent) => {
-        scrollViewHeight.current = e.nativeEvent.layout.height
+        const { height } = e.nativeEvent.layout
+        scrollViewHeight.current = height
+        setScrollViewLayoutHeight(prev => (prev === height ? prev : height))
         checkScrollableAfterLayout()
       },
       [checkScrollableAfterLayout]
     )
-    const [headerLayout, setHeaderLayout] = useState<
-      LayoutRectangle | undefined
-    >()
 
-    const [footerLayout, setFooterLayout] = useState<
-      LayoutRectangle | undefined
-    >()
+    // Run the internal tracking and then forward to any caller-provided
+    // handler, so passing `onContentSizeChange` / `onLayout` to ScrollScreen
+    // keeps working instead of being overridden by the internal handlers.
+    const handleContentSizeChangeComposed = useCallback(
+      (w: number, h: number) => {
+        handleContentSizeChange(w, h)
+        onContentSizeChangeProp?.(w, h)
+      },
+      [handleContentSizeChange, onContentSizeChangeProp]
+    )
 
-    const headerRef = useRef<View>(null)
+    const handleScrollViewLayoutComposed = useCallback(
+      (e: LayoutChangeEvent) => {
+        handleScrollViewLayout(e)
+        onLayoutProp?.(e)
+      },
+      [handleScrollViewLayout, onLayoutProp]
+    )
+
+    const handleTitleLayout = useCallback(
+      (event: LayoutChangeEvent) => {
+        const { height, x, y, width } = event.nativeEvent.layout
+        titleHeight.value = height
+        setHeaderTitleLayout(prev =>
+          prev &&
+          prev.x === x &&
+          prev.y === y &&
+          prev.width === width &&
+          prev.height === height
+            ? prev
+            : { x, y, width, height }
+        )
+      },
+      [titleHeight]
+    )
+
+    const handleSubtitleLayout = useCallback(
+      (event: LayoutChangeEvent) => {
+        const { height } = event.nativeEvent.layout
+        subtitleHeight.value = height
+      },
+      [subtitleHeight]
+    )
 
     // Stable header element — recreated only when the title text changes. Passing
     // a fresh JSX element every render made `useFadingHeaderNavigation`'s
@@ -221,7 +336,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       targetHiddenProgress
     } = useFadingHeaderNavigation({
       header: navigationHeader,
-      targetLayout: headerLayout,
+      targetLayout: headerTitleLayout ?? headerLayout,
       hasParent,
       hideHeaderBackground: hideHeaderBackground || isModal,
       renderHeaderRight,
@@ -252,18 +367,42 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       [onFadingScroll, onScrolledToEnd, checkScrolledToEnd]
     )
 
-    const animatedHeaderStyle = useAnimatedStyle(() => {
-      const scale = interpolate(
-        scrollY.value,
-        [-headerHeight, 0, headerHeight],
-        [0.95, 1, 0.95]
-      )
-      return {
-        opacity: 1 - targetHiddenProgress.value * 2,
-        transform: [{ scale }],
-        transformOrigin: 'bottom left'
-      }
-    })
+    // Snap the header on release, mirroring ListScreenV2's `onScrollEndDrag`:
+    // a drag released inside the collapsible header region either commits to
+    // fully collapsed (nav title fully in) or bounces back to fully expanded —
+    // never rests half-faded. The commit threshold is the title height alone
+    // (subtitle excluded), matching ListScreenV2; the scroll target is the
+    // full measured header region.
+    const handleScrollEndDrag = useCallback(
+      (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
+        onScrollEndDragProp?.(event)
+
+        if (disableHeaderSnap) return
+
+        // The no-title branch renders a phantom absolute header — its height
+        // must not trigger snapping.
+        if (!title && !subtitle) return
+
+        const headerRegionHeight = headerLayout?.height ?? 0
+        if (headerRegionHeight <= 0 || titleHeight.value <= 0) return
+
+        const offsetY = event.nativeEvent.contentOffset.y
+        if (offsetY <= 0 || offsetY >= headerRegionHeight) return
+
+        scrollViewRef.current?.scrollTo({
+          y: offsetY > titleHeight.value ? headerRegionHeight : 0,
+          animated: true
+        })
+      },
+      [
+        onScrollEndDragProp,
+        disableHeaderSnap,
+        title,
+        subtitle,
+        headerLayout?.height,
+        titleHeight
+      ]
+    )
 
     // Commit a new layout object only when the measured rect actually changed.
     // `onLayout` can fire repeatedly with identical values (notably when a
@@ -305,25 +444,89 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       }
     })
 
+    // The content container must be at least as tall as the scroll viewport
+    // (short content still fills the screen; the footer is already accounted
+    // for by the container's `paddingBottom`) PLUS the collapsible title
+    // region when one exists, so the release snap (`handleScrollEndDrag`)
+    // always has enough scroll range to tuck the title fully under the
+    // navigation header instead of stalling mid-fade at the content's max
+    // offset. Both terms come from measured layouts rather than
+    // `useSafeAreaFrame` math: the frame/inset relationship varies across
+    // Android nav modes (gesture vs 3-button), devices and build variants, so
+    // a computed value only held in the environment its constants were tuned
+    // in. `undefined` until the first layout lands.
+    const collapsibleHeaderHeight =
+      (title || subtitle) && !disableHeaderSnap ? headerLayout?.height ?? 0 : 0
+    const minHeight =
+      scrollViewLayoutHeight > 0
+        ? scrollViewLayoutHeight + collapsibleHeaderHeight
+        : undefined
+
+    const animatedTitleStyle = useAnimatedStyle(() => {
+      const scale = interpolate(
+        scrollY.value,
+        [
+          -titleHeight.value - subtitleHeight.value,
+          0,
+          titleHeight.value + subtitleHeight.value
+        ],
+        [Platform.OS === 'ios' ? 0.98 : 1, 1, 0.95]
+      )
+      return {
+        opacity: 1 - targetHiddenProgress.value,
+        transform: [{ scale }],
+        transformOrigin: 'bottom left'
+      }
+    })
+
+    const animatedSubtitleStyle = useAnimatedStyle(() => {
+      return {
+        opacity: 1 - targetHiddenProgress.value
+      }
+    })
+
     const renderHeaderContent = useCallback(() => {
       if (title || subtitle || renderHeader) {
         const hasTitle = Boolean(title || subtitle)
         return (
           <View collapsable={false}>
+            {/* The measured view deliberately excludes the `hasTitle &&
+                renderHeader` sibling below: `headerLayout` drives the snap
+                region and the `minHeight` title reservation, and custom header
+                content (e.g. DeviceConnectionScreen's Bluetooth banner) must
+                not be treated as collapsible space. */}
             <View
-              ref={headerRef}
               collapsable={false}
               onLayout={handleHeaderLayout}
               style={[headerStyle, hasTitle ? { gap: 4 } : undefined]}>
               {hasTitle ? (
-                <Animated.View style={[animatedHeaderStyle]}>
-                  <ScreenHeader
-                    title={title ?? ''}
-                    titleSx={titleSx}
-                    titleNumberOfLines={4}
-                    description={subtitle}
-                  />
-                </Animated.View>
+                <View
+                  style={{
+                    gap: 6,
+                    paddingBottom: 12
+                  }}>
+                  {title ? (
+                    <Animated.View
+                      onLayout={handleTitleLayout}
+                      style={animatedTitleStyle}>
+                      <Text variant="heading2" numberOfLines={4} sx={titleSx}>
+                        {title}
+                      </Text>
+                    </Animated.View>
+                  ) : null}
+
+                  {subtitle ? (
+                    <Animated.View
+                      onLayout={handleSubtitleLayout}
+                      style={[animatedSubtitleStyle]}>
+                      <Text
+                        variant="subtitle1"
+                        sx={{ color: '$textSecondary' }}>
+                        {subtitle}
+                      </Text>
+                    </Animated.View>
+                  ) : null}
+                </View>
               ) : null}
 
               {!hasTitle && renderHeader?.()}
@@ -337,7 +540,6 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
         // so that the header height is not undefined
         return (
           <View
-            ref={headerRef}
             collapsable={false}
             onLayout={handleHeaderLayout}
             style={[
@@ -353,7 +555,6 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
-      headerRef,
       headerHeight,
       headerStyle,
       handleHeaderLayout,
@@ -372,11 +573,12 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           const footerContent = (
             <LinearGradientBottomWrapper>
               <View
+                onLayout={handleFooterLayout}
                 style={{
                   paddingHorizontal: 16,
                   paddingBottom: insets.bottom + 16
                 }}>
-                <View onLayout={handleFooterLayout}>{footer}</View>
+                {footer}
               </View>
             </LinearGradientBottomWrapper>
           )
@@ -472,10 +674,29 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     // 90% of our screens reuse this component but only some need keyboard avoiding
     // If you have an input on the screen, you need to enable this prop
     if (shouldAvoidKeyboard) {
+      // On an Android form sheet, offset the scroll view *below* the header
+      // (margin) instead of letting it span the full height and inset its
+      // content (padding). When `nestedScrollEnabled` is on for scrollable
+      // content, a full-height scroll view claims vertical drags across the
+      // whole sheet — including the header strip — so the sheet's own
+      // drag-to-dismiss dies there (the strip has nothing to scroll and the
+      // scroll view doesn't forward the drag). Keeping the scroll view below
+      // the header leaves that strip over a non-scrolling view, so the sheet
+      // intercepts drags there and grabber/header swipe-to-dismiss works even
+      // while the body scrolls. iOS/non-modal keep the under-header layout so
+      // content still scrolls beneath the transparent header. (CP-14679)
+      const scrollBelowHeader = Platform.OS === 'android' && Boolean(isModal)
+      // Attach the internal composed content-size handler only when
+      // `onScrolledToEnd` (scroll-to-end tracking) needs it; otherwise the
+      // caller's callback is passed through directly so screens without that
+      // prop don't run extra JS on every content-size change. `onLayout` is
+      // always composed: it measures the viewport that drives `minHeight`.
+      const pickScrollHandler = <T,>(composed: T, passthrough: T): T =>
+        onScrolledToEnd ? composed : passthrough
       return (
         <View style={{ flex: 1 }} collapsable={false}>
           <KeyboardScrollView
-            ref={ref as never}
+            ref={setScrollViewRef as never}
             testID={testID}
             mode={mode}
             extraKeyboardSpace={disableStickyFooter ? -insets.bottom : 0}
@@ -483,24 +704,45 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             {...props}
-            style={{
-              flex: 1
-            }}
+            // Static — see `scrollBelowHeader`'s declaration above for why
+            // this can't be gated on overflow or scroll position.
+            // (CP-14679, CP-14976)
+            nestedScrollEnabled={scrollBelowHeader}
+            // `props.style` is merged last so a caller's style is preserved
+            // (it would otherwise be dropped: `{...props}` spreads `style` but
+            // this explicit `style` prop replaces it). Defaults come first so
+            // `flex: 1` and the Android modal offset still apply unless the
+            // caller overrides them, mirroring the `contentContainerStyle`
+            // merge below and the non-keyboard branch's wrapper `props.style`.
+            style={[
+              { flex: 1 },
+              scrollBelowHeader ? { marginTop: headerHeight } : null,
+              props?.style
+            ]}
             contentContainerStyle={[
               props?.contentContainerStyle,
               {
+                // `footerLayout` is measured on the padded footer wrapper, so
+                // its height already includes the bottom safe area — only add
+                // the inset when there's no measured footer.
                 paddingBottom:
-                  (footerLayout?.height ?? 0) +
-                  (disableStickyFooter ? insets.bottom : 0) +
+                  (footerLayout?.height ??
+                    (disableStickyFooter ? insets.bottom : 0)) +
                   EXTRA_PADDING_BOTTOM,
-                paddingTop: headerHeight
+                // Offset lives on the scroll view's margin when below the
+                // header; otherwise inset the content so it sits under the
+                // transparent header.
+                paddingTop: scrollBelowHeader ? 0 : headerHeight,
+                minHeight
               }
             ]}
             onScroll={onScroll}
-            onContentSizeChange={
-              onScrolledToEnd ? handleContentSizeChange : undefined
-            }
-            onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
+            onScrollEndDrag={handleScrollEndDrag}
+            onContentSizeChange={pickScrollHandler(
+              handleContentSizeChangeComposed,
+              onContentSizeChangeProp
+            )}
+            onLayout={handleScrollViewLayoutComposed}>
             {renderHeaderContent()}
             {children}
           </KeyboardScrollView>
@@ -515,34 +757,78 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
 
     // All of our screens have to be scrollable
     // If we don't have an input on the screen then we should not enable keyboard avoiding
+    //
+    // On an Android form sheet this branch used to kill the sheet's
+    // swipe-to-dismiss outright (CP-14765). Two reasons, both fixed below:
+    //
+    //  1. The gesture-handler `ScrollView` wraps the native scroll view in a
+    //     `NativeViewGestureHandler`, which requests disallow-intercept from its
+    //     ancestors as soon as it takes the touch. That locks the parent
+    //     `BottomSheetBehavior` out of the vertical drag, so dragging down does
+    //     nothing at all — it neither scrolls nor dismisses. A plain RN
+    //     ScrollView instead lets the sheet negotiate through Android's
+    //     nested scrolling (opted into via a static `nestedScrollEnabled`,
+    //     exactly like the keyboard branch — see its declaration above).
+    //  2. It spanned the full sheet height and only inset its content
+    //     (`paddingTop`), so it covered the grabber/header strip too and there
+    //     was nowhere left to grab the sheet. Offsetting with `marginTop` keeps
+    //     that strip over a non-scrolling view, so header/grabber drags always
+    //     reach the sheet.
+    //
+    // This mirrors the treatment the keyboard branch already got in CP-14679;
+    // iOS and non-modal screens keep the gesture-handler ScrollView and the
+    // under-header layout so content still scrolls beneath the transparent
+    // header.
+    const scrollBelowHeader = Platform.OS === 'android' && Boolean(isModal)
+    const ScrollComponent = scrollBelowHeader ? RNScrollView : ScrollView
     return (
       <View style={[{ flex: 1 }, props.style]} collapsable={false}>
-        <ScrollView
-          ref={ref}
+        <ScrollComponent
+          ref={setScrollViewRef}
           testID={testID}
-          style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           {...props}
+          // See (1) above — only meaningful on the Android modal path, where a
+          // parent sheet exists to negotiate with. Static — see
+          // `scrollBelowHeader`'s declaration above (CP-14976).
+          nestedScrollEnabled={scrollBelowHeader}
+          // Defaults first so `flex: 1` still applies unless the caller
+          // overrides it (previous behaviour: `props.style` replaced it
+          // outright), and the Android modal offset last so the fix can't be
+          // dropped by a caller-supplied style.
+          style={[
+            { flex: 1 },
+            props?.style,
+            scrollBelowHeader ? { marginTop: headerHeight } : null
+          ]}
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
+              // `footerLayout` is measured on the padded footer wrapper, so
+              // its height already includes the bottom safe area — only add
+              // the inset when there's no measured footer.
               paddingBottom:
-                (footerLayout?.height ?? 0) +
-                insets.bottom +
-                EXTRA_PADDING_BOTTOM,
-              paddingTop: headerHeight
+                (footerLayout?.height ?? insets.bottom) + EXTRA_PADDING_BOTTOM,
+              // Offset lives on the scroll view's margin when below the
+              // header; otherwise inset the content so it sits under the
+              // transparent header.
+              paddingTop: scrollBelowHeader ? 0 : headerHeight,
+              minHeight
             }
           ]}
           onScroll={onScroll}
+          onScrollEndDrag={handleScrollEndDrag}
           onContentSizeChange={
-            onScrolledToEnd ? handleContentSizeChange : undefined
+            onScrolledToEnd
+              ? handleContentSizeChangeComposed
+              : onContentSizeChangeProp
           }
-          onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
+          onLayout={handleScrollViewLayoutComposed}>
           {renderHeaderContent()}
           {children}
-        </ScrollView>
+        </ScrollComponent>
 
         {renderFooterContent()}
         {renderHeaderBackground()}

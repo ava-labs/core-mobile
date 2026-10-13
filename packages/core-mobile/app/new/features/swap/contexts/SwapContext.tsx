@@ -10,7 +10,6 @@ import React, {
   useMemo
 } from 'react'
 import { showAlert } from '@avalabs/k2-alpine'
-import { SwapSide } from '@paraswap/sdk'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -43,10 +42,7 @@ import {
 import { useQuoteStreaming } from '../hooks/useQuoteStreaming'
 import { useQuickSwaps } from '../hooks/useQuickSwaps'
 import FusionService from '../services/FusionService'
-import {
-  mapFeeSettingToGasSettings,
-  SuggestedGasFees
-} from '../utils/quickSwapsFee'
+import { buildFusionGasSettings } from '../utils/quickSwapsFee'
 import {
   isUserRejectionError,
   shouldRetryWithNextQuote,
@@ -93,8 +89,6 @@ interface SwapContextState {
   setSlippage: Dispatch<number>
   autoSlippage: boolean
   setAutoSlippage: Dispatch<boolean>
-  destination: SwapSide
-  setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
   /** Live source-token amount in smallest units. Exposed for consumers
    *  (e.g. the pricing details modal) that need to recompute downstream
@@ -112,6 +106,14 @@ interface SwapContextState {
   setUserClickedMax: Dispatch<boolean>
   /** ID of the transfer that was just successfully submitted */
   successTransferId: string | undefined
+  /**
+   * GasSettings for the recurring first-fill batch. Always carries the
+   * EIP-1559 tier override (from `feeSetting` + live `networkFees`) so the
+   * SDK's batch path fills `maxFeePerGas` and the batch reaches the manual
+   * BatchApprovalScreen instead of falling back to sequential approvals.
+   * (CP-14641)
+   */
+  recurringGasSettings: GasSettings
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -128,7 +130,6 @@ export const SwapContextProvider = ({
   const [toToken, setToToken] = useSwapSelectedToToken()
   const [slippage, setSlippage] = useState<number>(DEFAULT_SLIPPAGE)
   const [autoSlippage, setAutoSlippage] = useState<boolean>(true)
-  const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
   const [swapStatus, setSwapStatus] = useState<SwapStatus>(SwapStatus.Idle)
   const [successTransferId, setSuccessTransferId] = useState<
     string | undefined
@@ -186,6 +187,23 @@ export const SwapContextProvider = ({
   // Quick Swaps gas tier
   const { isEnabled: isQuickSwapsActive, feeSetting, maxBuy } = useQuickSwaps()
   const { data: networkFees } = useNetworkFee(fromNetwork)
+
+  // Recurring first-fills always need the EIP-1559 tier override (independent
+  // of the Quick Swaps toggle): the SDK's batch path only spreads
+  // `maybe1559(gasSettings)` onto the batch txs and never estimates fees for
+  // them, so without an explicit maxFeePerGas the recurring batch trips
+  // EvmSigner.signBatch's "fees pre-filled" guard and falls back to sequential
+  // per-tx approvals. Reuses the same `feeSetting` as regular swaps. (CP-14641)
+  const recurringGasSettings = useMemo(
+    () =>
+      buildFusionGasSettings({
+        networkFees,
+        feeSetting,
+        estimateGasMarginBps: transferGasMarginBps,
+        applyTierOverride: true
+      }),
+    [networkFees, feeSetting, transferGasMarginBps]
+  )
   const toNetwork = useMemo(
     () => (toToken ? getNetwork(toToken.networkChainId) : undefined),
     [toToken, getNetwork]
@@ -311,15 +329,14 @@ export const SwapContextProvider = ({
         'address' in toTokenData ? toTokenData.address : undefined
       audioFeedback(Audios.Send)
       AnalyticsService.capture('SwapConfirmed', {
-        encrypted: {
-          sourceAddress: address,
-          targetAddress,
-          sourceChainId: quote.sourceChain.chainId,
-          targetChainId: quote.targetChain.chainId,
-          sourceTxHash: transfer.source?.txHash,
-          quoteSelectionMode,
-          autoRetryAttempt
-        },
+        sourceAddress: address,
+        targetAddress,
+        sourceChainId: quote.sourceChain.chainId,
+        targetChainId: quote.targetChain.chainId,
+        sourceTxHash: transfer.source?.txHash,
+        quoteSelectionMode,
+        autoRetryAttempt,
+        serviceType: quote.serviceType,
         caip2SourceChainId: quote.sourceChain.chainId,
         caip2TargetChainId: quote.targetChain.chainId,
         quickSwapsEnabled: isQuickSwapsActive,
@@ -445,25 +462,17 @@ export const SwapContextProvider = ({
       setSwapStatus(SwapStatus.Swapping)
 
       try {
-        let gasSettings: GasSettings = {
-          estimateGasMarginBps: transferGasMarginBps
-        }
-
-        if (isQuickSwapsActive) {
-          const suggested: SuggestedGasFees | undefined = networkFees && {
-            slow: networkFees.low,
-            normal: networkFees.medium,
-            fast: networkFees.high
-          }
-          const tierOverride = mapFeeSettingToGasSettings(feeSetting, suggested)
-          if (tierOverride) {
-            gasSettings = { ...gasSettings, ...tierOverride }
-          } else {
-            Logger.warn(
-              '[SwapContext] no gas tier override available; using SDK default',
-              { feeSetting }
-            )
-          }
+        const gasSettings = buildFusionGasSettings({
+          networkFees,
+          feeSetting,
+          estimateGasMarginBps: transferGasMarginBps,
+          applyTierOverride: isQuickSwapsActive
+        })
+        if (isQuickSwapsActive && gasSettings.maxFeePerGas === undefined) {
+          Logger.warn(
+            '[SwapContext] no gas tier override available; using SDK default',
+            { feeSetting }
+          )
         }
 
         if (
@@ -580,14 +589,13 @@ export const SwapContextProvider = ({
     setSlippage,
     autoSlippage,
     setAutoSlippage,
-    destination,
-    setDestination,
     swapStatus,
     amount,
     setAmount,
     userClickedMax,
     setUserClickedMax,
-    successTransferId
+    successTransferId,
+    recurringGasSettings
   }
 
   return <SwapContext.Provider value={value}>{children}</SwapContext.Provider>

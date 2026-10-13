@@ -1,8 +1,24 @@
 import { SquareButton, SquareButtonIconType } from '@avalabs/k2-alpine'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
+import {
+  useIsActiveWalletKeystoneDeprecated,
+  useKeystoneDeprecation
+} from 'features/keystone/hooks/useKeystoneDeprecation'
 import { ActionButtonTitle } from '../consts'
+
+/**
+ * Actions that end in a signature, which a Keystone wallet can no longer
+ * produce. Buy, Receive and Hide/Unhide are excluded because they still work.
+ */
+const SIGNING_ACTIONS: readonly ActionButtonTitle[] = [
+  ActionButtonTitle.Send,
+  ActionButtonTitle.Swap,
+  ActionButtonTitle.Stake,
+  ActionButtonTitle.Bridge,
+  ActionButtonTitle.Withdraw
+]
 
 export const ActionButtons = ({
   buttons,
@@ -11,6 +27,21 @@ export const ActionButtons = ({
   buttons: ActionButton[]
   contentContainerStyle?: StyleProp<ViewStyle>
 }): JSX.Element => {
+  const isKeystoneDeprecated = useIsActiveWalletKeystoneDeprecated()
+  const { openDeprecationInfo } = useKeystoneDeprecation()
+
+  // Explain up front rather than letting a Keystone user pick a recipient,
+  // enter an amount and wait on a fee quote for a transaction that can only
+  // fail at the signing step. The buttons stay enabled: a disabled button
+  // would swallow the tap and explain nothing.
+  const resolveOnPress = useCallback(
+    (item: ActionButton): (() => void) =>
+      isKeystoneDeprecated && SIGNING_ACTIONS.includes(item.title)
+        ? openDeprecationInfo
+        : item.onPress,
+    [isKeystoneDeprecated, openDeprecationInfo]
+  )
+
   // NOTE: We intentionally render each button WITHOUT a reanimated `entering`
   // animation. The previous staggered `FadeInRight(...).springify()` entrance
   // could be left stuck at intermediate values (semi-transparent and/or
@@ -27,7 +58,7 @@ export const ActionButtons = ({
         testID={`action_button__${item.title}`}
         title={item.title}
         icon={item.icon}
-        onPress={item.onPress}
+        onPress={resolveOnPress(item)}
         disabled={item.disabled}
       />
     )

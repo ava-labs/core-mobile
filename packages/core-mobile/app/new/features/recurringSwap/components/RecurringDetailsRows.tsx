@@ -442,72 +442,79 @@ export function RecurringDetailsRows({
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
+    // `overflow: 'hidden'` must NOT sit on the `LinearTransition` view: under
+    // RN's new architecture (Fabric) on Android a layout-animated view with
+    // `overflow: 'hidden'` settles at a stale (too-short) height when a
+    // CollapsibleRow expands, clipping the chip picker. The clip lives on a
+    // static inner view (measures the real height); the animated view keeps its
+    // rounded background via `borderRadius` alone.
     <Animated.View
       layout={LinearTransition.easing(Easing.inOut(Easing.ease))}
       style={{
         marginTop: 8,
         borderRadius: 12,
-        overflow: 'hidden',
         backgroundColor: theme.colors.$surfaceSecondary
       }}>
-      <AndroidUnitListDialog
-        visible={androidUnitPickerVisible}
-        onSelect={handleAndroidUnitPicked}
-        onDismiss={() => setAndroidUnitPickerVisible(false)}
-      />
-      <CollapsibleRow
-        title="Frequency"
-        value={formatFrequency(frequency)}
-        expanded={expandedRow === 'frequency'}
-        onToggle={() => toggleRow('frequency')}
-        testID="recurring_row__frequency">
-        <View sx={{ padding: 16 }}>
-          <RecurrenceChips
-            options={FREQ_CHIPS}
-            selectedId={selectedFreqChip}
-            onSelect={handleSelectFreqChip}
-            testID="frequency_chips"
-          />
-        </View>
-      </CollapsibleRow>
-      <Separator sx={{ marginLeft: 16 }} />
-      <CollapsibleRow
-        title="Number of orders"
-        value={formatOrders(numberOfOrders)}
-        expanded={expandedRow === 'orders'}
-        onToggle={() => toggleRow('orders')}
-        testID="recurring_row__orders">
-        <View sx={{ padding: 16 }}>
-          <RecurrenceChips
-            options={ordersChips}
-            selectedId={selectedOrdersChip}
-            onSelect={handleSelectOrdersChip}
-            testID="orders_chips"
-          />
-        </View>
-      </CollapsibleRow>
-      {totalSpend !== null && (
-        <>
-          <Separator sx={{ marginLeft: 16 }} />
-          <View
-            sx={{
-              minHeight: 52,
-              paddingHorizontal: 16,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-            <Text
-              variant="buttonMedium"
-              sx={{ fontFamily: 'Inter-Medium', fontSize: 16 }}>
-              Estimated total spend
-            </Text>
-            <Text variant="body1" sx={{ color: '$textSecondary' }}>
-              {totalSpend}
-            </Text>
+      <View style={{ borderRadius: 12, overflow: 'hidden' }}>
+        <AndroidUnitListDialog
+          visible={androidUnitPickerVisible}
+          onSelect={handleAndroidUnitPicked}
+          onDismiss={() => setAndroidUnitPickerVisible(false)}
+        />
+        <CollapsibleRow
+          title="Frequency"
+          value={formatFrequency(frequency)}
+          expanded={expandedRow === 'frequency'}
+          onToggle={() => toggleRow('frequency')}
+          testID="recurring_row__frequency">
+          <View sx={{ padding: 16 }}>
+            <RecurrenceChips
+              options={FREQ_CHIPS}
+              selectedId={selectedFreqChip}
+              onSelect={handleSelectFreqChip}
+              testID="frequency_chips"
+            />
           </View>
-        </>
-      )}
+        </CollapsibleRow>
+        <Separator sx={{ marginLeft: 16 }} />
+        <CollapsibleRow
+          title="Number of orders"
+          value={formatOrders(numberOfOrders)}
+          expanded={expandedRow === 'orders'}
+          onToggle={() => toggleRow('orders')}
+          testID="recurring_row__orders">
+          <View sx={{ padding: 16 }}>
+            <RecurrenceChips
+              options={ordersChips}
+              selectedId={selectedOrdersChip}
+              onSelect={handleSelectOrdersChip}
+              testID="orders_chips"
+            />
+          </View>
+        </CollapsibleRow>
+        {totalSpend !== null && (
+          <>
+            <Separator sx={{ marginLeft: 16 }} />
+            <View
+              sx={{
+                minHeight: 52,
+                paddingHorizontal: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+              <Text
+                variant="buttonMedium"
+                sx={{ fontFamily: 'Inter-Medium', fontSize: 16 }}>
+                Estimated total spend
+              </Text>
+              <Text variant="body1" sx={{ color: '$textSecondary' }}>
+                {totalSpend}
+              </Text>
+            </View>
+          </>
+        )}
+      </View>
     </Animated.View>
   )
 }

@@ -19,6 +19,7 @@ it('should format numbers less than 1 million with fixed decimal places', () => 
 })
 
 it('should format numbers greater than or equal to 1 million using shorthand notation', () => {
+  expect(formatNumber(1000000)).toBe('1M')
   expect(formatNumber(1234567)).toBe('1.23M')
   expect(formatNumber(-1234567)).toBe('1.23M')
   expect(formatNumber(1500000)).toBe('1.5M')

@@ -1,5 +1,4 @@
 import { evm, UnsignedTx } from '@avalabs/avalanchejs'
-import { ErrorBase } from 'errors/ErrorBase'
 import { FundsStuckError } from 'hooks/earn/errors'
 import NetworkService from 'services/network/NetworkService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
@@ -9,6 +8,7 @@ import { Account } from 'store/account/types'
 import { AvaxC } from 'types/AvaxC'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import { weiToNano } from 'utils/units/converter'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
@@ -89,21 +89,24 @@ export async function exportC({
   Logger.trace('txID', txID)
 
   try {
-    const { status } = await retry<evm.GetAtomicTxStatusResponse>({
-      operation: () => avaxProvider.getApiC().getAtomicTxStatus(txID),
-      shouldStop: result =>
-        result.status === 'Accepted' || result.status === 'Dropped',
+    // The node sets blockHeight only once the atomic tx is accepted, and it
+    // serves Processing and Dropped txs without one, so its presence is the
+    // only acceptance signal available here. A tx the node has not indexed yet
+    // rejects outright, which retry() treats as another attempt.
+    await retry<evm.GetAtomicTxResponse>({
+      operation: () => avaxProvider.getApiC().getAtomicTx({ txID }),
+      shouldStop: result => result.blockHeight !== undefined,
       maxRetries: maxTransactionStatusCheckRetries
     })
-    if (status === 'Dropped') {
-      throw new ErrorBase({
-        name: 'EXPORT_DROPPED',
-        message: 'Export was dropped',
-        cause: new Error('Export was dropped')
-      })
-    }
   } catch (e) {
-    Logger.error('exportC failed', e)
+    // Sentry groups by the passed error, which demotes this message to an
+    // extra and collapses every earn confirmation failure into one
+    // "Max retry exceeded" bucket. Tags survive grouping, so they are what
+    // makes this leg findable.
+    Logger.error('exportC failed', e, {
+      source: SentryTag.Earn,
+      operation: 'exportC'
+    })
     throw new FundsStuckError({
       name: 'CONFIRM_EXPORT_FAIL',
       message: 'Export did not finish',

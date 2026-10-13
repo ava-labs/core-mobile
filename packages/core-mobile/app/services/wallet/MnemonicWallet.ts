@@ -13,7 +13,8 @@ import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
   Wallet,
-  SolanaTransactionRequest
+  SolanaTransactionRequest,
+  MessageSigningRequest
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest } from 'ethers'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -197,26 +198,28 @@ export class MnemonicWallet implements Wallet {
 
   /** WALLET INTERFACE IMPLEMENTATION **/
   public async signMessage({
-    rpcMethod,
-    data,
+    signingData,
     accountIndex,
     network,
     provider
   }: {
-    rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    signingData: MessageSigningRequest
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal
   }): Promise<string> {
-    switch (rpcMethod) {
+    switch (signingData.type) {
       case RpcMethod.SOLANA_SIGN_MESSAGE:
-        return this.signSolanaMessage(data as string, accountIndex)
+        return this.signSolanaMessage(signingData.data, accountIndex)
 
       case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
         const chainAlias = getChainAliasFromNetwork(network)
         if (!chainAlias) throw new Error('invalid chain alias')
-        return this.signAvalancheMessage(accountIndex, data, chainAlias)
+        return this.signAvalancheMessage(
+          accountIndex,
+          signingData.data,
+          chainAlias
+        )
       }
 
       case RpcMethod.ETH_SIGN:
@@ -226,11 +229,11 @@ export class MnemonicWallet implements Wallet {
       case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4:
         return this.signEvmMessage(
-          data,
+          signingData.data,
           accountIndex,
           network,
           provider,
-          rpcMethod
+          signingData.type
         )
 
       default:

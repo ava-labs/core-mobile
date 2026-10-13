@@ -18,7 +18,8 @@ const READY: RecurringSubmitGateParams = {
   hasRecurringQuote: true,
   recurringSubmitting: false,
   validationError: null,
-  isRecurringMinimumReady: true
+  isRecurringMinimumReady: true,
+  hasRecurringFees: true
 }
 
 describe('hasBlockingValidationError', () => {
@@ -94,6 +95,14 @@ describe('isRecurringReady', () => {
     expect(isRecurringReady({ ...READY, isRecurringMinimumReady: true })).toBe(
       true
     )
+  })
+
+  // Cold-start fee guard: `recurringGasSettings` starts fee-less until live
+  // `networkFees` load. Submitting fee-less trips signBatch's guard and, on the
+  // software-wallet path (fallback disabled), hard-fails the whole swap — so
+  // readiness must stay false until the EIP-1559 override is filled. (CP-14641)
+  it('is false while the recurring batch gas fees are not yet filled', () => {
+    expect(isRecurringReady({ ...READY, hasRecurringFees: false })).toBe(false)
   })
 })
 

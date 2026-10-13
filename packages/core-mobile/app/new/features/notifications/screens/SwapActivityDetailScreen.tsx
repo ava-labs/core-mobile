@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { useFusionTransfers } from 'features/swap/hooks/useZustandStore'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { RecoveredFundsNotice } from 'features/swap/components/RecoveredFundsNotice'
 import { NotificationSwapStatus } from '../types'
 import { TokenAmountRow } from '../components/TokenAmountRow'
 import { SwapStatusCard } from '../components/SwapStatusCard'
@@ -105,6 +106,14 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
             isDebit={false}
           />
         </View>
+
+        {/* Explains why the received amount can exceed what was sent: AVAX
+            stranded by a previous incomplete cross-chain transfer is swept into
+            this import. Hidden on failure, where nothing was received. */}
+        {display.includesRecoveredFunds &&
+          display.status !== NotificationSwapStatus.Failed && (
+            <RecoveredFundsNotice />
+          )}
 
         {/* Card 2: From network + source-chain status */}
         <SwapStatusCard

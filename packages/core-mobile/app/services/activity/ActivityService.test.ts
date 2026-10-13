@@ -1,18 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  NetworkVMType,
-  Network,
-  NetworkContractToken,
-  ChainId
-} from '@avalabs/core-chains-sdk'
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { NetworkVMType, Network, ChainId } from '@avalabs/core-chains-sdk'
 import {
   TokenType,
   Transaction as InternalTransaction,
   TransactionType
 } from '@avalabs/vm-module-types'
+import { getSolanaCaip2ChainId } from 'utils/caip2ChainIds'
 import { ActivityService } from './ActivityService'
 
 const SOLANA_CHAIN_ID = ChainId.SOLANA_MAINNET_ID
+const SOLANA_CAIP2_ID = getSolanaCaip2ChainId(SOLANA_CHAIN_ID)
 
 const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 const PUMP_MINT = 'PUMPkefFSVR5uvSKAhGsLGpeDE9w3RGGDbsGPsZrWJo'
@@ -35,11 +33,6 @@ jest.mock('vmModule/ModuleManager', () => ({
 
 jest.mock('vmModule/utils/mapToVmNetwork', () => ({
   mapToVmNetwork: (network: any) => network
-}))
-
-const mockGetCachedTokenList = jest.fn()
-jest.mock('hooks/networks/useTokenList', () => ({
-  getCachedTokenList: () => mockGetCachedTokenList()
 }))
 
 const mockGetQueriesData = jest.fn()
@@ -66,6 +59,15 @@ jest.mock('utils/Logger', () => ({
     warn: jest.fn(),
     error: jest.fn()
   }
+}))
+
+const mockPostV1TokenLookup = jest.fn()
+jest.mock('utils/api/generated/tokenAggregator/aggregatorApi.client', () => ({
+  postV1TokenLookup: (...args: unknown[]) => mockPostV1TokenLookup(...args)
+}))
+
+jest.mock('utils/api/clients/aggregatedTokensApiClient', () => ({
+  tokenAggregatorApi: {}
 }))
 
 // --- Helpers ---
@@ -104,20 +106,6 @@ function makeEvmNetwork(): Network {
       decimals: 18
     }
   } as Network
-}
-
-function makeSplToken(
-  address: string,
-  symbol: string,
-  name: string
-): NetworkContractToken {
-  return {
-    address,
-    symbol,
-    name,
-    decimals: 6,
-    contractType: 'SPL'
-  } as NetworkContractToken
 }
 
 function makeUnknownTxToken(
@@ -175,12 +163,11 @@ function makeTx(
   }
 }
 
-function makeModule(
-  getTokensResult: any[] = [],
-  getTransactionHistoryResult?: { transactions: any[]; nextPageToken?: string }
-) {
+function makeModule(getTransactionHistoryResult?: {
+  transactions: any[]
+  nextPageToken?: string
+}) {
   return {
-    getTokens: jest.fn().mockResolvedValue(getTokensResult),
     getTransactionHistory: jest.fn().mockResolvedValue(
       getTransactionHistoryResult ?? {
         transactions: [],
@@ -188,6 +175,27 @@ function makeModule(
       }
     )
   }
+}
+
+// Builds a `/v1/token/lookup` response, keyed the way the real API keys its
+// `data.data` map: `{caip2Id}-{address}`. Confirmed against the live
+// endpoint: Solana caip2Ids and base58 addresses come back case-preserved
+// (unlike EVM addresses, which the server lowercases).
+function lookupKey(address: string): string {
+  return `${SOLANA_CAIP2_ID}-${address}`
+}
+
+function makeLookupResponse(
+  entries: Array<{ address: string; symbol: string; name: string }>
+): { data: { data: Record<string, { symbol: string; name: string }> } } {
+  const data: Record<string, { symbol: string; name: string }> = {}
+  for (const entry of entries) {
+    data[lookupKey(entry.address)] = {
+      symbol: entry.symbol,
+      name: entry.name
+    }
+  }
+  return { data: { data } }
 }
 
 // --- Tests ---
@@ -199,93 +207,8 @@ describe('ActivityService', () => {
     jest.clearAllMocks()
     service = new ActivityService()
     mockGetAddressByNetwork.mockReturnValue('userSolanaAddress')
-    mockGetCachedTokenList.mockResolvedValue({})
     mockGetQueriesData.mockReturnValue([])
-  })
-
-  describe('enrichNetworkWithTokens', () => {
-    it('should skip enrichment for non-SVM networks', async () => {
-      const evmNetwork = makeEvmNetwork()
-      const module = makeModule()
-      mockLoadModuleByNetwork.mockResolvedValue(module)
-
-      await service.getActivities({
-        network: evmNetwork,
-        account: {} as any
-      })
-
-      expect(mockGetCachedTokenList).not.toHaveBeenCalled()
-    })
-
-    it('should merge token list tokens with existing network tokens', async () => {
-      const existingToken = makeSplToken(USDC_MINT, 'USDC', 'USD Coin')
-      const newToken = makeSplToken(PUMP_MINT, 'PUMP', 'Pump Token')
-
-      const network = makeSvmNetwork({ tokens: [existingToken] })
-
-      mockGetCachedTokenList.mockResolvedValue({
-        [SOLANA_CHAIN_ID]: {
-          tokens: [
-            makeSplToken(USDC_MINT, 'USDC-dup', 'USDC Duplicate'),
-            newToken
-          ]
-        }
-      })
-
-      const module = makeModule()
-      mockLoadModuleByNetwork.mockResolvedValue(module)
-
-      await service.getActivities({
-        network,
-        account: {} as any
-      })
-
-      // The network passed to getTransactionHistory should have merged tokens
-      const passedNetwork =
-        module.getTransactionHistory.mock.calls[0]![0].network
-      expect(passedNetwork.tokens).toHaveLength(2)
-      // Existing token preserved (not duplicated)
-      expect(passedNetwork.tokens[0].symbol).toBe('USDC')
-      // New token added
-      expect(passedNetwork.tokens[1].symbol).toBe('PUMP')
-    })
-
-    it('should return network unchanged when token list is empty', async () => {
-      const network = makeSvmNetwork()
-      mockGetCachedTokenList.mockResolvedValue({
-        [SOLANA_CHAIN_ID]: { tokens: [] }
-      })
-
-      const module = makeModule()
-      mockLoadModuleByNetwork.mockResolvedValue(module)
-
-      await service.getActivities({
-        network,
-        account: {} as any
-      })
-
-      const passedNetwork =
-        module.getTransactionHistory.mock.calls[0]![0].network
-      expect(passedNetwork.tokens).toEqual([])
-    })
-
-    it('should handle getCachedTokenList failure gracefully', async () => {
-      const network = makeSvmNetwork()
-      mockGetCachedTokenList.mockRejectedValue(new Error('Network error'))
-
-      const module = makeModule()
-      mockLoadModuleByNetwork.mockResolvedValue(module)
-
-      await service.getActivities({
-        network,
-        account: {} as any
-      })
-
-      // Should still proceed with the original network
-      const passedNetwork =
-        module.getTransactionHistory.mock.calls[0]![0].network
-      expect(passedNetwork.tokens).toEqual([])
-    })
+    mockPostV1TokenLookup.mockResolvedValue({ data: { data: {} } })
   })
 
   describe('resolveUnknownTokenSymbols', () => {
@@ -293,7 +216,7 @@ describe('ActivityService', () => {
       const evmNetwork = makeEvmNetwork()
       const unknownToken = makeUnknownTxToken(USDC_MINT, '10')
 
-      const module = makeModule([], {
+      const module = makeModule({
         transactions: [makeTx([unknownToken])],
         nextPageToken: undefined
       })
@@ -306,14 +229,14 @@ describe('ActivityService', () => {
 
       // Token should remain Unknown since resolution is skipped for EVM
       expect(result.transactions[0]!.tokens[0]!.symbol).toBe('Unknown')
-      expect(module.getTokens).not.toHaveBeenCalled()
+      expect(mockPostV1TokenLookup).not.toHaveBeenCalled()
     })
 
     it('should skip resolution when no unknown tokens exist', async () => {
       const network = makeSvmNetwork()
       const knownToken = makeKnownTxToken(USDC_MINT, 'USDC', '10')
 
-      const module = makeModule([], {
+      const module = makeModule({
         transactions: [makeTx([knownToken])],
         nextPageToken: undefined
       })
@@ -324,34 +247,22 @@ describe('ActivityService', () => {
         account: {} as any
       })
 
-      expect(module.getTokens).not.toHaveBeenCalled()
+      expect(mockPostV1TokenLookup).not.toHaveBeenCalled()
     })
 
-    it('should resolve unknown tokens from module token registry', async () => {
+    it('should resolve unknown tokens from the token-aggregator lookup', async () => {
       const network = makeSvmNetwork()
       const unknownUsdc = makeUnknownTxToken(USDC_MINT, '0.1')
       const unknownPump = makeUnknownTxToken(PUMP_MINT, '44.473')
 
-      const moduleTokens = [
-        {
-          address: USDC_MINT,
-          symbol: 'USDC',
-          name: 'USD Coin',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        },
-        {
-          address: PUMP_MINT,
-          symbol: 'PUMP',
-          name: 'Pump Token',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        }
-      ]
+      mockPostV1TokenLookup.mockResolvedValueOnce(
+        makeLookupResponse([
+          { address: USDC_MINT, symbol: 'USDC', name: 'USD Coin' },
+          { address: PUMP_MINT, symbol: 'PUMP', name: 'Pump Token' }
+        ])
+      )
 
-      const module = makeModule(moduleTokens, {
+      const module = makeModule({
         transactions: [makeTx([unknownUsdc, unknownPump])],
         nextPageToken: undefined
       })
@@ -368,22 +279,16 @@ describe('ActivityService', () => {
       expect(result.transactions[0]!.tokens[1]!.name).toBe('Pump Token')
     })
 
-    it('should resolve unknown tokens from balance cache when module registry misses them', async () => {
+    it('should resolve unknown tokens from balance cache when the token lookup misses them', async () => {
       const network = makeSvmNetwork()
       const unknownUsdc = makeUnknownTxToken(USDC_MINT, '0.1')
       const unknownPump = makeUnknownTxToken(PUMP_MINT, '44.473')
 
-      // Module only has PUMP, not USDC
-      const moduleTokens = [
-        {
-          address: PUMP_MINT,
-          symbol: 'PUMP',
-          name: 'Pump Token',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        }
-      ]
+      mockPostV1TokenLookup.mockResolvedValueOnce(
+        makeLookupResponse([
+          { address: PUMP_MINT, symbol: 'PUMP', name: 'Pump Token' }
+        ])
+      )
 
       // Balance cache has USDC from user's portfolio
       mockGetQueriesData.mockReturnValue([
@@ -411,7 +316,7 @@ describe('ActivityService', () => {
         ]
       ])
 
-      const module = makeModule(moduleTokens, {
+      const module = makeModule({
         transactions: [makeTx([unknownUsdc, unknownPump])],
         nextPageToken: undefined
       })
@@ -428,21 +333,15 @@ describe('ActivityService', () => {
       expect(result.transactions[0]!.tokens[1]!.name).toBe('Pump Token')
     })
 
-    it('should prioritize module tokens over balance cache', async () => {
+    it('should prioritize token-lookup results over balance cache', async () => {
       const network = makeSvmNetwork()
       const unknownToken = makeUnknownTxToken(USDC_MINT, '10')
 
-      // Module returns one name
-      const moduleTokens = [
-        {
-          address: USDC_MINT,
-          symbol: 'USDC',
-          name: 'USD Coin (Official)',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        }
-      ]
+      mockPostV1TokenLookup.mockResolvedValueOnce(
+        makeLookupResponse([
+          { address: USDC_MINT, symbol: 'USDC', name: 'USD Coin (Official)' }
+        ])
+      )
 
       // Balance cache has a different name
       mockGetQueriesData.mockReturnValue([
@@ -470,7 +369,7 @@ describe('ActivityService', () => {
         ]
       ])
 
-      const module = makeModule(moduleTokens, {
+      const module = makeModule({
         transactions: [makeTx([unknownToken])],
         nextPageToken: undefined
       })
@@ -481,7 +380,6 @@ describe('ActivityService', () => {
         account: {} as any
       })
 
-      // Module source should win
       expect(result.transactions[0]!.tokens[0]!.symbol).toBe('USDC')
       expect(result.transactions[0]!.tokens[0]!.name).toBe(
         'USD Coin (Official)'
@@ -495,7 +393,7 @@ describe('ActivityService', () => {
         '999'
       )
 
-      const module = makeModule([], {
+      const module = makeModule({
         transactions: [makeTx([unknownToken])],
         nextPageToken: undefined
       })
@@ -509,9 +407,43 @@ describe('ActivityService', () => {
       expect(result.transactions[0]!.tokens[0]!.symbol).toBe('Unknown')
     })
 
-    it('should handle module.getTokens failure gracefully and still try balance cache', async () => {
+    it('does not resolve tokens when the response map is keyed with a lowercased address (regression guard: Solana addresses are case-sensitive)', async () => {
+      const network = makeSvmNetwork()
+      const unknownToken = makeUnknownTxToken(USDC_MINT, '0.1')
+
+      // A lowercased key is what the old (buggy) key-building logic produced
+      // and what the real server never returns for Solana -- this must NOT
+      // match.
+      mockPostV1TokenLookup.mockResolvedValueOnce({
+        data: {
+          data: {
+            [`${SOLANA_CAIP2_ID}-${USDC_MINT.toLowerCase()}`]: {
+              symbol: 'USDC',
+              name: 'USD Coin'
+            }
+          }
+        }
+      })
+
+      const module = makeModule({
+        transactions: [makeTx([unknownToken])],
+        nextPageToken: undefined
+      })
+      mockLoadModuleByNetwork.mockResolvedValue(module)
+
+      const result = await service.getActivities({
+        network,
+        account: {} as any
+      })
+
+      expect(result.transactions[0]!.tokens[0]!.symbol).toBe('Unknown')
+    })
+
+    it('should handle token-lookup failure gracefully and still try balance cache', async () => {
       const network = makeSvmNetwork()
       const unknownUsdc = makeUnknownTxToken(USDC_MINT, '0.1')
+
+      mockPostV1TokenLookup.mockRejectedValueOnce(new Error('API error'))
 
       // Balance cache has USDC
       mockGetQueriesData.mockReturnValue([
@@ -539,12 +471,10 @@ describe('ActivityService', () => {
         ]
       ])
 
-      const module = makeModule([], {
+      const module = makeModule({
         transactions: [makeTx([unknownUsdc])],
         nextPageToken: undefined
       })
-      // Simulate getTokens failure
-      module.getTokens.mockRejectedValue(new Error('API error'))
       mockLoadModuleByNetwork.mockResolvedValue(module)
 
       const result = await service.getActivities({
@@ -562,18 +492,13 @@ describe('ActivityService', () => {
       const knownToken = makeKnownTxToken(USDC_MINT, 'USDC', '10')
       const unknownToken = makeUnknownTxToken(PUMP_MINT, '44')
 
-      const moduleTokens = [
-        {
-          address: PUMP_MINT,
-          symbol: 'PUMP',
-          name: 'Pump Token',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        }
-      ]
+      mockPostV1TokenLookup.mockResolvedValueOnce(
+        makeLookupResponse([
+          { address: PUMP_MINT, symbol: 'PUMP', name: 'Pump Token' }
+        ])
+      )
 
-      const module = makeModule(moduleTokens, {
+      const module = makeModule({
         transactions: [makeTx([knownToken, unknownToken])],
         nextPageToken: undefined
       })
@@ -618,7 +543,7 @@ describe('ActivityService', () => {
         ]
       ])
 
-      const module = makeModule([], {
+      const module = makeModule({
         transactions: [makeTx([unknownToken])],
         nextPageToken: undefined
       })
@@ -639,26 +564,14 @@ describe('ActivityService', () => {
       const tx1 = makeTx([makeUnknownTxToken(USDC_MINT, '5')])
       const tx2 = makeTx([makeUnknownTxToken(PUMP_MINT, '100')])
 
-      const moduleTokens = [
-        {
-          address: USDC_MINT,
-          symbol: 'USDC',
-          name: 'USD Coin',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        },
-        {
-          address: PUMP_MINT,
-          symbol: 'PUMP',
-          name: 'Pump Token',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        }
-      ]
+      mockPostV1TokenLookup.mockResolvedValueOnce(
+        makeLookupResponse([
+          { address: USDC_MINT, symbol: 'USDC', name: 'USD Coin' },
+          { address: PUMP_MINT, symbol: 'PUMP', name: 'Pump Token' }
+        ])
+      )
 
-      const module = makeModule(moduleTokens, {
+      const module = makeModule({
         transactions: [tx1, tx2],
         nextPageToken: 'page2'
       })
@@ -672,6 +585,150 @@ describe('ActivityService', () => {
       expect(result.transactions[0]!.tokens[0]!.symbol).toBe('USDC')
       expect(result.transactions[1]!.tokens[0]!.symbol).toBe('PUMP')
       expect(result.nextPageToken).toBe('page2')
+    })
+  })
+
+  describe('chunking the token lookup', () => {
+    // The endpoint rejects bodies over 500 tokens with INVALID_PAYLOAD. Before
+    // chunking, one oversized batch failed wholesale and left EVERY symbol in
+    // it as "Unknown", not just the ones past the limit.
+    const CHUNK_SIZE = 500
+
+    const mintAt = (index: number): string =>
+      `Mint${index}AaBbCcDdEeFfGgHhJjKkLmNnPpQqRrSs`
+
+    const mints = (count: number): string[] =>
+      Array.from({ length: count }, (_, index) => mintAt(index))
+
+    const symbolFor = (address: string): string => `SYM-${address}`
+
+    const echoEveryRequestedToken = (): void => {
+      mockPostV1TokenLookup.mockImplementation(
+        (options: { body: { tokens: Array<{ address: string }> } }) =>
+          Promise.resolve(
+            makeLookupResponse(
+              options.body.tokens.map(({ address }) => ({
+                address,
+                symbol: symbolFor(address),
+                name: symbolFor(address)
+              }))
+            )
+          )
+      )
+    }
+
+    const activityFor = async (
+      addresses: string[]
+    ): Promise<Awaited<ReturnType<ActivityService['getActivities']>>> => {
+      const module = makeModule({
+        transactions: addresses.map(address =>
+          makeTx([makeUnknownTxToken(address, '1')])
+        ),
+        nextPageToken: undefined
+      })
+      mockLoadModuleByNetwork.mockResolvedValue(module)
+
+      return service.getActivities({
+        network: makeSvmNetwork(),
+        account: {} as any
+      })
+    }
+
+    const requestedTokenCounts = (): number[] =>
+      mockPostV1TokenLookup.mock.calls.map(
+        ([options]) => options.body.tokens.length
+      )
+
+    it.each([
+      [1, 1],
+      [CHUNK_SIZE - 1, 1],
+      [CHUNK_SIZE, 1],
+      [CHUNK_SIZE + 1, 2],
+      [CHUNK_SIZE * 2, 2],
+      [CHUNK_SIZE * 2 + 1, 3]
+    ])(
+      'splits %i unknown mints into %i request(s)',
+      async (mintCount, expectedRequests) => {
+        echoEveryRequestedToken()
+
+        await activityFor(mints(mintCount))
+
+        expect(mockPostV1TokenLookup).toHaveBeenCalledTimes(expectedRequests)
+        expect(requestedTokenCounts().every(count => count <= CHUNK_SIZE)).toBe(
+          true
+        )
+        expect(
+          requestedTokenCounts().reduce((sum, count) => sum + count, 0)
+        ).toBe(mintCount)
+      }
+    )
+
+    it('resolves symbols from every chunk, not just the first', async () => {
+      echoEveryRequestedToken()
+      const addresses = mints(CHUNK_SIZE + 10)
+
+      const result = await activityFor(addresses)
+
+      // First, last, and the one straddling the chunk boundary.
+      expect(result.transactions[0]!.tokens[0]!.symbol).toBe(
+        symbolFor(addresses[0]!)
+      )
+      expect(result.transactions[CHUNK_SIZE]!.tokens[0]!.symbol).toBe(
+        symbolFor(addresses[CHUNK_SIZE]!)
+      )
+      expect(result.transactions[CHUNK_SIZE + 9]!.tokens[0]!.symbol).toBe(
+        symbolFor(addresses[CHUNK_SIZE + 9]!)
+      )
+    })
+
+    it('keeps the surviving chunk when another chunk fails', async () => {
+      const addresses = mints(CHUNK_SIZE + 1)
+      mockPostV1TokenLookup
+        .mockResolvedValueOnce(
+          makeLookupResponse(
+            addresses.slice(0, CHUNK_SIZE).map(address => ({
+              address,
+              symbol: symbolFor(address),
+              name: symbolFor(address)
+            }))
+          )
+        )
+        .mockRejectedValueOnce(new Error('INVALID_PAYLOAD'))
+
+      const result = await activityFor(addresses)
+
+      expect(result.transactions[0]!.tokens[0]!.symbol).toBe(
+        symbolFor(addresses[0]!)
+      )
+      expect(result.transactions[CHUNK_SIZE]!.tokens[0]!.symbol).toBe('Unknown')
+    })
+
+    it('warns when a chunk fails, since lookupTokens resolves rather than throwing', async () => {
+      const { default: Logger } = jest.requireMock('utils/Logger') as {
+        default: { warn: jest.Mock }
+      }
+      const addresses = mints(CHUNK_SIZE + 1)
+      mockPostV1TokenLookup
+        .mockResolvedValueOnce(makeLookupResponse([]))
+        .mockRejectedValueOnce(new Error('INVALID_PAYLOAD'))
+
+      await activityFor(addresses)
+
+      expect(Logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Token lookup failed for 1 of 501 tokens')
+      )
+    })
+
+    it('chunks unique mints rather than transactions', async () => {
+      echoEveryRequestedToken()
+      const repeated = Array.from({ length: 600 }, (_, index) =>
+        index % 2 === 0 ? USDC_MINT : PUMP_MINT
+      )
+
+      await activityFor(repeated)
+
+      expect(mockPostV1TokenLookup).toHaveBeenCalledTimes(1)
+      expect(requestedTokenCounts()).toEqual([2])
     })
   })
 })

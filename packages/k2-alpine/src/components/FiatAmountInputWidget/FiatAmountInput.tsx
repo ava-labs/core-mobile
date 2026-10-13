@@ -23,6 +23,7 @@ import {
 } from '../../utils/tokenUnitInput'
 import { AutoSizeTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
 import { View } from '../Primitives'
+import { getCurrencySymbol } from './helpers'
 
 export type FiatAmountInputHandle = {
   setValue: (value: string) => void
@@ -214,15 +215,3 @@ export const FiatAmountInput = forwardRef<
 
 const PLACEHOLDER = '0.00'
 const FIAT_MAX_DECIMALS = 5
-
-// returns matching currency symbol for the amount with symbol
-// e.g '$' | '€' | '£' | '¥' | '₹'
-function getCurrencySymbol(amountWithSymbol: string): string {
-  const ScRe =
-    /[$\xA2-\xA5\u058F\u060B\u09F2\u09F3\u09FB\u0AF1\u0BF9\u0E3F\u17DB\u20A0-\u20BD\uA838\uFDFC\uFE69\uFF04\uFFE0\uFFE1\uFFE5\uFFE6]/
-
-  // Empty string when no fiat symbol is detected — lets callers that format
-  // amounts with a token name (e.g. `"1.50 USDC"`) render without a spurious
-  // leading `$`.
-  return amountWithSymbol.match(ScRe)?.[0] ?? ''
-}

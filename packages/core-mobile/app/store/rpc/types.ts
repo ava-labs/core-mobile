@@ -230,7 +230,16 @@ export enum RequestContext {
   // through the SDK `signerContext` → `step.signerContext`, and
   // `EvmSigner.signOne` injects it onto requests whose stepDetails carry a
   // `markr-recurring*` aggregator id.
-  RECURRING_SWAP = 'recurringSwap'
+  RECURRING_SWAP = 'recurringSwap',
+
+  // User opted into gasless ("Get free gas") on the batch approval screen.
+  // The single-tx gasless path funds between sign and broadcast via
+  // `useGasless`'s `onSigned` callback; the batch path signs each tx and hands
+  // the signed RLP to the EVM module to broadcast, with no equivalent funding
+  // hook (GaslessService only exposes a per-tx `fundTx`). We capture the user's
+  // choice here so the batch broadcast path can fund gas once batch gasless
+  // support lands. See BatchApprovalScreen / handleBatchApprovalApprove.
+  GASLESS_ENABLED = 'gaslessEnabled'
 }
 
 // Presence of `SWAP_AUTO_APPROVE` in request.context signals bypass

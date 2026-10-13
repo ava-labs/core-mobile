@@ -22,7 +22,6 @@ export enum FeatureGates {
   SOLANA_LAUNCH_MODAL = 'solana-launch-modal',
   MELD_ONRAMP = 'meld-onramp',
   MELD_OFFRAMP = 'meld-offramp',
-  KEYSTONE = 'keystone',
   SWAP_SOLANA = 'swap-solana',
   IN_APP_UPDATE_ANDROID = 'in-app-update-android',
   ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',
@@ -47,7 +46,18 @@ export enum FeatureGates {
   PRICE_CHART = 'price-chart',
   PERPETUALS = 'perpetuals',
   FAST_STAKE_ENABLED = 'fast-stake-enabled',
-  FAST_STAKE_FEE_ENABLED = 'fast-stake-fee-enabled'
+  // The two fee gates below are multivariate: enabling a fee requires a
+  // variant string carrying the rate in basis points (e.g. '1000' = 10%).
+  // Anything without a positive parsable rate — a plain boolean `true`, a
+  // '0' variant, or an unparsable variant — behaves exactly like the flag
+  // being off (see `selectIs*FeeBlocked` in `store/posthog`).
+  FAST_STAKE_FEE_ENABLED = 'fast-stake-fee-enabled',
+  DELEGATION_FEE_ENABLED = 'delegation-fee-enabled',
+  FILTER_SMALL_UTXOS = 'filter-small-utxos',
+  // Gates visibility of Hyperliquid networks (HyperEVM/HyperCore) that the
+  // backend serves for extension/web. Mobile has no Hyperliquid support yet,
+  // so this stays off until we ship it (CP-14595).
+  HYPERLIQUID_SUPPORT = 'hyperliquid-support'
 }
 
 export enum FeatureVars {

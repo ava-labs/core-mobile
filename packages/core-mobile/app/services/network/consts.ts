@@ -72,7 +72,7 @@ export const NETWORK_P = {
     logoUri:
       'https://glacier-api.avax.network/proxy/chain-assets/cb14a1f/chains/43114/token-logo.png'
   },
-  explorerUrl: 'https://subnets.avax.network/p-chain'
+  explorerUrl: 'https://build.avax.network/explorer/mainnet/p-chain'
 } as Network
 
 export const NETWORK_P_TEST = {
@@ -88,7 +88,7 @@ export const NETWORK_P_TEST = {
     logoUri:
       'https://glacier-api.avax.network/proxy/chain-assets/cb14a1f/chains/43114/token-logo.png'
   },
-  explorerUrl: 'https://subnets-test.avax.network/p-chain'
+  explorerUrl: 'https://build.avax.network/explorer/fuji/p-chain'
 } as Network
 
 export const NETWORK_X = {
@@ -98,7 +98,7 @@ export const NETWORK_X = {
   chainName: ChainName.AVALANCHE_X,
   logoUri:
     'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg',
-  explorerUrl: 'https://subnets.avax.network/x-chain'
+  explorerUrl: 'https://build.avax.network/explorer/mainnet/x-chain'
 } as Network
 
 export const NETWORK_X_TEST = {
@@ -108,7 +108,7 @@ export const NETWORK_X_TEST = {
   chainName: ChainName.AVALANCHE_X_TESTNET,
   logoUri:
     'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg',
-  explorerUrl: 'https://subnets-test.avax.network/x-chain'
+  explorerUrl: 'https://build.avax.network/explorer/fuji/x-chain'
 } as Network
 
 export const NETWORK_SOLANA = {

@@ -25,6 +25,9 @@ export const advancedSlice = createSlice({
     },
     setQuickSwapsMaxBuy: (state, action: PayloadAction<QuickSwapMaxBuy>) => {
       state.quickSwaps.maxBuy = action.payload
+    },
+    setFilterSmallUtxos: (state, action: PayloadAction<boolean>) => {
+      state.filterSmallUtxos = action.payload
     }
   }
 })
@@ -46,13 +49,17 @@ export const selectQuickSwapsFeeSetting = (
 export const selectQuickSwapsMaxBuy = (state: RootState): QuickSwapMaxBuy =>
   state.settings.advanced.quickSwaps.maxBuy
 
+export const selectFilterSmallUtxos = (state: RootState): boolean =>
+  state.settings.advanced.filterSmallUtxos
+
 // actions
 export const {
   toggleDeveloperMode,
   toggleLeftHanded,
   setQuickSwapsEnabled,
   setQuickSwapsFeeSetting,
-  setQuickSwapsMaxBuy
+  setQuickSwapsMaxBuy,
+  setFilterSmallUtxos
 } = advancedSlice.actions
 
 export const advancedReducer = advancedSlice.reducer

@@ -49,8 +49,9 @@ const ForgotPin = (): JSX.Element => {
       title={`Do you want to\nreset your PIN?`}
       navigationTitle="Reset your PIN?"
       renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <View>
+      disableHeaderSnap
+      contentContainerStyle={{ padding: 16 }}>
+      <View sx={{ marginTop: 16 }}>
         <View
           sx={{
             flexDirection: 'row',

@@ -106,6 +106,7 @@ const ImportWalletScreen = (): JSX.Element => {
     <ScrollScreen
       title={`Add or connect\na wallet`}
       isModal
+      disableHeaderSnap
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <View
         style={{

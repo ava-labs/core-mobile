@@ -53,3 +53,43 @@ diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansi
                  val isImeVisible =
                      WindowInsetsCompat
                          .toWindowInsetsCompat(bottomSheet.rootWindowInsets)
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt
+@@ -388,7 +388,7 @@ class ScreenStackFragment :
+         return sheetDelegate.createSheetExitAnimator(sheetAnimationContext)
+     }
+ 
+-    private fun createBottomSheetBehaviour(): BottomSheetBehavior<Screen> = BottomSheetBehavior<Screen>()
++    private fun createBottomSheetBehaviour(): BottomSheetBehavior<Screen> = GestureAwareBottomSheetBehavior<Screen>()
+ 
+     private fun resolveBackgroundColor(screen: Screen): Int? {
+         val screenColor =
+@@ -596,3 +596,27 @@ class ScreenStackFragment :
+         return bottomSheetWindowInsetListenerChain!!
+     }
+ }
++
++// Patched (CP-14976): stock BottomSheetBehavior hands a gesture off to the sheet
++// (onNestedPreScroll moves it, onStopNestedScroll -> shouldHide dismisses it unconditionally
++// when skipCollapsed=true) as soon as the target can't scroll up further *at any point* during
++// the gesture. That lets a drag which starts mid-list reach the top and keep going into a
++// dismiss. Declining nested-scroll participation up front for any gesture (touch or fling) that
++// starts already scrolled means the behavior never receives those callbacks for it, so the
++// ScrollView just scrolls/flings and clamps at top on its own; a gesture that starts at the top
++// is unaffected and still hands off normally.
++private class GestureAwareBottomSheetBehavior<V : View> : BottomSheetBehavior<V>() {
++    override fun onStartNestedScroll(
++        coordinatorLayout: CoordinatorLayout,
++        child: V,
++        directTargetChild: View,
++        target: View,
++        axes: Int,
++        type: Int,
++    ): Boolean {
++        if (target.canScrollVertically(-1)) {
++            return false
++        }
++        return super.onStartNestedScroll(coordinatorLayout, child, directTargetChild, target, axes, type)
++    }
++}

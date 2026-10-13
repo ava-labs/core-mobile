@@ -1,16 +1,20 @@
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { ListRenderItem } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PositionListItem } from '../components/PositionListItem'
-import { POSITIONS_HISTORY_MOCK } from '../mocks'
+import { usePerpsUserFills } from '../hooks/usePerpsUserFills'
+import { toPositionEntries } from '../utils/toPosition'
 import { PositionEntry } from '../types'
 
 export const PerpetualsPositionsHistoryScreen = (): JSX.Element => {
   useEffect(() => {
     AnalyticsService.capture('PerpetualsPositionsHistoryViewed')
   }, [])
+
+  const { fills } = usePerpsUserFills()
+  const entries = useMemo(() => toPositionEntries(fills), [fills])
 
   const renderItem: ListRenderItem<PositionEntry> = useCallback(
     ({ item, index }) => (
@@ -36,7 +40,7 @@ export const PerpetualsPositionsHistoryScreen = (): JSX.Element => {
     <ListScreen
       title="History"
       isModal
-      data={POSITIONS_HISTORY_MOCK}
+      data={entries}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       renderEmpty={renderEmpty}

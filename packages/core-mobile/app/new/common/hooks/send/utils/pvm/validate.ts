@@ -9,7 +9,8 @@ export const validate = ({
   maxFee,
   token,
   estimatedFee,
-  gasPrice
+  gasPrice,
+  spendableBalance
 }: {
   amount: bigint
   address: string | undefined
@@ -17,12 +18,18 @@ export const validate = ({
   token: TokenWithBalancePVM
   estimatedFee?: bigint
   gasPrice?: bigint
+  /**
+   * CP-13903: dust-filtered spendable balance. When set it replaces the
+   * displayed balance, which can include dust the send tx builder will
+   * refuse to spend.
+   */
+  spendableBalance?: bigint
 }): void => {
   if (!address) throw new Error(SendErrorMessage.ADDRESS_REQUIRED)
   // TODO: use correct gas limit for P-chain
   const fee = estimatedFee ?? BigInt(GAS_LIMIT_FOR_X_CHAIN) * maxFee
 
-  const balance = token.available ?? 0n
+  const balance = spendableBalance ?? token.available ?? 0n
   const maxAmountValue = balance - fee
 
   if (

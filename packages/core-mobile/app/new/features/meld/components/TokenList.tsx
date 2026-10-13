@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
 import {
   Icons,
@@ -14,8 +14,7 @@ import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSym
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
 import { SubTextNumber } from 'common/components/SubTextNumber'
-import { useSearchableERC20AndSolanaTokenList } from 'common/hooks/useSearchableERC20AndSolanaTokenList'
-import { useSupportedCryptoCurrencies, useTokenIndex } from '../store'
+import { useMeldSupportedCryptoCurrencies } from '../hooks/useMeldSupportedCryptoCurrencies'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from '../types'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 
@@ -36,54 +35,10 @@ export const TokenList = ({
     theme: { colors }
   } = useTheme()
   const [searchText, setSearchText] = useState<string>('')
-  const { tokenIndex, splTokenIndex, setTokenIndex, setSplTokenIndex } =
-    useTokenIndex()
-  const {
-    supportedErc20AndNativeCryptoCurrencies,
-    supportedSplCryptoCurrencies,
-    setSupportedCryptoCurrencies,
-    setSupportedSplCryptoCurrencies
-  } = useSupportedCryptoCurrencies()
-  const { filteredErc20TokenList, filteredSolanaTokenList } =
-    useSearchableERC20AndSolanaTokenList(
-      category !== ServiceProviderCategories.CRYPTO_ONRAMP
-    )
-
-  useEffect(() => {
-    if (filteredErc20TokenList.length > 0) {
-      setTokenIndex(filteredErc20TokenList)
-    }
-    if (filteredSolanaTokenList.length > 0) {
-      setSplTokenIndex(filteredSolanaTokenList)
-    }
-  }, [
-    filteredErc20TokenList,
-    setTokenIndex,
-    setSplTokenIndex,
-    filteredSolanaTokenList
-  ])
-
-  useEffect(() => {
-    if (cryptoCurrencies && tokenIndex) {
-      setSupportedCryptoCurrencies(cryptoCurrencies, tokenIndex)
-    }
-    if (cryptoCurrencies && splTokenIndex) {
-      setSupportedSplCryptoCurrencies(cryptoCurrencies, splTokenIndex)
-    }
-  }, [
-    cryptoCurrencies,
-    tokenIndex,
-    splTokenIndex,
-    setSupportedCryptoCurrencies,
-    setSupportedSplCryptoCurrencies
-  ])
-
-  const supportedCryptoCurrencies = useMemo(() => {
-    return [
-      ...supportedErc20AndNativeCryptoCurrencies,
-      ...supportedSplCryptoCurrencies
-    ]
-  }, [supportedErc20AndNativeCryptoCurrencies, supportedSplCryptoCurrencies])
+  const supportedCryptoCurrencies = useMeldSupportedCryptoCurrencies({
+    category,
+    cryptoCurrencies
+  })
 
   const searchResults = useMemo(() => {
     if (searchText.length === 0) {

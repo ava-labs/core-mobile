@@ -6,10 +6,10 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
 import { PositionEntry } from '../types'
+import { PerpsCoinLogo } from './PerpsCoinLogo'
 
 interface PositionListItemProps {
   entry: PositionEntry
@@ -47,7 +47,7 @@ export const PositionListItem = ({
         justifyContent: 'space-between',
         gap: 15
       }}>
-      <TokenLogo size={36} symbol={entry.symbol} />
+      <PerpsCoinLogo size={36} symbol={entry.coin} />
 
       <View
         sx={{

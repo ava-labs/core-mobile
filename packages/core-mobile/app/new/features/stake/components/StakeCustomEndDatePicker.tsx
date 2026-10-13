@@ -14,13 +14,19 @@ export const StakeCustomEndDatePicker = ({
   isVisible,
   setIsVisible,
   onDateSelected,
-  onCancel
+  onCancel,
+  maxDate
 }: {
   customEndDate: Date | undefined
   isVisible: boolean
   setIsVisible: (visible: boolean) => void
   onDateSelected: (date: Date) => void
   onCancel: () => void
+  /**
+   * Optional upper bound (e.g. the selected validator's end time in the
+   * advanced delegate flow). Capped against the protocol maximum.
+   */
+  maxDate?: Date
 }): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const now = useNow()
@@ -29,7 +35,19 @@ export const StakeCustomEndDatePicker = ({
     () => getMinimumStakeEndTime(isDeveloperMode, new UTCDate(now)),
     [isDeveloperMode, now]
   )
-  const maximumStakeEndDate = useMemo(() => getMaximumStakeEndDate(), [])
+  const maximumStakeEndDate = useMemo(() => {
+    const protocolMax = getMaximumStakeEndDate()
+    const capped =
+      maxDate && maxDate.getTime() < protocolMax.getTime()
+        ? maxDate
+        : protocolMax
+    // Never let the maximum fall before the minimum: a validator ending sooner
+    // than the protocol minimum stake end time would make `maximumDate <
+    // minimumDate`, which can crash/misbehave the native date picker.
+    return capped.getTime() < minimumStakeEndDate.getTime()
+      ? minimumStakeEndDate
+      : capped
+  }, [maxDate, minimumStakeEndDate])
 
   return (
     <DateTimePicker

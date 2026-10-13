@@ -3,7 +3,11 @@ import { showAlert } from '@avalabs/k2-alpine'
 import { RpcError, RpcMethod } from '@avalabs/vm-module-types'
 import { getLedgerAppName, isBitcoinCompatibleApp } from 'features/ledger/utils'
 import LedgerService from 'services/ledger/LedgerService'
-import { LEDGER_ERROR_CODES, LedgerAppType } from 'services/ledger/types'
+import {
+  LEDGER_ERROR_CODES,
+  LedgerAppType,
+  LEDGER_BLIND_SIGN_MESSAGE
+} from 'services/ledger/types'
 
 export const TRANSACTION_CANCELLED_BY_USER = 'Transaction cancelled by user'
 
@@ -18,6 +22,10 @@ export const handleLedgerErrorAndShowAlert = ({
   rpcMethod?: RpcMethod
   onRetry: () => void
   onCancel: () => void
+  // sonarjs anchors the cognitive-complexity report on the arrow-function line
+  // below, so the suppression must sit immediately above it (not above the
+  // export) to actually apply.
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
   // @ts-ignore
   const message = error.data?.cause?.message || error.message || ''
@@ -26,13 +34,21 @@ export const handleLedgerErrorAndShowAlert = ({
   const version = LedgerService.getCurrentAppVersion()
   const detectedAppType = LedgerService.getCurrentAppType()
   const ledgerAppName = getLedgerAppName(network)
-  const compatible = isBitcoinCompatibleApp(detectedAppType, version)
-  const unsupported =
-    ledgerAppName === LedgerAppType.BITCOIN &&
-    detectedAppType === LedgerAppType.BITCOIN &&
-    !compatible
+  const resolveAppName = (): LedgerAppType => {
+    if (ledgerAppName !== LedgerAppType.BITCOIN) return ledgerAppName
+    // A Bitcoin request is also satisfied by the Bitcoin Recovery app, so
+    // naming "Bitcoin" while Recovery is open would point the user at the app
+    // Core cannot use past MAX_BITCOIN_APP_VERSION.
+    if (isBitcoinCompatibleApp(detectedAppType, version)) return detectedAppType
+    // Out-of-range Bitcoin app open: Recovery is the one that works. From the
+    // dashboard or another app we cannot know the installed version, so keep
+    // pointing at Bitcoin.
+    return detectedAppType === LedgerAppType.BITCOIN
+      ? LedgerAppType.BITCOIN_RECOVERY
+      : ledgerAppName
+  }
 
-  const appName = unsupported ? LedgerAppType.BITCOIN_RECOVERY : ledgerAppName
+  const appName = resolveAppName()
 
   let title = 'Transaction failed'
   let description = 'An error occurred while signing the transaction.'
@@ -71,6 +87,18 @@ export const handleLedgerErrorAndShowAlert = ({
   ) {
     description =
       'Ledger is processing another request. Please try again later.'
+  } else if (
+    lowercasedMessage.includes(LEDGER_BLIND_SIGN_MESSAGE.toLowerCase())
+  ) {
+    // For a real Avalanche L1 (foreign-EVM) send/swap the raw 0x6984 never
+    // reaches this handler unchanged: the throw-side handleLedgerError has
+    // already rewritten it into LEDGER_BLIND_SIGN_MESSAGE, and
+    // ethSendTransaction re-wraps that as data.cause.message. So match on the
+    // transformed message rather than 0x6984 (which would fall through to the
+    // default "Transaction failed" title). The message is only ever produced
+    // for the Avalanche app, so it is inherently app-scoped.
+    title = 'Enable blind signing'
+    description = LEDGER_BLIND_SIGN_MESSAGE
   } else {
     description = message
   }

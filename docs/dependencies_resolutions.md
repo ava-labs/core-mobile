@@ -26,7 +26,7 @@ to keep certain eslint plugins/configs from conflicting with each other
 
 ### "jest": "29.7.0"
 
-to prevent error when running detox due to different versions of jest conflicting
+to prevent errors from different versions of jest conflicting across tooling
 
 ### "bip174": "2.1.0",
 
@@ -44,7 +44,7 @@ supports promise out of the box
 
 ### "@hpke/core": "1.2.7"
 
-@avalabs/core-utils-sdk depends on @hpke/core 1.2.5 while core mobile depends on 1.2.7. we need to force it to 1.2.7 so that we can apply the same patch to @hpke/core.
+@avalabs/core-utils-sdk depends on @hpke/core 1.2.5 while @cubist-labs/cubesigner-sdk depends on ^1.2.7. we need to force a single 1.2.7 so that we can apply the same patch to @hpke/core.
 
 ### "@noble/secp256k1": "2.1.0"
 

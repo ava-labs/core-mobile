@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { Avalanche, BitcoinProviderAbstract } from '@avalabs/core-wallets-sdk'
+import {
+  Avalanche,
+  BitcoinProviderAbstract,
+  DerivationPath,
+  JsonRpcBatchInternal
+} from '@avalabs/core-wallets-sdk'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { Curve } from 'utils/publicKeys'
 import {
@@ -30,23 +35,27 @@ jest.mock(
 // Mock LedgerService - the default export is the service instance
 // We need to create the mock inline so Jest can hoist it properly
 jest.mock('services/ledger/LedgerService', () => {
-  const mockTransport = {
-    send: jest.fn(),
-    close: jest.fn(),
-    isConnected: true
+  const mockSession = {
+    dmk: {
+      sendApdu: jest.fn(),
+      sendCommand: jest.fn(),
+      executeDeviceAction: jest.fn(),
+      getDeviceSessionState: jest.fn()
+    },
+    sessionId: 'test-session-id'
   }
   return {
     __esModule: true,
     default: {
       openApp: jest.fn().mockResolvedValue(undefined),
-      getTransport: jest.fn().mockReturnValue(mockTransport),
-      ensureConnection: jest.fn().mockResolvedValue(mockTransport),
+      ensureConnection: jest.fn().mockResolvedValue(mockSession),
       connect: jest.fn().mockResolvedValue(undefined),
       waitForApp: jest.fn().mockResolvedValue(undefined),
       isConnected: jest.fn().mockReturnValue(true),
       getCurrentAppType: jest.fn().mockReturnValue('AVALANCHE'),
       getAllAddresses: jest.fn(),
-      getExtendedPublicKeys: jest.fn()
+      getExtendedPublicKeys: jest.fn(),
+      getSolanaKeys: jest.fn()
     }
   }
 })
@@ -78,43 +87,48 @@ jest.mock('@avalabs/hw-app-avalanche', () => {
 })
 
 // Mock Ethereum app
-const mockEthGetAddress = jest.fn()
-const mockEthSignTransaction = jest.fn()
-const mockEthSignPersonalMessage = jest.fn()
-const mockEthSignEIP712Message = jest.fn()
-const mockEthSignEIP712HashedMessage = jest.fn()
 
-jest.mock('@ledgerhq/hw-app-eth', () => {
-  return {
-    __esModule: true,
-    default: class MockEthApp {
-      getAddress = mockEthGetAddress
-      signTransaction = mockEthSignTransaction
-      signPersonalMessage = mockEthSignPersonalMessage
-      signEIP712Message = mockEthSignEIP712Message
-      signEIP712HashedMessage = mockEthSignEIP712HashedMessage
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      constructor(_transport: unknown) {}
-    }
-  }
-})
+// @ledgerhq/hw-app-eth left the tree with the Device Management Kit
+// migration; LedgerWallet drives the kit's Ethereum signer instead, so there is
+// nothing to mock here any more.
 
 // Mock Bitcoin app
-const mockGetMasterFingerprint = jest.fn()
-const mockGetExtendedPubkey = jest.fn()
-const mockRegisterWallet = jest.fn()
+// ledger-bitcoin left the tree with the Device Management Kit migration;
+// LedgerWallet uses @ledgerhq/device-signer-kit-bitcoin's SignerBtcBuilder now.
+// Every call has to carry skipOpenApp, so the kit's own device actions are
+// mocked here to let the tests assert the options each one receives.
+jest.mock('@ledgerhq/device-signer-kit-bitcoin', () => {
+  const { of } = jest.requireActual('rxjs')
+  const completed = (output: unknown) => ({
+    observable: of({ status: 'pending' }, { status: 'completed', output })
+  })
 
-jest.mock('ledger-bitcoin', () => {
+  const getMasterFingerprint = jest
+    .fn()
+    .mockReturnValue(
+      completed({ masterFingerprint: Buffer.from('0badc0de', 'hex') })
+    )
+  const getExtendedPublicKey = jest
+    .fn()
+    .mockReturnValue(completed({ extendedPublicKey: 'xpub-from-device' }))
+  const registerWallet = jest
+    .fn()
+    .mockReturnValue(
+      completed({ name: 'Core - Account 1', hmac: new Uint8Array(32) })
+    )
+
   return {
-    AppClient: class MockBtcClient {
-      getMasterFingerprint = mockGetMasterFingerprint
-      getExtendedPubkey = mockGetExtendedPubkey
-      registerWallet = mockRegisterWallet
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      constructor(_transport: unknown) {}
-    },
-    DefaultWalletPolicy: jest.fn(),
-    WalletPolicy: jest.fn()
+    // createWalletPolicy (real SDK code) constructs the kit's WalletPolicy, so
+    // only the builder is replaced.
+    ...jest.requireActual('@ledgerhq/device-signer-kit-bitcoin'),
+    SignerBtcBuilder: jest.fn().mockImplementation(() => ({
+      build: () => ({
+        getMasterFingerprint,
+        getExtendedPublicKey,
+        registerWallet
+      })
+    })),
+    __mocks: { getMasterFingerprint, getExtendedPublicKey, registerWallet }
   }
 })
 
@@ -152,17 +166,55 @@ jest.mock('services/network/utils/providerUtils', () => ({
 }))
 
 // Mock BitcoinLedgerWallet
-jest.mock('@avalabs/core-wallets-sdk', () => ({
-  ...jest.requireActual('@avalabs/core-wallets-sdk'),
-  BitcoinLedgerWallet: jest.fn().mockImplementation(() => ({
-    signTx: jest.fn()
-  }))
-}))
+// LedgerWallet delegates signing to the SDK's signers; these mocks let the
+// tests assert the delegation (construction args + call args) rather than
+// re-testing derivation-path logic that now lives inside the SDK.
+// The fns are created inside the factory — it runs before module-scope consts
+// are initialised — and handed back on `__mocks` for the tests to grab.
+jest.mock('@avalabs/core-wallets-sdk', () => {
+  const actual = jest.requireActual('@avalabs/core-wallets-sdk')
+
+  const avaSignTx = jest.fn()
+  const avaSignMessage = jest.fn()
+  const evmSignTransaction = jest.fn()
+  const evmSignMessage = jest.fn()
+  const evmSignTypedData = jest.fn()
+  const solSignTx = jest.fn()
+
+  return {
+    ...actual,
+    BitcoinLedgerWallet: jest.fn().mockImplementation(() => ({
+      signTx: jest.fn()
+    })),
+    LedgerSigner: jest.fn(() => ({
+      signTransaction: evmSignTransaction,
+      signMessage: evmSignMessage,
+      signTypedData: evmSignTypedData
+    })),
+    SolanaLedgerSigner: jest.fn(() => ({
+      signTx: solSignTx
+    })),
+    Avalanche: {
+      ...actual.Avalanche,
+      SimpleLedgerSigner: jest.fn(() => ({
+        signTx: avaSignTx,
+        signMessage: avaSignMessage
+      }))
+    },
+    __mocks: {
+      avaSignTx,
+      avaSignMessage,
+      evmSignTransaction,
+      evmSignMessage,
+      evmSignTypedData,
+      solSignTx
+    }
+  }
+})
 
 // Import after mocking. App selection (Avalanche vs Ethereum) is driven by the
 // real getLedgerAppName(network) helper, so tests control it via the network
 // object they pass rather than by mocking a predicate.
-import { Transaction } from 'ethers'
 import LedgerService from 'services/ledger/LedgerService'
 import { bip32 } from 'utils/bip32'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
@@ -171,8 +223,43 @@ import { LedgerWallet } from './LedgerWallet'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 
 // Get references to the mocked functions
+const sdkMock = jest.requireMock('@avalabs/core-wallets-sdk') as {
+  LedgerSigner: jest.Mock
+  Avalanche: { SimpleLedgerSigner: jest.Mock }
+  __mocks: {
+    avaSignTx: jest.Mock
+    avaSignMessage: jest.Mock
+    evmSignTransaction: jest.Mock
+    evmSignMessage: jest.Mock
+    evmSignTypedData: jest.Mock
+    solSignTx: jest.Mock
+  }
+}
+const mockSimpleLedgerSigner = sdkMock.Avalanche.SimpleLedgerSigner
+const mockLedgerSigner = sdkMock.LedgerSigner
+const {
+  avaSignTx: mockAvaSignTx,
+  avaSignMessage: mockAvaSignMessage,
+  evmSignTransaction: mockEvmSignTransaction,
+  evmSignMessage: mockEvmSignMessage,
+  evmSignTypedData: mockEvmSignTypedData,
+  solSignTx: mockSolSignTx
+} = sdkMock.__mocks
+
+const btcKitMock = jest.requireMock('@ledgerhq/device-signer-kit-bitcoin') as {
+  __mocks: {
+    getMasterFingerprint: jest.Mock
+    getExtendedPublicKey: jest.Mock
+    registerWallet: jest.Mock
+  }
+}
+const {
+  getMasterFingerprint: mockGetMasterFingerprint,
+  getExtendedPublicKey: mockGetDeviceExtendedPublicKey,
+  registerWallet: mockRegisterWallet
+} = btcKitMock.__mocks
+
 const mockOpenApp = LedgerService.openApp as jest.Mock
-const mockGetTransport = LedgerService.getTransport as jest.Mock
 const mockEnsureConnection = LedgerService.ensureConnection as jest.Mock
 const mockWaitForApp = LedgerService.waitForApp as jest.Mock
 const mockIsConnected = LedgerService.isConnected as jest.Mock
@@ -181,29 +268,25 @@ const mockGetAllAddresses = LedgerService.getAllAddresses as jest.Mock
 const mockGetExtendedPublicKeys =
   LedgerService.getExtendedPublicKeys as jest.Mock
 
-// Mock transport
-class MockTransport {
-  send = jest.fn()
-  close = jest.fn()
+// handleLedgerError ignores messages it does not recognise, so rejecting with a
+// real status word is what proves the signer call is awaited inside the catch.
+const deviceRejection = (): Error => new Error('Ledger device: status 0x6985')
+const REJECTED_ON_DEVICE = 'Transaction rejected by user on Ledger device.'
+
+// Mock DMK session — what LedgerService.ensureConnection() now hands back
+class MockSession {
+  dmk = {
+    sendApdu: jest.fn(),
+    sendCommand: jest.fn(),
+    executeDeviceAction: jest.fn(),
+    getDeviceSessionState: jest.fn()
+  }
+  sessionId = 'test-session-id'
 }
 
 // Helper functions to create mock transactions
-const createCChainTx = () => ({
-  getVM: jest.fn().mockReturnValue('EVM'),
-  toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-  addSignature: jest.fn(),
-  toJSON: jest.fn().mockReturnValue({})
-})
-
 const createXChainTx = () => ({
   getVM: jest.fn().mockReturnValue('AVM'),
-  toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-  addSignature: jest.fn(),
-  toJSON: jest.fn().mockReturnValue({})
-})
-
-const createPChainTx = () => ({
-  getVM: jest.fn().mockReturnValue('PVM'),
   toBytes: jest.fn().mockReturnValue(new Uint8Array()),
   addSignature: jest.fn(),
   toJSON: jest.fn().mockReturnValue({})
@@ -228,8 +311,7 @@ describe('LedgerWallet', () => {
 
     // Reset and configure mocks with default behavior
     mockOpenApp.mockResolvedValue(undefined)
-    mockGetTransport.mockReturnValue(new MockTransport() as never)
-    mockEnsureConnection.mockResolvedValue(new MockTransport() as never)
+    mockEnsureConnection.mockResolvedValue(new MockSession() as never)
     mockWaitForApp.mockResolvedValue(undefined)
     mockIsConnected.mockReturnValue(true)
     mockGetCurrentAppType.mockReturnValue('AVALANCHE')
@@ -260,655 +342,136 @@ describe('LedgerWallet', () => {
     mockSign.mockResolvedValue({
       signatures: new Map()
     })
+    mockAvaSignTx.mockResolvedValue({
+      toJSON: () => ({ signed: true })
+    })
+    mockEvmSignTransaction.mockResolvedValue('0xsignedtx')
+    mockAvaSignMessage.mockResolvedValue(Buffer.from('cafe', 'hex'))
 
-    // Spy on getTransport to return mock transport
+    // Spy on getTransport to return the mock DMK session
     jest
       .spyOn(ledgerWallet as never, 'getTransport')
-      .mockReturnValue(new MockTransport() as never)
+      .mockResolvedValue(new MockSession() as never)
   })
 
   describe('signAvalancheTransaction', () => {
     const mockNetwork = { vmName: 'AVM', isTestnet: false } as Network
     const mockProvider = {} as Avalanche.JsonRpcProvider
 
-    describe('chainAlias mapping', () => {
-      it('should map AVM to chainAlias "X"', async () => {
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('AVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue({})
-        }
+    const request = (): AvalancheTransactionRequest =>
+      ({
+        tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
+        externalIndices: [0],
+        internalIndices: [1]
+      } as unknown as AvalancheTransactionRequest)
 
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
+    const sign = (accountIndex = 0, transaction = request()): Promise<string> =>
+      ledgerWallet.signAvalancheTransaction({
+        accountIndex,
+        transaction,
+        network: mockNetwork,
+        provider: mockProvider
+      })
 
-        await ledgerWallet.signAvalancheTransaction({
+    // Chain aliases, derivation paths and index -> signing-path mapping are
+    // the SDK signer's job now. What LedgerWallet still owns is the handoff:
+    // building the signer correctly and passing the session through.
+    describe('delegation to the SDK signer', () => {
+      it('builds the signer from the account index, provider and derivation spec', async () => {
+        await sign(0)
+
+        expect(mockSimpleLedgerSigner).toHaveBeenCalledWith(
+          0,
+          mockProvider,
+          'mock-avax-xpub',
+          DerivationPath.BIP44
+        )
+      })
+
+      it('builds the signer without an xpub for Ledger Live wallets', async () => {
+        const ledgerLiveWallet = new LedgerWallet({
+          deviceId: mockDeviceId,
+          derivationPathSpec: LedgerDerivationPathType.LedgerLive,
+          publicKeys: mockPublicKeys,
+          walletId: mockWalletId
+        } as any)
+
+        await ledgerLiveWallet.signAvalancheTransaction({
           accountIndex: 0,
-          transaction,
+          transaction: request(),
           network: mockNetwork,
           provider: mockProvider
         })
 
-        // Verify sign was called with X-chain path
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/0'],
-          expect.any(Buffer),
-          undefined
+        expect(mockSimpleLedgerSigner).toHaveBeenCalledWith(
+          0,
+          mockProvider,
+          undefined,
+          DerivationPath.LedgerLive
         )
       })
 
-      it('should map PVM to chainAlias "P"', async () => {
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('PVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue({})
-        }
+      it('hands the transaction and the DMK session to the signer', async () => {
+        const transaction = request()
+        await sign(0, transaction)
 
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        // Verify sign was called with P-chain path (same as X-chain for derivation)
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/0'],
-          expect.any(Buffer),
-          undefined
-        )
-      })
-
-      it('should map EVM to chainAlias "C"', async () => {
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('EVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue({})
-        }
-
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx']
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        // Verify sign was called with C-chain path
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/0'",
-          ['0/0'],
-          expect.any(Buffer),
-          undefined
-        )
-      })
-
-      it('should throw error for unsupported VM type', async () => {
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('UNKNOWN_VM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue({})
-        }
-
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx']
-        }
-
-        await expect(
-          ledgerWallet.signAvalancheTransaction({
-            accountIndex: 0,
-            transaction,
-            network: mockNetwork,
-            provider: mockProvider
+        expect(mockAvaSignTx).toHaveBeenCalledWith(
+          expect.objectContaining({
+            tx: transaction.tx,
+            externalIndices: [0],
+            internalIndices: [1],
+            sessionId: 'test-session-id',
+            dmk: expect.any(Object)
           })
-        ).rejects.toThrow('Unsupported VM type: UNKNOWN_VM')
-      })
-    })
-
-    describe('C-chain derivation paths', () => {
-      it('should use account 0 path for C-chain with account index 0', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/0'", // BIP44 always uses account 0
-          ['0/0'], // Address index matches account index (0)
-          expect.any(Buffer),
-          undefined
         )
       })
 
-      it('should use account 0 path for C-chain with account index 1 (BIP44 always uses account 0)', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
-        }
+      it('returns the signed transaction as JSON', async () => {
+        mockAvaSignTx.mockResolvedValue({ toJSON: () => ({ signed: true }) })
 
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 1,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/0'", // BIP44 always uses account 0
-          ['0/1'], // Address index matches account index
-          expect.any(Buffer),
-          undefined
-        )
-      })
-
-      it('should use account 0 path for C-chain with account index 2 (BIP44 always uses account 0)', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 2,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/0'", // BIP44 always uses account 0
-          ['0/2'], // Address index matches account index
-          expect.any(Buffer),
-          undefined
-        )
-      })
-
-      it('should use signing path 0/accountIndex for C-chain with BIP44', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
-        }
-
-        // Test with account 5
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 5,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/0'", // BIP44 always uses account 0
-          ['0/5'], // Address index matches account index
-          expect.any(Buffer),
-          undefined
-        )
-      })
-
-      it('should ignore externalIndices for C-chain transactions', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [3, 5, 7] // Should be ignored for C-chain
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/0'",
-          ['0/0'], // Not ['0/3', '0/5', '0/7']
-          expect.any(Buffer),
-          undefined
-        )
-      })
-    })
-
-    describe('X/P-chain derivation paths', () => {
-      it('should use account index in X-chain account path', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 2,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/2'", // Account 2
-          ['0/0'],
-          expect.any(Buffer),
-          undefined
-        )
-      })
-
-      it('should use account index in P-chain account path', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createPChainTx() as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 3,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/3'", // Account 3
-          ['0/0'],
-          expect.any(Buffer),
-          undefined
-        )
-      })
-
-      it('should map external indices to signing paths for X-chain', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [3, 5, 7]
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/3', '0/5', '0/7'], // Multiple UTXO signing paths
-          expect.any(Buffer),
-          undefined
-        )
-      })
-
-      it('should default to [0/0] when externalIndices is empty array for X-chain', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: []
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/0'], // Default fallback
-          expect.any(Buffer),
-          undefined
-        )
-      })
-
-      it('should default to [0/0] when externalIndices is undefined for X-chain', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx']
-          // externalIndices not provided
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/0'], // Default fallback
-          expect.any(Buffer),
-          undefined
-        )
-      })
-
-      it('should handle single external index for P-chain', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createPChainTx() as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [2]
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/2'],
-          expect.any(Buffer),
-          undefined
-        )
-      })
-    })
-
-    describe('internal indices / change paths', () => {
-      it('should map internal indices to change paths', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0],
-          internalIndices: [1, 3]
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/0'],
-          expect.any(Buffer),
-          ['1/1', '1/3'] // Change paths
-        )
-      })
-
-      it('should not include change paths when internalIndices is empty', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0],
-          internalIndices: []
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/0'],
-          expect.any(Buffer),
-          undefined // No change paths
-        )
-      })
-
-      it('should not include change paths when internalIndices is undefined', async () => {
-        const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-          // internalIndices not provided
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/0'],
-          expect.any(Buffer),
-          undefined // No change paths
-        )
-      })
-    })
-
-    describe('signature handling', () => {
-      it('should add signatures to transaction', async () => {
-        const mockSignature1 = Buffer.from('signature1')
-        const mockSignature2 = Buffer.from('signature2')
-        const mockSignatures = new Map([
-          ['path1', mockSignature1],
-          ['path2', mockSignature2]
-        ])
-
-        mockSign.mockResolvedValue({
-          signatures: mockSignatures
-        })
-
-        const addSignatureSpy = jest.fn()
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('AVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: addSignatureSpy,
-          toJSON: jest.fn().mockReturnValue({})
-        }
-
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0, 1]
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(addSignatureSpy).toHaveBeenCalledTimes(2)
-        expect(addSignatureSpy).toHaveBeenCalledWith(mockSignature1)
-        expect(addSignatureSpy).toHaveBeenCalledWith(mockSignature2)
-      })
-
-      it('should return JSON stringified transaction', async () => {
-        const mockTxJSON = { codecId: '0', vm: 'AVM', txBytes: '0x123' }
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('AVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue(mockTxJSON)
-        }
-
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
-
-        const result = await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(result).toBe(JSON.stringify(mockTxJSON))
-      })
-    })
-
-    describe('error handling', () => {
-      it('should throw error when connection fails', async () => {
-        mockEnsureConnection.mockRejectedValueOnce(
-          new Error('DisconnectedDevice')
-        )
-
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('AVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue({})
-        }
-
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
-
-        await expect(
-          ledgerWallet.signAvalancheTransaction({
-            accountIndex: 0,
-            transaction,
-            network: mockNetwork,
-            provider: mockProvider
-          })
-        ).rejects.toThrow(
-          'Ledger device disconnected. Please ensure your Ledger device is nearby and Bluetooth is enabled.'
-        )
-      })
-
-      it('should throw error when Avalanche app is not ready', async () => {
-        mockWaitForApp.mockRejectedValueOnce(new Error('0x6a86'))
-
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('AVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue({})
-        }
-
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
-
-        await expect(
-          ledgerWallet.signAvalancheTransaction({
-            accountIndex: 0,
-            transaction,
-            network: mockNetwork,
-            provider: mockProvider
-          })
-        ).rejects.toThrow(
-          'Avalanche app not ready. Please ensure the Avalanche app is open and ready.'
-        )
-      })
-
-      it('should throw error when signing fails', async () => {
-        mockSign.mockRejectedValue(new Error('0x6985'))
-
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('AVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue({})
-        }
-
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
-
-        await expect(
-          ledgerWallet.signAvalancheTransaction({
-            accountIndex: 0,
-            transaction,
-            network: mockNetwork,
-            provider: mockProvider
-          })
-        ).rejects.toThrow('Transaction rejected by user on Ledger device.')
+        await expect(sign()).resolves.toBe(JSON.stringify({ signed: true }))
       })
     })
 
     describe('Ledger service integration', () => {
-      it('should open Avalanche app before signing', async () => {
-        mockOpenApp.mockClear()
-
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('AVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue({})
-        }
-
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
+      it('opens the Avalanche app before signing', async () => {
+        await sign()
         expect(mockOpenApp).toHaveBeenCalledWith(LedgerAppType.AVALANCHE)
       })
 
-      it('should ensure transport is obtained before signing', async () => {
-        // Restore the spy so the real LedgerWallet.getTransport() runs,
-        // which calls through to LedgerService.ensureConnection() — the
-        // BLE recovery hop that multi-step signing flows rely on.
-        jest.restoreAllMocks()
-        mockEnsureConnection.mockClear()
-        mockEnsureConnection.mockResolvedValue(new MockTransport() as never)
-
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('AVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue({})
-        }
-
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
-        expect(mockEnsureConnection).toHaveBeenCalled()
-      })
-
-      it('should wait for Avalanche app before signing', async () => {
-        mockWaitForApp.mockClear()
-
-        const mockTx = {
-          getVM: jest.fn().mockReturnValue('AVM'),
-          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
-          addSignature: jest.fn(),
-          toJSON: jest.fn().mockReturnValue({})
-        }
-
-        const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
-          externalIndices: [0]
-        }
-
-        await ledgerWallet.signAvalancheTransaction({
-          accountIndex: 0,
-          transaction,
-          network: mockNetwork,
-          provider: mockProvider
-        })
-
+      it('waits for the Avalanche app before signing', async () => {
+        await sign()
         expect(mockWaitForApp).toHaveBeenCalledWith(
           LedgerAppType.AVALANCHE,
           expect.any(Number)
         )
+      })
+
+      it('ensures the connection before signing', async () => {
+        await sign()
+        expect(mockEnsureConnection).toHaveBeenCalled()
+      })
+    })
+
+    describe('error handling', () => {
+      it('throws when the connection fails', async () => {
+        mockEnsureConnection.mockRejectedValue(new Error('Connection failed'))
+
+        await expect(sign()).rejects.toThrow()
+        expect(mockAvaSignTx).not.toHaveBeenCalled()
+      })
+
+      it('throws when the Avalanche app is not ready', async () => {
+        mockWaitForApp.mockRejectedValue(new Error('App not ready'))
+
+        await expect(sign()).rejects.toThrow()
+        expect(mockAvaSignTx).not.toHaveBeenCalled()
+      })
+
+      it('maps a device rejection to the user-rejected message', async () => {
+        mockAvaSignTx.mockRejectedValue(deviceRejection())
+
+        await expect(sign()).rejects.toThrow(REJECTED_ON_DEVICE)
       })
     })
   })
@@ -958,6 +521,196 @@ describe('LedgerWallet', () => {
   // signEvmTransaction Tests
   // ========================================
 
+  // Replaces the deleted private-method blocks (handleEthAndPersonalSign,
+  // handleSignedTypedData, signEIP712WithFallback, ...). That logic now lives
+  // in the SDK's LedgerSigner, so what is left to cover here is dispatch.
+  describe('signMessage', () => {
+    const evmNetwork = { chainId: 1, vmName: 'EVM' } as Network
+    const evmProvider = Object.create(
+      JsonRpcBatchInternal.prototype
+    ) as JsonRpcBatchInternal
+
+    const typedData = {
+      domain: { name: 'Test', chainId: 1 },
+      types: { Person: [{ name: 'name', type: 'string' }] },
+      primaryType: 'Person',
+      message: { name: 'alice' }
+    }
+
+    const sign = (signingData: unknown): Promise<string> =>
+      ledgerWallet.signMessage({
+        signingData: signingData as never,
+        accountIndex: 0,
+        network: evmNetwork,
+        provider: evmProvider
+      })
+
+    it('routes hex personal_sign to the signer as raw bytes', async () => {
+      mockEvmSignMessage.mockResolvedValue('0xsig')
+
+      await expect(
+        sign({ type: RpcMethod.PERSONAL_SIGN, account: '0xa', data: '0xdead' })
+      ).resolves.toBe('0xsig')
+      expect(mockEvmSignMessage).toHaveBeenCalledWith(
+        new Uint8Array([0xde, 0xad])
+      )
+      expect(mockEvmSignTypedData).not.toHaveBeenCalled()
+    })
+
+    it('left-pads odd-length hex the way eth-sig-util recovers it', async () => {
+      mockEvmSignMessage.mockResolvedValue('0xsig')
+
+      await sign({
+        type: RpcMethod.PERSONAL_SIGN,
+        account: '0xa',
+        data: '0xabc'
+      })
+
+      expect(mockEvmSignMessage).toHaveBeenCalledWith(
+        new Uint8Array([0x0a, 0xbc])
+      )
+    })
+
+    it('passes plain-text personal_sign through as a string', async () => {
+      mockEvmSignMessage.mockResolvedValue('0xsig')
+
+      await sign({
+        type: RpcMethod.PERSONAL_SIGN,
+        account: '0xa',
+        data: 'Hello'
+      })
+
+      expect(mockEvmSignMessage).toHaveBeenCalledWith('Hello')
+    })
+
+    it('routes eth_sign to the signer as raw bytes', async () => {
+      mockEvmSignMessage.mockResolvedValue('0xsig')
+
+      await sign({ type: RpcMethod.ETH_SIGN, account: '0xa', data: '0xdead' })
+
+      expect(mockEvmSignMessage).toHaveBeenCalledWith(
+        new Uint8Array([0xde, 0xad])
+      )
+    })
+
+    it('routes typed data v4 to signTypedData with domain, types and message', async () => {
+      mockEvmSignTypedData.mockResolvedValue('0xtyped')
+
+      await expect(
+        sign({
+          type: RpcMethod.SIGN_TYPED_DATA_V4,
+          account: '0xa',
+          data: typedData
+        })
+      ).resolves.toBe('0xtyped')
+      expect(mockEvmSignTypedData).toHaveBeenCalledWith(
+        typedData.domain,
+        expect.objectContaining({ Person: typedData.types.Person }),
+        typedData.message
+      )
+      expect(mockEvmSignMessage).not.toHaveBeenCalled()
+    })
+
+    it('rejects EIP-712 v1, which Ledger devices cannot display', async () => {
+      await expect(
+        sign({
+          type: RpcMethod.SIGN_TYPED_DATA_V1,
+          account: '0xa',
+          data: [{ name: 'n', type: 'string', value: 'v' }]
+        })
+      ).rejects.toThrow(/v1 is not supported/)
+    })
+
+    it('rejects an EVM sign with a non-EVM provider', async () => {
+      await expect(
+        ledgerWallet.signMessage({
+          signingData: {
+            type: RpcMethod.PERSONAL_SIGN,
+            account: '0xa',
+            data: '0xdead'
+          } as never,
+          accountIndex: 0,
+          network: evmNetwork,
+          provider: {} as never
+        })
+      ).rejects.toThrow()
+    })
+
+    it('maps a personal_sign device rejection to the user-rejected message', async () => {
+      mockEvmSignMessage.mockRejectedValue(deviceRejection())
+
+      await expect(
+        sign({ type: RpcMethod.PERSONAL_SIGN, account: '0xa', data: 'Hello' })
+      ).rejects.toThrow(REJECTED_ON_DEVICE)
+    })
+
+    it('maps a typed data device rejection to the user-rejected message', async () => {
+      mockEvmSignTypedData.mockRejectedValue(deviceRejection())
+
+      await expect(
+        sign({
+          type: RpcMethod.SIGN_TYPED_DATA_V4,
+          account: '0xa',
+          data: typedData
+        })
+      ).rejects.toThrow(REJECTED_ON_DEVICE)
+    })
+
+    it('reports Solana message signing as unsupported', async () => {
+      await expect(
+        sign({ type: RpcMethod.SOLANA_SIGN_MESSAGE, account: 'a', data: 'b' })
+      ).rejects.toThrow()
+    })
+  })
+
+  describe('signSvmTransaction', () => {
+    const DEVICE_ACCOUNT = 'DeviceSolanaAccount1111111111111111111111111'
+    const mockNetwork = {
+      rpcUrl: 'https://solana.rpc',
+      isTestnet: false
+    } as Network
+
+    const signSvm = (account: string): Promise<string> =>
+      ledgerWallet.signSvmTransaction({
+        accountIndex: 0,
+        transaction: { account, serializedTx: 'serialized-tx' },
+        network: mockNetwork,
+        provider: {} as never
+      })
+
+    beforeEach(() => {
+      ;(LedgerService.getSolanaKeys as jest.Mock).mockResolvedValue([
+        { key: DEVICE_ACCOUNT }
+      ])
+      mockSolSignTx.mockResolvedValue('signed-tx')
+    })
+
+    it('signs when the transaction account matches the device account', async () => {
+      await expect(signSvm(DEVICE_ACCOUNT)).resolves.toBe('signed-tx')
+
+      expect(LedgerService.getSolanaKeys).toHaveBeenCalledWith(0)
+      expect(mockSolSignTx).toHaveBeenCalledWith(
+        'serialized-tx',
+        'https://solana.rpc',
+        false
+      )
+    })
+
+    it('maps a device rejection to the user-rejected message', async () => {
+      mockSolSignTx.mockRejectedValue(deviceRejection())
+
+      await expect(signSvm(DEVICE_ACCOUNT)).rejects.toThrow(REJECTED_ON_DEVICE)
+    })
+
+    it('rejects without signing when the accounts differ', async () => {
+      await expect(signSvm('SomeOtherAccount')).rejects.toThrow(
+        'Account mismatch'
+      )
+
+      expect(mockSolSignTx).not.toHaveBeenCalled()
+    })
+  })
+
   describe('signEvmTransaction', () => {
     const mockNetwork = { chainId: 1 } as Network
     const mockProvider = {} as never
@@ -974,139 +727,121 @@ describe('LedgerWallet', () => {
       accessList: []
     }
 
-    const mockSignature = { r: 'aaaa', s: 'bbbb', v: '1c' }
-
-    beforeEach(() => {
-      mockEthGetAddress.mockResolvedValue({ address: '0xabc' })
-      mockEthSignTransaction.mockResolvedValue(mockSignature)
-    })
-
-    it('serializes the transaction as EIP-1559 (type 2) — unsigned hex starts with 02', async () => {
-      await ledgerWallet.signEvmTransaction({
+    const signEvm = (
+      transaction:
+        | typeof baseTransaction
+        | Record<string, unknown> = baseTransaction
+    ): Promise<string> =>
+      ledgerWallet.signEvmTransaction({
         accountIndex: 0,
-        transaction: baseTransaction,
+        transaction: transaction as never,
         network: mockNetwork,
         provider: mockProvider
       })
 
-      const [, capturedHex] = mockEthSignTransaction.mock.calls[0]
-      // The '0x' prefix was sliced off; prepend it to decode
-      const decoded = Transaction.from('0x' + capturedHex)
-      expect(decoded.type).toBe(2)
-      // Raw hex also starts with the type byte 02
-      expect(capturedHex.slice(0, 2)).toBe('02')
+    /** The tx object handed to the SDK signer. */
+    const signedPayload = (): Record<string, unknown> =>
+      mockEvmSignTransaction.mock.calls[0]?.[0] as Record<string, unknown>
+
+    it('marks the transaction as EIP-1559 (type 2)', async () => {
+      await signEvm()
+
+      expect(signedPayload()).toMatchObject({ type: 2 })
     })
 
-    it('encodes maxFeePerGas and maxPriorityFeePerGas — not gasPrice', async () => {
-      await ledgerWallet.signEvmTransaction({
-        accountIndex: 0,
-        transaction: baseTransaction,
-        network: mockNetwork,
-        provider: mockProvider
-      })
+    it('passes maxFeePerGas and maxPriorityFeePerGas, not gasPrice', async () => {
+      await signEvm()
 
-      const [, capturedHex] = mockEthSignTransaction.mock.calls[0]
-      const decoded = Transaction.from('0x' + capturedHex)
-      expect(decoded.maxFeePerGas).toBe(baseTransaction.maxFeePerGas)
-      expect(decoded.maxPriorityFeePerGas).toBe(
-        baseTransaction.maxPriorityFeePerGas
-      )
-      expect(decoded.gasPrice).toBeNull()
+      const tx = signedPayload()
+      expect(tx.maxFeePerGas).toBe(baseTransaction.maxFeePerGas)
+      expect(tx.maxPriorityFeePerGas).toBe(baseTransaction.maxPriorityFeePerGas)
+      expect(tx).not.toHaveProperty('gasPrice')
     })
 
     it('does not swap maxFeePerGas and maxPriorityFeePerGas', async () => {
-      const tx = {
-        ...baseTransaction,
-        maxFeePerGas: BigInt('50000000000'), // 50 gwei — higher
-        maxPriorityFeePerGas: BigInt('1000000000') // 1 gwei — lower
-      }
+      await signEvm()
 
-      await ledgerWallet.signEvmTransaction({
-        accountIndex: 0,
-        transaction: tx,
-        network: mockNetwork,
-        provider: mockProvider
-      })
-
-      const [, capturedHex] = mockEthSignTransaction.mock.calls[0]
-      const decoded = Transaction.from('0x' + capturedHex)
-      expect(decoded.maxFeePerGas).toBe(tx.maxFeePerGas)
-      expect(decoded.maxPriorityFeePerGas).toBe(tx.maxPriorityFeePerGas)
+      const tx = signedPayload()
+      expect(tx.maxFeePerGas).not.toBe(baseTransaction.maxPriorityFeePerGas)
+      expect(tx.maxPriorityFeePerGas).not.toBe(baseTransaction.maxFeePerGas)
     })
 
-    it('uses getEvmSignature (Ethereum app) for non-Avalanche chains', async () => {
-      await ledgerWallet.signEvmTransaction({
-        accountIndex: 0,
-        transaction: { ...baseTransaction, chainId: 1 },
-        network: mockNetwork,
-        provider: mockProvider
-      })
+    it('signs non-Avalanche EVM chains through the Ethereum app', async () => {
+      await signEvm()
 
-      expect(mockEthSignTransaction).toHaveBeenCalledTimes(1)
-      expect(mockSignEVMTransaction).not.toHaveBeenCalled()
+      expect(mockOpenApp).toHaveBeenCalledWith(LedgerAppType.ETHEREUM)
+      expect(mockWaitForApp).toHaveBeenCalledWith(
+        LedgerAppType.ETHEREUM,
+        expect.any(Number)
+      )
     })
 
-    it('uses getCChainSignature (Avalanche app) for Avalanche chains', async () => {
-      mockGetETHAddress.mockResolvedValue({ address: '0xabc' })
-      mockSignEVMTransaction.mockResolvedValue(mockSignature)
-
+    it('signs C-Chain through the Avalanche app', async () => {
       await ledgerWallet.signEvmTransaction({
         accountIndex: 0,
-        transaction: { ...baseTransaction, chainId: 43114 },
+        transaction: { ...baseTransaction, chainId: 43114 } as never,
         network: { chainId: 43114, vmName: NetworkVMType.EVM } as Network,
         provider: mockProvider
       })
 
-      expect(mockSignEVMTransaction).toHaveBeenCalledTimes(1)
-      expect(mockEthSignTransaction).not.toHaveBeenCalled()
+      expect(mockOpenApp).toHaveBeenCalledWith(LedgerAppType.AVALANCHE)
+      expect(mockWaitForApp).toHaveBeenCalledWith(
+        LedgerAppType.AVALANCHE,
+        expect.any(Number)
+      )
     })
 
-    it('uses getCChainSignature (Avalanche app) for Avalanche L1 networks (EVM + subnetId)', async () => {
-      mockGetETHAddress.mockResolvedValue({ address: '0xabc' })
-      mockSignEVMTransaction.mockResolvedValue(mockSignature)
-      const l1Network = {
-        chainId: 1510,
-        vmName: NetworkVMType.EVM,
-        subnetId: 'orange-subnet'
-      } as Network
-
+    it('signs Avalanche L1s through the Avalanche app', async () => {
       await ledgerWallet.signEvmTransaction({
         accountIndex: 0,
-        transaction: { ...baseTransaction, chainId: 1510 },
-        network: l1Network,
+        transaction: baseTransaction as never,
+        network: {
+          chainId: 1,
+          vmName: NetworkVMType.EVM,
+          subnetId: 'subnet'
+        } as Network,
         provider: mockProvider
       })
 
-      expect(mockSignEVMTransaction).toHaveBeenCalledTimes(1)
-      expect(mockEthSignTransaction).not.toHaveBeenCalled()
+      expect(mockOpenApp).toHaveBeenCalledWith(LedgerAppType.AVALANCHE)
     })
 
-    it('returns a serialized signed transaction string', async () => {
-      const result = await ledgerWallet.signEvmTransaction({
-        accountIndex: 0,
-        transaction: baseTransaction,
-        network: mockNetwork,
-        provider: mockProvider
-      })
+    it('builds the signer with the account index, session and derivation spec', async () => {
+      await signEvm()
 
-      expect(typeof result).toBe('string')
-      expect(result.startsWith('0x')).toBe(true)
+      expect(mockLedgerSigner).toHaveBeenCalledWith(
+        0,
+        expect.any(Object),
+        'test-session-id',
+        DerivationPath.BIP44,
+        mockProvider
+      )
+    })
+
+    it('returns whatever the signer produced', async () => {
+      mockEvmSignTransaction.mockResolvedValue('0xdeadbeefsigned')
+
+      await expect(signEvm()).resolves.toBe('0xdeadbeefsigned')
     })
 
     it('defaults nonce to 0 and data to 0x when absent', async () => {
-      const { nonce: _nonce, data: _data, ...rest } = baseTransaction
-
-      await ledgerWallet.signEvmTransaction({
-        accountIndex: 0,
-        transaction: rest,
-        network: mockNetwork,
-        provider: mockProvider
+      await signEvm({
+        chainId: 1,
+        maxFeePerGas: BigInt('30000000000'),
+        maxPriorityFeePerGas: BigInt('2000000000'),
+        gasLimit: BigInt('21000'),
+        to: '0x1234567890123456789012345678901234567890',
+        value: BigInt('0'),
+        accessList: []
       })
 
-      const [, capturedHex] = mockEthSignTransaction.mock.calls[0]
-      const decoded = Transaction.from('0x' + capturedHex)
-      expect(decoded.nonce).toBe(0)
-      expect(decoded.data).toBe('0x')
+      expect(signedPayload()).toMatchObject({ nonce: 0, data: '0x' })
+    })
+
+    it('maps a device rejection to the user-rejected message', async () => {
+      mockEvmSignTransaction.mockRejectedValue(deviceRejection())
+
+      await expect(signEvm()).rejects.toThrow(REJECTED_ON_DEVICE)
     })
   })
 
@@ -1120,7 +855,7 @@ describe('LedgerWallet', () => {
         // Remove the spy set up in beforeEach
         jest.restoreAllMocks()
 
-        const mockTransport = new MockTransport()
+        const mockTransport = new MockSession()
         mockEnsureConnection.mockResolvedValue(mockTransport as never)
 
         const result = await (ledgerWallet as any).getTransport()
@@ -1385,65 +1120,62 @@ describe('LedgerWallet', () => {
     })
 
     describe('signAvalancheMessage', () => {
-      beforeEach(() => {
-        mockSignMsg.mockResolvedValue({
-          signatures: new Map([['key', Buffer.from('mock-signature', 'hex')]])
-        })
+      // The message is run through toUtf8(), so callers pass hex, not text.
+      const hexMessage = '0x48656c6c6f' // "Hello"
+
+      const signMsg = (accountIndex = 0, data: unknown = hexMessage) =>
+        (
+          ledgerWallet as unknown as {
+            signAvalancheMessage: (
+              i: number,
+              d: unknown,
+              p: unknown
+            ) => Promise<string>
+          }
+        ).signAvalancheMessage(accountIndex, data, {} as never)
+
+      it('sends the decoded message on the X chain with the DMK session', async () => {
+        await signMsg()
+
+        expect(mockAvaSignMessage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'Hello',
+            chain: 'X',
+            sessionId: 'test-session-id',
+            dmk: expect.any(Object)
+          })
+        )
       })
 
-      it('should sign Avalanche message with correct derivation path', async () => {
-        const message = 'Test message'
-        const result = await (ledgerWallet as any).signAvalancheMessage(
+      it('returns the signature as hex', async () => {
+        mockAvaSignMessage.mockResolvedValue(Buffer.from('cafe', 'hex'))
+
+        await expect(signMsg()).resolves.toBe('cafe')
+      })
+
+      it('builds the signer for the requested account index', async () => {
+        await signMsg(0)
+
+        expect(mockSimpleLedgerSigner).toHaveBeenCalledWith(
           0,
-          message
-        )
-
-        expect(mockSignMsg).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/0'],
-          message
-        )
-        expect(typeof result).toBe('string')
-      })
-
-      it('should use correct account index in derivation path', async () => {
-        const message = 'Test message'
-        await (ledgerWallet as any).signAvalancheMessage(2, message)
-
-        expect(mockSignMsg).toHaveBeenCalledWith(
-          "m/44'/9000'/2'",
-          ['0/0'],
-          message
+          expect.anything(),
+          'mock-avax-xpub',
+          DerivationPath.BIP44
         )
       })
 
-      it('should stringify non-string data', async () => {
-        const data = { foo: 'bar', num: 123 }
-        await (ledgerWallet as any).signAvalancheMessage(0, data)
-
-        expect(mockSignMsg).toHaveBeenCalledWith(
-          "m/44'/9000'/0'",
-          ['0/0'],
-          JSON.stringify(data)
-        )
-      })
-
-      it('should throw error when no signatures returned', async () => {
-        mockSignMsg.mockResolvedValue({ signatures: new Map() })
-
-        await expect(
-          (ledgerWallet as any).signAvalancheMessage(0, 'message')
-        ).rejects.toThrow('No signatures returned from device')
-      })
-
-      it('should handle app connection errors', async () => {
+      it('propagates app connection errors', async () => {
         mockEnsureConnection.mockRejectedValueOnce(
           new Error('Connection failed')
         )
 
-        await expect(
-          (ledgerWallet as any).signAvalancheMessage(0, 'message')
-        ).rejects.toThrow('Connection failed')
+        await expect(signMsg()).rejects.toThrow('Connection failed')
+      })
+
+      it('maps a device rejection to the user-rejected message', async () => {
+        mockAvaSignMessage.mockRejectedValue(deviceRejection())
+
+        await expect(signMsg()).rejects.toThrow(REJECTED_ON_DEVICE)
       })
     })
 
@@ -1580,291 +1312,6 @@ describe('LedgerWallet', () => {
             'Address'
           ])
         )
-      })
-    })
-
-    describe('signEIP712WithFallback', () => {
-      const mockEIP712Message = {
-        domain: { name: 'Test', version: '1' },
-        types: {
-          EIP712Domain: [
-            { name: 'name', type: 'string' },
-            { name: 'version', type: 'string' }
-          ],
-          Message: [{ name: 'content', type: 'string' }]
-        },
-        primaryType: 'Message',
-        message: { content: 'Hello' }
-      }
-
-      it('should use signEIP712Message when supported', async () => {
-        mockEthSignEIP712Message.mockResolvedValue({
-          r: '1234567890abcdef',
-          s: 'fedcba0987654321',
-          v: 27
-        })
-
-        // Create mock app object with signEIP712Message method
-        const mockApp = {
-          signEIP712Message: mockEthSignEIP712Message,
-          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
-        }
-
-        const result = await (ledgerWallet as any).signEIP712WithFallback(
-          mockApp,
-          "m/44'/60'/0'/0/0",
-          mockEIP712Message
-        )
-
-        expect(mockEthSignEIP712Message).toHaveBeenCalledWith(
-          "m/44'/60'/0'/0/0",
-          mockEIP712Message
-        )
-        expect(result).toMatch(/^0x[0-9a-f]{130}$/i) // 0x + 64 chars (r) + 64 chars (s) + 2 chars (v)
-      })
-
-      it('should fallback to signEIP712HashedMessage for Nano S (INS_NOT_SUPPORTED 0x6d00)', async () => {
-        mockEthSignEIP712Message.mockRejectedValue(
-          new Error('Ledger device: UNKNOWN_ERROR (0x6d00)')
-        )
-        mockEthSignEIP712HashedMessage.mockResolvedValue({
-          r: '1234567890abcdef',
-          s: 'fedcba0987654321',
-          v: 28
-        })
-
-        const mockApp = {
-          signEIP712Message: mockEthSignEIP712Message,
-          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
-        }
-
-        const result = await (ledgerWallet as any).signEIP712WithFallback(
-          mockApp,
-          "m/44'/60'/0'/0/0",
-          mockEIP712Message
-        )
-
-        expect(mockEthSignEIP712Message).toHaveBeenCalled()
-        expect(mockEthSignEIP712HashedMessage).toHaveBeenCalled()
-        expect(result).toMatch(/^0x[0-9a-f]{130}$/i)
-      })
-
-      it('should rethrow user-rejection errors without triggering fallback', async () => {
-        mockEthSignEIP712Message.mockRejectedValue(
-          new Error('Ledger device: Conditions of use not satisfied (0x6985)')
-        )
-
-        const mockApp = {
-          signEIP712Message: mockEthSignEIP712Message,
-          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
-        }
-
-        await expect(
-          (ledgerWallet as any).signEIP712WithFallback(
-            mockApp,
-            "m/44'/60'/0'/0/0",
-            mockEIP712Message
-          )
-        ).rejects.toThrow('0x6985')
-
-        expect(mockEthSignEIP712HashedMessage).not.toHaveBeenCalled()
-      })
-
-      it('should rethrow unknown errors without triggering fallback', async () => {
-        mockEthSignEIP712Message.mockRejectedValue(
-          new Error('Unexpected device error')
-        )
-
-        const mockApp = {
-          signEIP712Message: mockEthSignEIP712Message,
-          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
-        }
-
-        await expect(
-          (ledgerWallet as any).signEIP712WithFallback(
-            mockApp,
-            "m/44'/60'/0'/0/0",
-            mockEIP712Message
-          )
-        ).rejects.toThrow('Unexpected device error')
-
-        expect(mockEthSignEIP712HashedMessage).not.toHaveBeenCalled()
-      })
-
-      it('should use TypedDataEncoder.hashStruct with explicit primaryType in fallback', async () => {
-        mockEthSignEIP712Message.mockRejectedValue(
-          new Error('Ledger device: UNKNOWN_ERROR (0x6d00)')
-        )
-        mockEthSignEIP712HashedMessage.mockResolvedValue({
-          r: '1234567890abcdef',
-          s: 'fedcba0987654321',
-          v: 28
-        })
-
-        const mockApp = {
-          signEIP712Message: mockEthSignEIP712Message,
-          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
-        }
-
-        // Should not throw "ambiguous primary types" even when type keys are
-        // in an arbitrary insertion order, because we pass primaryType explicitly
-        await expect(
-          (ledgerWallet as any).signEIP712WithFallback(
-            mockApp,
-            "m/44'/60'/0'/0/0",
-            mockEIP712Message
-          )
-        ).resolves.toMatch(/^0x/)
-      })
-
-      it('should pad signature components correctly', async () => {
-        mockEthSignEIP712Message.mockResolvedValue({
-          r: '1',
-          s: '2',
-          v: 27
-        })
-
-        const mockApp = {
-          signEIP712Message: mockEthSignEIP712Message,
-          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
-        }
-
-        const result = await (ledgerWallet as any).signEIP712WithFallback(
-          mockApp,
-          "m/44'/60'/0'/0/0",
-          mockEIP712Message
-        )
-
-        // Should pad r and s to 64 chars, v to 2 chars
-        expect(result).toBe(
-          '0x' +
-            '0000000000000000000000000000000000000000000000000000000000000001' + // r padded
-            '0000000000000000000000000000000000000000000000000000000000000002' + // s padded
-            '1b' // v = 27 = 0x1b
-        )
-      })
-    })
-
-    describe('isDeviceCapabilityError', () => {
-      it('should return true for INS_NOT_SUPPORTED status (0x6d00)', () => {
-        const err = new Error('Ledger device: UNKNOWN_ERROR (0x6d00)')
-        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(true)
-      })
-
-      it('should return true for CLA_NOT_SUPPORTED status (0x6e00)', () => {
-        const err = new Error('Ledger device: CLA_NOT_SUPPORTED (0x6e00)')
-        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(true)
-      })
-
-      it('should return false for unrelated errors', () => {
-        const err = new Error('Unexpected device error')
-        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(false)
-      })
-
-      it('should return false for non-Error values', () => {
-        expect((ledgerWallet as any).isDeviceCapabilityError('string')).toBe(
-          false
-        )
-        expect((ledgerWallet as any).isDeviceCapabilityError(null)).toBe(false)
-        expect((ledgerWallet as any).isDeviceCapabilityError(42)).toBe(false)
-      })
-    })
-
-    describe('getCChainSignature', () => {
-      beforeEach(() => {
-        mockGetETHAddress.mockResolvedValue({ address: '0x123...' })
-        mockSignEVMTransaction.mockResolvedValue({
-          r: 'aaaa',
-          s: 'bbbb',
-          v: '1c'
-        })
-      })
-
-      it('should sign with Avalanche app', async () => {
-        const mockTransport = new MockTransport()
-        const result = await (ledgerWallet as any).getCChainSignature({
-          transport: mockTransport,
-          derivationPath: "m/44'/60'/0'/0/0",
-          unsignedTx: 'abcdef123456'
-        })
-
-        expect(mockGetETHAddress).toHaveBeenCalledWith("m/44'/60'/0'/0/0")
-        expect(mockSignEVMTransaction).toHaveBeenCalledWith(
-          "m/44'/60'/0'/0/0",
-          'abcdef123456',
-          expect.objectContaining({
-            externalPlugin: [],
-            erc20Tokens: [],
-            nfts: [],
-            plugin: [],
-            domains: []
-          })
-        )
-        expect(result).toEqual({
-          r: 'aaaa',
-          s: 'bbbb',
-          v: '1c'
-        })
-      })
-
-      it('should throw error when signature is undefined', async () => {
-        mockSignEVMTransaction.mockResolvedValue(undefined)
-
-        const mockTransport = new MockTransport()
-
-        await expect(
-          (ledgerWallet as any).getCChainSignature({
-            transport: mockTransport,
-            derivationPath: "m/44'/60'/0'/0/0",
-            unsignedTx: 'abcdef'
-          })
-        ).rejects.toThrow('signEVMTransaction returned undefined')
-      })
-    })
-
-    describe('getEvmSignature', () => {
-      beforeEach(() => {
-        mockEthGetAddress.mockResolvedValue({ address: '0x456...' })
-        mockEthSignTransaction.mockResolvedValue({
-          r: 'cccc',
-          s: 'dddd',
-          v: '1b'
-        })
-      })
-
-      it('should sign with Ethereum app', async () => {
-        const mockTransport = new MockTransport()
-        const result = await (ledgerWallet as any).getEvmSignature({
-          transport: mockTransport,
-          derivationPath: "m/44'/60'/0'/0/0",
-          unsignedTx: 'fedcba987654'
-        })
-
-        expect(mockEthGetAddress).toHaveBeenCalledWith("m/44'/60'/0'/0/0")
-        expect(mockEthSignTransaction).toHaveBeenCalledWith(
-          "m/44'/60'/0'/0/0",
-          'fedcba987654',
-          null
-        )
-        expect(result).toEqual({
-          r: 'cccc',
-          s: 'dddd',
-          v: '1b'
-        })
-      })
-
-      it('should throw error when signature is undefined', async () => {
-        mockEthSignTransaction.mockResolvedValue(undefined)
-
-        const mockTransport = new MockTransport()
-
-        await expect(
-          (ledgerWallet as any).getEvmSignature({
-            transport: mockTransport,
-            derivationPath: "m/44'/60'/0'/0/0",
-            unsignedTx: 'abcdef'
-          })
-        ).rejects.toThrow('signTransaction returned undefined')
       })
     })
 
@@ -2014,345 +1461,74 @@ describe('LedgerWallet', () => {
       })
     })
 
-    describe('getHexSignature', () => {
-      it('should format signature into 0x-prefixed hex string', () => {
-        const result = (ledgerWallet as any).getHexSignature({
-          r: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-          s: 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
-          v: 27
-        })
-
-        expect(result).toMatch(/^0x[0-9a-f]{130}$/i)
+    // The kit's device actions each run OpenAppDeviceAction({ appName:
+    // 'Bitcoin' }) unless told to skip, which closes the Bitcoin Recovery app
+    // and opens the plain Bitcoin one — the app Core cannot use past
+    // MAX_BITCOIN_APP_VERSION.
+    describe('registerBitcoinWalletPolicy', () => {
+      beforeEach(() => {
+        ;(
+          BitcoinWalletPolicyService.storeBtcWalletPolicy as jest.Mock
+        ).mockResolvedValue(true)
       })
 
-      it('should pad r and s to 64 characters', () => {
-        const result = (ledgerWallet as any).getHexSignature({
-          r: '1',
-          s: '2',
-          v: 27
+      const register = () =>
+        (ledgerWallet as any).registerBitcoinWalletPolicy({
+          accountName: 'Account 1',
+          accountIndex: 0,
+          walletId: mockWalletId
         })
 
-        expect(result).toBe(
-          '0x' +
-            '0000000000000000000000000000000000000000000000000000000000000001' + // r padded to 64
-            '0000000000000000000000000000000000000000000000000000000000000002' + // s padded to 64
-            '1b' // v = 27 = 0x1b
+      it('never lets the signer kit switch the Ledger app', async () => {
+        await register()
+
+        expect(mockGetMasterFingerprint).toHaveBeenCalledWith({
+          skipOpenApp: true
+        })
+        expect(mockGetDeviceExtendedPublicKey).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({ skipOpenApp: true })
+        )
+        expect(mockRegisterWallet).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({ skipOpenApp: true })
         )
       })
 
-      it('should convert v to 2-character hex', () => {
-        const result = (ledgerWallet as any).getHexSignature({
-          r: '0'.repeat(64),
-          s: '0'.repeat(64),
-          v: 28
-        })
+      // get_extended_pubkey answers 0x6a82 for Core's 44'/60'/x' path unless the
+      // key is displayed for confirmation, so display must stay on.
+      it('asks the device to display the key so the non-standard path is accepted', async () => {
+        await register()
 
-        expect(result).toMatch(/1c$/) // v = 28 = 0x1c
+        expect(mockGetDeviceExtendedPublicKey).toHaveBeenCalledWith(
+          expect.any(String),
+          { checkOnDevice: true, skipOpenApp: true }
+        )
       })
     })
 
-    describe('handleEthAndPersonalSign', () => {
-      const derivationPath = "m/44'/60'/0'/0/0"
-
-      beforeEach(() => {
-        mockEthSignPersonalMessage.mockResolvedValue({
-          r: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-          s: 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
-          v: 27
-        })
-      })
-
-      it('should sign a plain string message using Ethereum app', async () => {
-        const result = await (ledgerWallet as any).handleEthAndPersonalSign({
-          data: 'hello world',
-          derivationPath
-        })
-
-        const expectedHex = Buffer.from('hello world', 'utf8').toString('hex')
-        expect(mockEthSignPersonalMessage).toHaveBeenCalledWith(
-          derivationPath,
-          expectedHex
+    describe('signBtcTransaction app readiness', () => {
+      it('establishes the app itself now that the kit no longer does', async () => {
+        ;(
+          BitcoinWalletPolicyService.needsBtcWalletPolicyRegistration as jest.Mock
+        ).mockReturnValue(false)
+        ;(getBitcoinProvider as jest.Mock).mockRejectedValue(
+          new Error('stop after the app gate')
         )
-        expect(result).toMatch(/^0x/)
-      })
-
-      it('should strip 0x prefix from hex-encoded string data', async () => {
-        await (ledgerWallet as any).handleEthAndPersonalSign({
-          data: '0xdeadbeef',
-          derivationPath
-        })
-
-        expect(mockEthSignPersonalMessage).toHaveBeenCalledWith(
-          derivationPath,
-          'deadbeef'
-        )
-      })
-
-      it('should stringify non-string data before signing', async () => {
-        const objData = { foo: 'bar', num: 42 }
-        await (ledgerWallet as any).handleEthAndPersonalSign({
-          data: objData,
-          derivationPath
-        })
-
-        const expectedHex = Buffer.from(
-          JSON.stringify(objData),
-          'utf8'
-        ).toString('hex')
-        expect(mockEthSignPersonalMessage).toHaveBeenCalledWith(
-          derivationPath,
-          expectedHex
-        )
-      })
-
-      it('should return hex-formatted signature', async () => {
-        mockEthSignPersonalMessage.mockResolvedValue({ r: '1', s: '2', v: 27 })
-
-        const result = await (ledgerWallet as any).handleEthAndPersonalSign({
-          data: 'test',
-          derivationPath
-        })
-
-        expect(result).toBe(
-          '0x' +
-            '0000000000000000000000000000000000000000000000000000000000000001' +
-            '0000000000000000000000000000000000000000000000000000000000000002' +
-            '1b'
-        )
-      })
-
-      it('should throw when app connection fails', async () => {
-        mockEnsureConnection.mockRejectedValueOnce(new Error('No device'))
 
         await expect(
-          (ledgerWallet as any).handleEthAndPersonalSign({
-            data: 'hello',
-            derivationPath
+          ledgerWallet.signBtcTransaction({
+            accountIndex: 0,
+            transaction: {} as any,
+            network: { isTestnet: false, vmName: 'BITCOIN' } as Network,
+            provider: {} as any
           })
-        ).rejects.toThrow('No device')
-      })
+        ).rejects.toThrow()
 
-      it('opens the Avalanche app for Avalanche L1 networks (EVM + subnetId)', async () => {
-        await (ledgerWallet as any).handleEthAndPersonalSign({
-          data: 'hello world',
-          derivationPath,
-          network: {
-            chainId: 1510,
-            vmName: NetworkVMType.EVM,
-            subnetId: 'orange-subnet'
-          } as Network
-        })
-
-        expect(mockOpenApp).toHaveBeenCalledWith(LedgerAppType.AVALANCHE)
-      })
-    })
-
-    describe('handleSignedTypedData', () => {
-      const derivationPath = "m/44'/60'/0'/0/0"
-      const ethNetwork = { chainId: 1, vmName: NetworkVMType.EVM } as Network
-      const avaxNetwork = {
-        chainId: 43114,
-        vmName: NetworkVMType.EVM
-      } as Network
-
-      const validTypedData = {
-        domain: { name: 'Test App', version: '1' },
-        types: {
-          EIP712Domain: [
-            { name: 'name', type: 'string' },
-            { name: 'version', type: 'string' }
-          ],
-          Message: [{ name: 'content', type: 'string' }]
-        },
-        primaryType: 'Message',
-        message: { content: 'Hello' }
-      }
-
-      beforeEach(() => {
-        mockEthSignEIP712Message.mockResolvedValue({
-          r: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-          s: 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
-          v: 27
-        })
-        mockAvaxSignEIP712Message.mockResolvedValue({
-          r: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          s: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-          v: 28
-        })
-      })
-
-      it('should throw for v1 array format data', async () => {
-        await expect(
-          (ledgerWallet as any).handleSignedTypedData({
-            data: [{ name: 'test', type: 'string', value: 'hello' }],
-            rpcMethod: RpcMethod.SIGN_TYPED_DATA,
-            derivationPath,
-            network: ethNetwork
-          })
-        ).rejects.toThrow(
-          'eth_signTypedData v1 is not supported on Ledger devices.'
+        expect(mockWaitForApp).toHaveBeenCalledWith(
+          LedgerAppType.BITCOIN,
+          expect.any(Number)
         )
-      })
-
-      it('should throw for v1 JSON array string', async () => {
-        await expect(
-          (ledgerWallet as any).handleSignedTypedData({
-            data: '[{"name":"test","type":"string","value":"hello"}]',
-            rpcMethod: RpcMethod.SIGN_TYPED_DATA,
-            derivationPath,
-            network: ethNetwork
-          })
-        ).rejects.toThrow(
-          'eth_signTypedData v1 is not supported on Ledger devices.'
-        )
-      })
-
-      it('should throw when rpcMethod is SIGN_TYPED_DATA_V1', async () => {
-        await expect(
-          (ledgerWallet as any).handleSignedTypedData({
-            data: validTypedData,
-            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V1,
-            derivationPath,
-            network: ethNetwork
-          })
-        ).rejects.toThrow(
-          'eth_signTypedData v1 is not supported on Ledger devices.'
-        )
-      })
-
-      it('should sign EIP-712 typed data object with Ethereum app', async () => {
-        const result = await (ledgerWallet as any).handleSignedTypedData({
-          data: validTypedData,
-          rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-          derivationPath,
-          network: ethNetwork
-        })
-
-        expect(mockEthSignEIP712Message).toHaveBeenCalledWith(
-          derivationPath,
-          expect.objectContaining({ primaryType: 'Message' })
-        )
-        expect(result).toMatch(/^0x/)
-      })
-
-      it('should sign EIP-712 data passed as JSON string', async () => {
-        const result = await (ledgerWallet as any).handleSignedTypedData({
-          data: JSON.stringify(validTypedData),
-          rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-          derivationPath,
-          network: ethNetwork
-        })
-
-        expect(mockEthSignEIP712Message).toHaveBeenCalled()
-        expect(result).toMatch(/^0x/)
-      })
-
-      it('should throw when JSON string is invalid', async () => {
-        await expect(
-          (ledgerWallet as any).handleSignedTypedData({
-            data: 'not-valid-json',
-            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-            derivationPath,
-            network: ethNetwork
-          })
-        ).rejects.toThrow(
-          'Invalid typed data format: expected JSON string or object'
-        )
-      })
-
-      it('should throw when domain is missing', async () => {
-        const { domain: _domain, ...dataWithoutDomain } = validTypedData
-        await expect(
-          (ledgerWallet as any).handleSignedTypedData({
-            data: dataWithoutDomain,
-            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-            derivationPath,
-            network: ethNetwork
-          })
-        ).rejects.toThrow('TypedData missing required field: domain')
-      })
-
-      it('should throw when types is missing', async () => {
-        const { types: _types, ...dataWithoutTypes } = validTypedData
-        await expect(
-          (ledgerWallet as any).handleSignedTypedData({
-            data: dataWithoutTypes,
-            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-            derivationPath,
-            network: ethNetwork
-          })
-        ).rejects.toThrow('TypedData missing required field: types')
-      })
-
-      it('should throw when primaryType is missing', async () => {
-        const { primaryType: _primaryType, ...dataWithoutPrimary } =
-          validTypedData
-        await expect(
-          (ledgerWallet as any).handleSignedTypedData({
-            data: dataWithoutPrimary,
-            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-            derivationPath,
-            network: ethNetwork
-          })
-        ).rejects.toThrow('TypedData missing required field: primaryType')
-      })
-
-      it('should throw when message is missing', async () => {
-        const { message: _message, ...dataWithoutMessage } = validTypedData
-        await expect(
-          (ledgerWallet as any).handleSignedTypedData({
-            data: dataWithoutMessage,
-            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-            derivationPath,
-            network: ethNetwork
-          })
-        ).rejects.toThrow('TypedData missing required field: message')
-      })
-
-      it('should use Avalanche app for Avalanche chain IDs', async () => {
-        await (ledgerWallet as any).handleSignedTypedData({
-          data: validTypedData,
-          rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-          derivationPath,
-          network: avaxNetwork
-        })
-
-        expect(mockAvaxSignEIP712Message).toHaveBeenCalledWith(
-          derivationPath,
-          expect.objectContaining({ primaryType: 'Message' })
-        )
-        expect(mockEthSignEIP712Message).not.toHaveBeenCalled()
-      })
-
-      it('should use Ethereum app for non-Avalanche chain IDs', async () => {
-        await (ledgerWallet as any).handleSignedTypedData({
-          data: validTypedData,
-          rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-          derivationPath,
-          network: ethNetwork
-        })
-
-        expect(mockEthSignEIP712Message).toHaveBeenCalled()
-        expect(mockAvaxSignEIP712Message).not.toHaveBeenCalled()
-      })
-
-      it('should use Avalanche app for Avalanche L1 networks (EVM + subnetId)', async () => {
-        await (ledgerWallet as any).handleSignedTypedData({
-          data: validTypedData,
-          rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
-          derivationPath,
-          network: {
-            chainId: 1510,
-            vmName: NetworkVMType.EVM,
-            subnetId: 'orange-subnet'
-          } as Network
-        })
-
-        expect(mockAvaxSignEIP712Message).toHaveBeenCalledWith(
-          derivationPath,
-          expect.objectContaining({ primaryType: 'Message' })
-        )
-        expect(mockEthSignEIP712Message).not.toHaveBeenCalled()
       })
     })
   })

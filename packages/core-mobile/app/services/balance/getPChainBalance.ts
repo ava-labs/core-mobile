@@ -10,13 +10,15 @@ export const getPChainBalance = async ({
   currency,
   avaxXPNetwork,
   xpAddresses,
-  xpub
+  xpub,
+  filterOutDustUtxos
 }: {
   account: Account
   currency: string
   avaxXPNetwork: Network
   xpAddresses: string[]
   xpub?: string
+  filterOutDustUtxos: boolean
 }): Promise<TokenWithBalancePVM> => {
   try {
     const balances = await BalanceService.getBalancesForAccount({
@@ -24,7 +26,8 @@ export const getPChainBalance = async ({
       account,
       currency,
       xpAddresses,
-      xpub
+      xpub,
+      filterOutDustUtxos
     })
 
     const pChainBalance = balances

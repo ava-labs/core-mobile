@@ -67,6 +67,7 @@ export const useDelegation = (): {
   computeSteps: ComputeSteps
   delegate: Delegate
   steps: Step[]
+  isComputeReady: boolean
 } => {
   const [steps, setSteps] = useState<Step[]>(EMPTY_STEPS)
   const cChainBalance = useCChainBalance()
@@ -83,6 +84,20 @@ export const useDelegation = (): {
   const avalancheEvmProvider = useAvalancheEvmProvider(isDeveloperMode)
   const cChainBaseFee = useCChainBaseFee()
   const pChainBalance = usePChainBalance()
+
+  // Mirrors the guard at the top of `computeSteps`: while any of these inputs
+  // is still loading, `computeSteps` resolves to EMPTY_STEPS without actually
+  // computing (or validating) anything. Callers that need a real answer — the
+  // confirm screen's funding pre-flight — must wait for this to be true,
+  // otherwise an "empty success" is indistinguishable from a funded stake.
+  const isComputeReady = Boolean(
+    activeAccount?.addressPVM &&
+      activeAccount.addressC &&
+      defaultFeeState &&
+      cChainBaseFee.data &&
+      avaxProvider &&
+      avalancheEvmProvider
+  )
 
   const computeSteps: ComputeSteps = useCallback(
     async (stakeAmount: bigint, additionalOutputAmount = 0n) => {
@@ -284,5 +299,5 @@ export const useDelegation = (): {
     ]
   )
 
-  return { computeSteps, delegate, steps }
+  return { computeSteps, delegate, steps, isComputeReady }
 }

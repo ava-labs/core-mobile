@@ -33,6 +33,9 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 import { useDisableLockAppStore } from 'features/accountSettings/store'
+import { clearPerpsSessionCaches } from 'features/trade/perpetuals/utils/clearPerpsSessionCaches'
+import { stakeCompleteNotificationRecordsStore } from 'features/notifications/store/stakeCompleteNotificationRecords'
+import { fusionTransfersStore } from 'features/swap/hooks/useZustandStore'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import {
   onAppLocked,
@@ -193,10 +196,27 @@ const clearData = async (
     Logger.error('failed to clear common storage', e)
   }
   try {
+    // The zustand MMKV storage is not wiped here (it also holds device-scoped
+    // state like view preferences), but these stores hold wallet data —
+    // without this the next wallet on the device would see the previous
+    // wallet's stake / swap notifications. Cleared in this listener rather
+    // than in `useDeleteWallet` so forced logouts (e.g. the session-expired
+    // flow) are covered too.
+    stakeCompleteNotificationRecordsStore.getState().clear()
+    fusionTransfersStore.getState().clearAllTransfers()
+  } catch (e) {
+    Logger.error('failed to clear wallet-scoped zustand stores', e)
+  }
+  try {
     // clear React Query cache including persisted data (XP addresses, networks, etc.)
     queryClient.clear()
   } catch (e) {
     Logger.error('failed to clear React Query cache', e)
+  }
+  try {
+    clearPerpsSessionCaches()
+  } catch (e) {
+    Logger.error('failed to clear perps session caches', e)
   }
 }
 

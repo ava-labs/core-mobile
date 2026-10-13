@@ -3,6 +3,7 @@ import type { NetworkFees } from '@avalabs/vm-module-types'
 import type { LocalTokenWithBalance } from 'store/balance'
 import {
   buildFeeOptions,
+  computeIsMaxLoading,
   computeMaxAmount,
   getPreQuoteAmount,
   getRouteAdditiveBps,
@@ -18,6 +19,18 @@ const makeToken = (
     balance,
     type
   } as LocalTokenWithBalance)
+
+// P/X-chain AVAX: `balance` includes staked/locked funds, `available` is the
+// swappable (unlocked/unstaked) portion.
+const makeStakedToken = (
+  balance: bigint,
+  available: bigint
+): LocalTokenWithBalance =>
+  ({
+    balance,
+    available,
+    type: TokenType.NATIVE
+  } as unknown as LocalTokenWithBalance)
 
 describe('buildFeeOptions', () => {
   it('returns only feeUnitsMarginBps when networkFee is undefined', () => {
@@ -89,6 +102,32 @@ describe('computeMaxAmount', () => {
     expect(result).toBeUndefined()
   })
 
+  it('uses spendableBalance instead of the displayed balance when provided (CP-13903)', () => {
+    const token = makeToken(5000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: 1000n,
+      additiveFee: 0n,
+      hasEstimationError: false,
+      spendableBalance: 3000n
+    })
+    expect(result).toBe(2000n)
+  })
+
+  it('uses spendableBalance for the estimation-error fallback too (CP-13903)', () => {
+    const token = makeToken(5000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: undefined,
+      additiveFee: 0n,
+      hasEstimationError: true,
+      spendableBalance: 3000n
+    })
+    expect(result).toBe(3000n)
+  })
+
   it('returns balance minus gas for native token with no additive fees', () => {
     const token = makeToken(5000n)
     const result = computeMaxAmount({
@@ -115,6 +154,47 @@ describe('computeMaxAmount', () => {
 
   it('returns undefined for native when fees exceed balance', () => {
     const token = makeToken(500n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: 400n,
+      additiveFee: 200n,
+      hasEstimationError: false
+    })
+    expect(result).toBeUndefined()
+  })
+
+  // -------------------------------------------------------------------------
+  // P/X-chain staked-balance tests (CP-14788)
+  // -------------------------------------------------------------------------
+
+  it('caps native max at available (not full balance) for a P-chain token with staked funds', () => {
+    // balance 10000 includes staked; only 3000 is available to swap
+    const token = makeStakedToken(10000n, 3000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: 1000n,
+      additiveFee: 0n,
+      hasEstimationError: false
+    })
+    expect(result).toBe(2000n)
+  })
+
+  it('returns available (not full balance) for a P-chain token on estimation error', () => {
+    const token = makeStakedToken(10000n, 3000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: 1000n,
+      additiveFee: 0n,
+      hasEstimationError: true
+    })
+    expect(result).toBe(3000n)
+  })
+
+  it('returns undefined for a P-chain token when fees exceed available', () => {
+    const token = makeStakedToken(10000n, 500n)
     const result = computeMaxAmount({
       fromToken: token,
       isNative: true,
@@ -237,6 +317,12 @@ describe('getPreQuoteAmount', () => {
     const token = makeToken(1000n)
     expect(getPreQuoteAmount(100n, token)).toBe(500n)
   })
+
+  it('uses half of available (not full balance) for a P-chain staked token', () => {
+    // full balance 1000 would give 500, but only 200 is available → half is 100
+    const token = makeStakedToken(1000n, 200n)
+    expect(getPreQuoteAmount(50n, token)).toBe(100n)
+  })
 })
 
 describe('resolveAdditiveFeeForMax', () => {
@@ -338,5 +424,97 @@ describe('getRouteAdditiveBps', () => {
     expect(
       getRouteAdditiveBps('bitcoin:mainnet', 'bitcoin:mainnet', config)
     ).toBe(1500)
+  })
+})
+
+describe('computeIsMaxLoading', () => {
+  const baseParams = {
+    fromToken: makeToken(1_000_000n),
+    toToken: makeToken(0n, TokenType.ERC20),
+    isNative: true,
+    bufferedGas: undefined as bigint | undefined,
+    additiveFee: undefined as bigint | undefined,
+    hasEstimationError: false,
+    isSpendableBalanceRequired: false,
+    spendableBalance: undefined as bigint | undefined,
+    hasSpendableBalanceError: false
+  }
+
+  it('is false without a from token', () => {
+    expect(computeIsMaxLoading({ ...baseParams, fromToken: undefined })).toBe(
+      false
+    )
+  })
+
+  it('is false without a to token — nothing is in flight for an incomplete pair', () => {
+    expect(computeIsMaxLoading({ ...baseParams, toToken: undefined })).toBe(
+      false
+    )
+  })
+
+  it('is true while the X/P spendable balance is pending', () => {
+    expect(
+      computeIsMaxLoading({
+        ...baseParams,
+        isSpendableBalanceRequired: true,
+        spendableBalance: undefined
+      })
+    ).toBe(true)
+  })
+
+  it('is false when the X/P spendable query settled in error (terminal — Max hides)', () => {
+    expect(
+      computeIsMaxLoading({
+        ...baseParams,
+        isSpendableBalanceRequired: true,
+        spendableBalance: undefined,
+        hasSpendableBalanceError: true
+      })
+    ).toBe(false)
+  })
+
+  it('is true for a native source while the gas estimate is pending', () => {
+    expect(computeIsMaxLoading({ ...baseParams, bufferedGas: undefined })).toBe(
+      true
+    )
+  })
+
+  it('is false for a native source once the gas estimate arrives', () => {
+    expect(computeIsMaxLoading({ ...baseParams, bufferedGas: 100n })).toBe(
+      false
+    )
+  })
+
+  it('is true for a non-native source while the additive fee is pending', () => {
+    expect(
+      computeIsMaxLoading({
+        ...baseParams,
+        isNative: false,
+        additiveFee: undefined
+      })
+    ).toBe(true)
+  })
+
+  it('is false for a non-native source once the additive fee arrives', () => {
+    expect(
+      computeIsMaxLoading({ ...baseParams, isNative: false, additiveFee: 0n })
+    ).toBe(false)
+  })
+
+  it('is false on estimation error — computeMaxAmount falls back to balance', () => {
+    expect(
+      computeIsMaxLoading({ ...baseParams, hasEstimationError: true })
+    ).toBe(false)
+  })
+
+  it('spendable pending wins over an available gas estimate', () => {
+    expect(
+      computeIsMaxLoading({
+        ...baseParams,
+        bufferedGas: 100n,
+        isSpendableBalanceRequired: true,
+        spendableBalance: undefined
+      })
+    ).toBe(true)
   })
 })

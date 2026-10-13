@@ -7,7 +7,6 @@ export type SpanName =
   | 'get-nfts'
   | 'send-token'
   | 'send-nft'
-  | 'swap'
   | 'sign-transaction'
   | 'send-transaction'
 
@@ -30,19 +29,15 @@ export type OpName =
   | 'svc.send.evm.get_trx_request'
   | 'svc.send.pvm.validate_and_calc_fees'
   | 'svc.send.pvm.get_trx_request'
-  | 'svc.swap.get_rate'
-  | 'svc.swap.get_paraswap_spender'
-  | 'svc.swap.build_trx'
   | 'svc.wallet.sign'
   | 'svc.wallet.get_wallet'
-  | 'svc.swap.contract_allowance'
-  | 'svc.swap.contract_estimate_gas'
   | 'svc.send.avm.get_trx_request'
   | 'svc.send.avm.validate_and_calc_fees'
 
 export const SentryStorage = 'sentry_sample_rate'
 
 export const SentryTag = {
+  Earn: 'earn',
   FusionSdk: 'fusion-sdk',
   AccountService: 'accounts-service',
   PostHog: 'posthog',
@@ -50,7 +45,8 @@ export const SentryTag = {
   ProfileApi: 'profile-api',
   GasStation: 'gas-station',
   Proxy: 'proxy',
-  SchemaMigration: 'schemaMigration'
+  SchemaMigration: 'schemaMigration',
+  Ledger: 'ledger'
 } as const
 
 /**
@@ -62,7 +58,8 @@ export const SentryTag = {
 export const AllowedSentryBreadcrumbCategory = {
   ListenerMigration: 'listenerMigration',
   ListenerReconciler: 'listenerReconciler',
-  FeeEstimationUserState: 'feeEstimationUserState'
+  FeeEstimationUserState: 'feeEstimationUserState',
+  LedgerApdu: 'ledgerApdu'
 } as const
 
 export type AllowedSentryBreadcrumbCategory =

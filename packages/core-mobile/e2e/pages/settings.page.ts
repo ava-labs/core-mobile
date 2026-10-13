@@ -1,384 +1,919 @@
-import assert from 'assert'
-import Actions from '../helpers/actions'
-import assertions from '../helpers/assertions'
+/* eslint-disable max-params */
+import { actions } from '../helpers/actions'
+import { getAndroidAppId } from '../helpers/warmup'
 import settings from '../locators/settings.loc'
+import { selectors } from '../helpers/selectors'
 import commonElsLoc from '../locators/commonEls.loc'
-import delay from '../helpers/waits'
-import commonElsPage from './commonEls.page'
+import { Network, networks } from '../helpers/networks'
+import common from './commonEls.page'
+import onboardingPage from './onboarding.page'
 import portfolioPage from './portfolio.page'
-import bottomTabsPage from './bottomTabs.page'
-
 class Settings {
-  get eyeIcon() {
-    return by.id(settings.eyeIcon)
-  }
-
-  get changePin() {
-    return by.text(settings.changePin)
-  }
-
-  get connectedSites() {
-    return by.text(settings.connectedSites)
-  }
-
-  get showRecoveryPhrase() {
-    return by.text(settings.showRecoveryPhrase)
-  }
-
-  get iWroteItDownButton() {
-    return by.text(settings.iWroteItDownButton)
-  }
-
-  get analyticsOn() {
-    return by.id(settings.analyticsOn)
-  }
-
-  get analyticsOff() {
-    return by.id(settings.analyticsOff)
-  }
-
-  get settingsScrollView() {
-    return by.id(settings.settingsScrollView)
-  }
-
-  get contacts() {
-    return by.text(settings.contacts)
-  }
-
-  get currency() {
-    return by.text(settings.currency)
-  }
-
-  get networks() {
-    return by.text(settings.networks)
-  }
-
-  get securityAndPrivacy() {
-    return by.text(settings.securityAndPrivacy)
-  }
-
-  get securityAndPrivacyTitle() {
-    return by.text(settings.securityAndPrivacyTitle)
-  }
-
-  get notificationsPreferences() {
-    return by.text(settings.notificationsPreferences)
-  }
-
-  get notificationsPreferencesTitle() {
-    return by.text(settings.notificationsPreferencesTitle)
-  }
-
-  get deleteWalletBtn() {
-    return by.text(settings.deleteWalletBtn)
-  }
-
-  get iUnderstandBtn() {
-    return by.text(settings.iUnderstandBtn)
-  }
-
-  get appearance() {
-    return by.text(settings.appearance)
-  }
-
-  get appearanceTitle() {
-    return by.text(settings.appearanceTitle)
-  }
-
-  get system() {
-    return by.text(settings.system)
-  }
-
-  get light() {
-    return by.text(settings.light)
-  }
-
-  get dark() {
-    return by.text(settings.dark)
-  }
-
-  get settingsBtn() {
-    return by.id(settings.settingsBtn)
-  }
-
-  get selectCurrencyTitle() {
-    return by.text(settings.selectCurrencyTitle)
-  }
-
   get addWalletBtn() {
-    return by.id(settings.addWalletBtn)
-  }
-
-  get addNetworkBtn() {
-    return by.id(settings.addNetworkBtn)
+    return selectors.getById(settings.addWalletBtn)
   }
 
   get createNewAccountBtn() {
-    return by.id(settings.createNewAccountBtn)
-  }
-
-  get accountList() {
-    return by.id(settings.accountList)
-  }
-
-  get enterYourCurrentPinTitle() {
-    return by.text(settings.enterYourCurrentPinTitle)
-  }
-
-  get enterYourNewPinTitle() {
-    return by.text(settings.enterYourNewPinTitle)
-  }
-
-  get unlockWithFaceId() {
-    return by.text(settings.unlockWithFaceId)
-  }
-
-  get toggleBiometricsOn() {
-    return by.id(settings.toggleBiometricsOn)
-  }
-
-  get toggleBiometricsOff() {
-    return by.id(settings.toggleBiometricsOff)
-  }
-
-  get confirmYourNewPinTitle() {
-    return by.text(settings.confirmYourNewPinTitle)
-  }
-
-  get showRecoveryPhraseTitle() {
-    return by.text(settings.showRecoveryPhraseTitle)
-  }
-
-  get showRecoveryPhraseDescription() {
-    return by.text(settings.showRecoveryPhraseDescription)
-  }
-
-  get showRecoveryPhraseWarning() {
-    return by.text(settings.showRecoveryPhraseWarning)
-  }
-
-  get testnetSwitchOff() {
-    return by.id(settings.testnetSwitchOff)
-  }
-
-  get testnetSwitchOn() {
-    return by.id(settings.testnetSwitchOn)
-  }
-
-  get testnetModeToast() {
-    return by.id(settings.testnetModeToast)
-  }
-
-  get testnetModeOffToast() {
-    return by.text(settings.testnetModeOffToast)
-  }
-
-  get fujiFunds() {
-    return by.text(settings.fujiFunds)
-  }
-
-  get totalNetWorth() {
-    return by.text(settings.totalNetWorth)
-  }
-
-  get mainnetAvatar() {
-    return by.id(settings.mainnetAvatar)
-  }
-
-  get testnetAvatar() {
-    return by.id(settings.testnetAvatar)
-  }
-
-  get renameAccount() {
-    return by.text(settings.renameAccount)
-  }
-
-  get manageAccountsBtn() {
-    return by.id(settings.manageAccountsBtn)
-  }
-
-  get emptyContacts() {
-    return by.text(settings.emptyContacts)
-  }
-
-  get emptyContactsText() {
-    return by.text(settings.emptyContactsText)
-  }
-
-  get addAddressButton() {
-    return by.text(settings.addAddressButton)
-  }
-
-  get nameContactBtn() {
-    return by.id(settings.nameContactBtn)
-  }
-
-  get typeInOrPasteAddress() {
-    return by.text(settings.typeInOrPasteAddress)
-  }
-
-  get contactPreviewAddress() {
-    return by.id(settings.contactPreviewAddress)
-  }
-
-  get disconnectAll() {
-    return by.text(settings.disconnectAll)
+    return selectors.getById(settings.createNewAccountBtn)
   }
 
   get manageAccountsTitle() {
-    return by.text(settings.manageAccountsTitle)
+    return selectors.getByText(settings.manageAccountsTitle)
+  }
+
+  get importWalletBtn() {
+    return selectors.getById(settings.importWalletBtn)
+  }
+
+  get importRecoveryPhraseBtn() {
+    return selectors.getById(settings.importRecoveryPhraseBtn)
+  }
+
+  get importPrivateKeyBtn() {
+    return selectors.getById(settings.importPrivateKeyBtn)
+  }
+
+  get manageAccountsBtn() {
+    return selectors.getById(settings.manageAccountsBtn)
+  }
+
+  get settingsBtn() {
+    return selectors.getById(settings.settingsBtn)
+  }
+
+  get bottomSheet() {
+    return selectors.getById(settings.bottomSheet)
+  }
+
+  get accountList() {
+    return selectors.getById(settings.accountList)
+  }
+
+  get settingsFooter() {
+    return selectors.getById(settings.settingsFooter)
+  }
+
+  get networks() {
+    return selectors.getBySomeText(settings.networks)
+  }
+
+  get addNetworkBtn() {
+    return selectors.getById(settings.addNetworkBtn)
+  }
+
+  get nameContactBtn() {
+    return selectors.getById(settings.nameContactBtn)
+  }
+
+  get nameThisNetworkBtn() {
+    return selectors.getByText(settings.nameThisNetworkBtn)
   }
 
   get networkRpcUrl() {
-    return by.text(settings.networkRpcUrl)
+    return selectors.getById(settings.networkRpcUrl)
+  }
+
+  get saveNetworkBtn() {
+    return selectors.getById(settings.saveNetworkBtn)
   }
 
   get chainId() {
-    return by.text(settings.chainId)
+    return selectors.getById(settings.chainId)
   }
 
   get tokenSymbol() {
-    return by.text(settings.tokenSymbol)
+    return selectors.getById(settings.tokenSymbol)
   }
 
   get tokenName() {
-    return by.text(settings.tokenName)
+    return selectors.getById(settings.tokenName)
   }
 
   get explorerUrl() {
-    return by.text(settings.explorerUrl)
+    return selectors.getById(settings.explorerUrl)
+  }
+
+  get renameAccount() {
+    return selectors.getByText(settings.renameAccount)
+  }
+
+  get removeAccount() {
+    return selectors.getById(settings.removeAccount)
+  }
+
+  get removeAccountDisabled() {
+    return selectors.getById(settings.removeAccountDisabled)
+  }
+
+  get rename() {
+    return selectors.getByText(settings.rename)
+  }
+
+  get addAccountToThisWallet() {
+    return selectors.getByText(settings.addAccountToThisWallet)
+  }
+
+  get removeAllAccounts() {
+    return selectors.getByText(settings.removeAllAccounts)
+  }
+
+  get removeWallet() {
+    return selectors.getByText(settings.removeWallet)
+  }
+
+  get theme() {
+    return selectors.getBySomeText(settings.theme)
+  }
+
+  get themeTitle() {
+    return selectors.getBySomeText(settings.themeTitle)
+  }
+
+  get enterYourNewPinTitle() {
+    return selectors.getBySomeText(settings.enterYourNewPinTitle)
+  }
+
+  get confirmYourNewPinTitle() {
+    return selectors.getBySomeText(settings.confirmYourNewPinTitle)
+  }
+
+  get securityAndPrivacy() {
+    return common.listItem(settings.securityAndPrivacy)
+  }
+
+  get changePin() {
+    return common.listItem(settings.changePin)
+  }
+
+  get enterYourCurrentPinTitle() {
+    return selectors.getBySomeText(settings.enterYourCurrentPinTitle)
+  }
+
+  get testnetSwitchOff() {
+    return selectors.getById(settings.testnetSwitchOff)
+  }
+
+  get testnetSwitchOn() {
+    return selectors.getById(settings.testnetSwitchOn)
+  }
+
+  get testnetIsOn() {
+    return selectors.getByText(settings.testnetModeOnToast)
+  }
+
+  get testnetAvatar() {
+    return selectors.getById(settings.testnetAvatar)
+  }
+
+  get mainnetAvatar() {
+    return selectors.getById(settings.mainnetAvatar)
+  }
+
+  get analyticsOn() {
+    return selectors.getById(settings.analyticsOn)
+  }
+
+  get analyticsOff() {
+    return selectors.getById(settings.analyticsOff)
+  }
+
+  get notificationsPreferences() {
+    return common.listItem(settings.notificationsPreferences)
+  }
+
+  get notificationsPreferencesTitle() {
+    return selectors.getBySomeText(settings.notificationsPreferencesTitle)
+  }
+
+  get currency() {
+    return selectors.getByText(settings.currency)
+  }
+
+  get currencyId() {
+    return selectors.getById(settings.currencyId)
+  }
+
+  get selectCurrencyTitle() {
+    return selectors.getByText(settings.selectCurrencyTitle)
+  }
+
+  get showRecoveryPhrase() {
+    return common.listItem(settings.showRecoveryPhrase)
+  }
+
+  get showRecoveryPhraseTitle() {
+    return selectors.getBySomeText(settings.showRecoveryPhraseTitle)
+  }
+
+  get privateKeyWarning() {
+    return selectors.getByText(settings.privateKeyWarning)
+  }
+
+  get privateKey() {
+    return selectors.getById(settings.privateKey)
+  }
+
+  get copyKey() {
+    return selectors.getByText(settings.copyKey)
+  }
+
+  get contacts() {
+    return common.listItem(settings.contacts)
+  }
+
+  get addAddressButton() {
+    return selectors.getById(settings.addAddressButton)
+  }
+
+  get deleteContactBtn() {
+    return selectors.getById(settings.deleteContactBtn)
+  }
+
+  get typeInOrPasteAddress() {
+    return selectors.getByText(settings.typeInOrPasteAddress)
+  }
+
+  get emptyContacts() {
+    return selectors.getByText(settings.emptyContacts)
+  }
+
+  get customAvatar() {
+    return selectors.getById(settings.customAvatar)
+  }
+
+  get myWallets() {
+    return selectors.getByText(settings.myWallets)
+  }
+
+  networkList(name: string) {
+    return selectors.getById(`network_list__${name}`)
+  }
+
+  networkEnabled(name: string) {
+    return selectors.getById(`network_toggle_enabled__${name}`)
+  }
+
+  networkDisabled(name: string) {
+    return selectors.getById(`network_toggle_disabled__${name}`)
+  }
+
+  networkDetails(name: string) {
+    return selectors.getById(`advanced_subtitle__${name}`)
+  }
+
+  networkName(name: string) {
+    return selectors.getById(`network_name__${name}`)
+  }
+
+  manageAccountsWalletName(name: string) {
+    return selectors.getById(`manage_accounts_wallet_name__${name}`)
+  }
+
+  manageAccountsAccountName(walletName = 'Wallet 1', accountName: string) {
+    return selectors.getById(
+      `manage_accounts_list__${walletName}__${accountName}`
+    )
+  }
+
+  privateKeyAccount(accountName: string) {
+    return selectors.getById(`private_key_account__${accountName}`)
+  }
+
+  accountDetailIcon(walletName = 'Wallet 1', accountName: string) {
+    return selectors.getById(
+      `${settings.accountDetailIconIdPrefix}${walletName}__${accountName}`
+    )
+  }
+
+  addAccountBtnByWallet(walletName = 'Wallet 1') {
+    return selectors.getById(`${settings.addAccountBtn}__${walletName}`)
+  }
+
+  contact(contactName: string, address: string) {
+    return selectors.getById(`contact__${contactName}__${address}`)
+  }
+
+  get advancedSettingsBtn() {
+    return selectors.getById(settings.advancedSettings)
+  }
+
+  get quickSwapsEnabled() {
+    return selectors.getById(settings.quickSwapsEnabled)
+  }
+
+  get quickSwapsDisabled() {
+    return selectors.getById(settings.quickSwapsDisabled)
+  }
+
+  async verifyEmptyContacts() {
+    await actions.waitFor(this.emptyContacts)
+    await actions.isVisible(this.addAddressButton)
+  }
+
+  async editContactAddress(
+    networkAndAddress: Record<string, string>,
+    contactName: string
+  ) {
+    // add contact name
+    await this.addContactName(contactName)
+    // add contact addresses
+    for (const [network, address] of Object.entries(networkAndAddress)) {
+      await actions.click(selectors.getById(`contact_delete_btn__${network}`))
+      await common.tapAndroidDeleteAlert()
+      await actions.waitFor(selectors.getByText(`Add ${network} address`))
+      await this.setAddress(network, address)
+    }
+    // exit the edit contact form
+    await common.goBack()
+  }
+
+  async tapContact(contactName: string, address: string) {
+    await actions.tap(this.contact(contactName, address))
+  }
+
+  async tapDeleteContact() {
+    await actions.tap(this.deleteContactBtn)
+    await common.tapDeleteAlert()
+  }
+
+  async setAddress(network: string, address: string) {
+    await actions.click(selectors.getByText(`Add ${network} address`))
+    await actions.tap(this.typeInOrPasteAddress)
+    const input = selectors.getById(`advanced_input__${network.toLowerCase()}`)
+    await actions.scrollTo(input, 'down')
+    await actions.type(input, address)
+    await actions.tapEnterOnKeyboard()
+  }
+
+  async verifyContact(address: string, contactName: string) {
+    await actions.waitFor(this.contact(contactName, address))
+  }
+
+  async addContactAddress(
+    networkAndAddress: Record<string, string>, // {evm: '0x6d...', solana: '1234'}
+    contactName: string
+  ) {
+    // add contact name
+    await this.addContactName(contactName)
+    // add contact addresses
+    for (const [network, address] of Object.entries(networkAndAddress)) {
+      await this.setAddress(network, address)
+    }
+    // save contact
+    await common.tapSave()
+  }
+
+  async tapAddAddressButton() {
+    await actions.click(this.addAddressButton)
   }
 
   async tapContacts() {
-    await Actions.tapElementAtIndex(this.contacts, 0)
+    await actions.tap(this.contacts)
+  }
+
+  async enterCurrentPin(pin = '000000') {
+    await actions.waitFor(this.enterYourCurrentPinTitle)
+    await onboardingPage.tapZero(pin)
+  }
+
+  async verifyShowPrivateKeyScreen(privateKey?: string) {
+    await actions.waitFor(this.privateKeyWarning)
+    await actions.isVisible(this.privateKey)
+    await actions.isVisible(this.copyKey)
+
+    if (privateKey) {
+      await actions.verifyText(privateKey, this.privateKey)
+    }
+    await common.goBack()
+  }
+
+  async tapRemoveAccount() {
+    await actions.click(this.removeAccount)
+    await common.tapRemoveAlert()
+  }
+
+  async selectAccount(name: string, walletName = 'Wallet 1') {
+    await actions.tap(this.manageAccountsAccountName(walletName, name))
+  }
+
+  async tapAddWalletBtn() {
+    await actions.click(this.addWalletBtn)
+  }
+
+  async addAccount(accountNum = 2, walletName = 'Wallet 1') {
+    const accountName = `Account ${accountNum}`
+    const ele = this.manageAccountsAccountName(walletName, accountName)
+    while (!(await actions.getVisible(ele))) {
+      await this.tapAddAccountBtn(walletName)
+      await actions.delay(1000)
+    }
+  }
+
+  async tapAddAccountBtn(walletName = 'Wallet 1') {
+    await actions.click(this.addAccountBtnByWallet(walletName))
+  }
+
+  async tapMoreIconByWallet(walletName = 'Wallet 1') {
+    await actions.click(selectors.getById(`more_icon__${walletName}`))
+  }
+
+  async tapImportWalletBtn() {
+    await actions.waitFor(this.importWalletBtn)
+    await actions.tap(this.importWalletBtn)
+  }
+
+  async verifyAddAccountDisabled(walletName = 'Imported') {
+    await this.tapMoreIconByWallet(walletName)
+    await actions.waitFor(this.removeAllAccounts)
+    await actions.isNotVisible(this.addAccountToThisWallet)
+    await actions.isNotVisible(this.addAccountBtnByWallet(walletName))
+    if (driver.isAndroid) {
+      await common.goAndroidBack()
+    } else {
+      await this.tapMyWalletsTitle()
+    }
+  }
+
+  async tapMyWalletsTitle() {
+    await actions.click(selectors.getByText(settings.myWallets))
+  }
+
+  async importWallet(mnemonic: string) {
+    await this.tapAddWalletBtn()
+    await this.tapImportRecoveryPhraseBtn()
+    await onboardingPage.enterRecoveryPhrase(mnemonic)
+    await this.tapImportWalletBtn()
+    await onboardingPage.enterWalletName('Wallet 2')
+    await onboardingPage.tapNextBtnOnNameWallet()
+  }
+
+  async importWalletViaPK(privateKey: string) {
+    await this.tapAddWalletBtn()
+    await this.tapImportPrivateKeyBtn()
+    await actions.pasteText(common.inputTextField, privateKey)
+    await this.tapImportWalletBtn()
+  }
+
+  async verifyPKWalletRemoved(accountName = 'Account 3') {
+    await actions.delay(1000)
+    await actions.isNotVisible(this.manageAccountsWalletName(settings.imported))
+    await actions.isNotVisible(this.privateKeyAccount(accountName))
+  }
+
+  async tapWalletByName(walletName = 'Wallet 2', accountName = 'Account 1') {
+    await actions.tap(this.manageAccountsWalletName(walletName))
+    await this.verifyMyWalletsAccountName(accountName, walletName)
+  }
+
+  async verifyAccountDetail(
+    walletName = 'Wallet 2',
+    accountName = 'Account 1',
+    isPKWallet = false,
+    canDelete = false
+  ) {
+    // verify the account name
+    await this.goToAccountDetail(walletName, accountName)
+    await common.verifyAccountName(accountName)
+    await actions.isVisible(selectors.getByText(walletName))
+    if (isPKWallet) {
+      await actions.isVisible(selectors.getByText(settings.imported))
+    } else {
+      await actions.isVisible(selectors.getByText(settings.primary))
+    }
+
+    // verify the networks on the account detail screen
+    for (const network of [
+      commonElsLoc.evm,
+      commonElsLoc.xpChain,
+      commonElsLoc.solana,
+      commonElsLoc.bitcoin
+    ]) {
+      await actions.isVisible(common.listItem(network))
+    }
+
+    // verify the rename and remove account buttons
+    await actions.isVisible(this.renameAccount)
+    if (canDelete) {
+      await actions.isVisible(this.removeAccount)
+    } else {
+      await actions.isVisible(this.removeAccountDisabled)
+    }
+    await common.goBack()
+  }
+
+  async tapRename() {
+    await actions.click(this.rename)
+  }
+
+  async tapAddAccountToThisWallet() {
+    await actions.click(this.addAccountToThisWallet)
+  }
+
+  async tapRemoveWallet() {
+    await actions.click(this.removeWallet)
+    await common.tapRemoveAlert()
+  }
+
+  async addWalletViaPK(privateKey: string) {
+    await this.tapAddWalletBtn()
+    await this.tapImportPrivateKeyBtn()
+    await common.enterTextInput(privateKey)
+    await onboardingPage.tapImport()
+  }
+
+  async tapImportRecoveryPhraseBtn() {
+    await actions.tap(this.importRecoveryPhraseBtn)
+  }
+
+  async tapImportPrivateKeyBtn() {
+    await actions.tap(this.importPrivateKeyBtn)
+  }
+
+  async tapManageAccountsBtn() {
+    while (!(await actions.getVisible(this.manageAccountsBtn))) {
+      await actions.swipe('left', 0.5, this.accountList)
+    }
+    await actions.tap(this.manageAccountsBtn)
+  }
+
+  async goSettings() {
+    await actions.delay(1500)
+    await actions.click(this.settingsBtn)
+    try {
+      await actions.waitFor(this.bottomSheet, 5000)
+    } catch (e) {
+      await actions.click(this.settingsBtn)
+    }
+  }
+
+  async tapCurrency() {
+    await actions.tap(this.currencyId)
+  }
+
+  async verifyCurrencyScreen(curr = 'USD') {
+    await actions.waitFor(this.selectCurrencyTitle)
+    await actions.isVisible(selectors.getById(`selected_currency__${curr}`))
   }
 
   async tapNotifications() {
-    await this.scrollToSettingsFooter()
-    await Actions.tapElementAtIndex(this.notificationsPreferences, 0)
+    await actions.scrollTo(this.notificationsPreferences, 'down')
+    await actions.tap(this.notificationsPreferences)
   }
 
-  async tapCurrencyRow() {
-    await Actions.tapElementAtIndex(this.currency, 0)
-  }
-
-  async tapNetworksRow() {
-    await Actions.tapElementAtIndex(this.networks, 0)
-  }
-
-  async scrollToSettingsFooter() {
-    const isVisible = await Actions.isVisible(this.securityAndPrivacy, 0, 2000)
-    if (!isVisible) {
-      await Actions.scrollToBottom(this.settingsScrollView)
-    }
-  }
-
-  async tapSecurityAndPrivacy() {
-    await this.scrollToSettingsFooter()
-    let tries = 7
-    while (tries > 0) {
-      if (await Actions.isVisible(this.connectedSites, 0, 2000)) {
-        break
-      }
-      await Actions.tap(this.securityAndPrivacy)
-      tries--
-    }
-  }
-
-  async deleteWallet() {
-    await Actions.tapElementAtIndex(this.deleteWalletBtn, 0)
-    await Actions.tap(this.iUnderstandBtn)
-  }
-
-  async tapChangePin() {
-    await Actions.tapElementAtIndex(this.changePin, 0)
+  async selectCurrency(curr: string) {
+    await actions.tap(selectors.getById(`currency__${curr}`))
   }
 
   async tapShowRecoveryPhrase() {
-    await Actions.tapElementAtIndex(this.showRecoveryPhrase, 0)
+    await actions.tap(this.showRecoveryPhrase)
   }
 
-  async tapConnectedSites() {
-    await Actions.tapElementAtIndex(this.connectedSites, 0)
+  async createNthAccount(account = 2, walletName = 'Wallet 1') {
+    await common.goMyWallets()
+    await this.addAccount(account, walletName)
   }
 
-  async verifyAnalyticsSwitch(isOn = true) {
-    if (isOn) {
-      await Actions.waitForElement(this.analyticsOn)
-    } else {
-      await Actions.waitForElement(this.analyticsOff)
+  async exitMyWallets() {
+    let maxAttempts = 10
+    while (maxAttempts > 0) {
+      try {
+        if (!(await actions.getVisible(this.myWallets))) break
+      } catch {
+        break
+      }
+      try {
+        await actions.click(common.backButton)
+      } catch {
+        await actions.tap(common.backButton)
+      }
+      await actions.delay(1000)
+      maxAttempts--
     }
   }
 
-  async tapAnalyticsSwitch(isOn = true) {
-    if (isOn) {
-      await Actions.longPress(this.analyticsOn)
-    } else {
-      await Actions.longPress(this.analyticsOff)
+  async tapNetworks() {
+    await actions.tap(common.listItem(settings.networks))
+  }
+
+  async tapAddNetworkBtn() {
+    await actions.tap(this.addNetworkBtn)
+  }
+
+  async goNetworks() {
+    await this.goSettings()
+    await this.tapNetworks()
+  }
+
+  async verifyDefaultNetworks() {
+    await actions.waitFor(this.addNetworkBtn)
+    const networksToVerify = networks.filter(network => network.data)
+    for (const network of networksToVerify) {
+      await actions.isVisible(this.networkList(network.name))
+      if (network.haveToggle) {
+        await actions.isVisible(this.networkEnabled(network.name))
+      } else {
+        await actions.isNotVisible(this.networkEnabled(network.name))
+        await actions.isNotVisible(this.networkDisabled(network.name))
+      }
     }
   }
 
-  async tapAppearanceRow() {
-    await Actions.tapElementAtIndex(this.appearance, 0)
+  async addContactName(name: string) {
+    await actions.tap(this.nameContactBtn)
+    await actions.type(common.dialogInput, name)
+    await actions.tapEnterOnKeyboard()
+    await common.tapSaveAlert()
+  }
+
+  async addNetworkName(name: string) {
+    await actions.tap(this.nameThisNetworkBtn)
+    await actions.type(common.dialogInput, name)
+    await actions.tapEnterOnKeyboard()
+    await common.tapSaveAlert()
+  }
+
+  async setNetworkData(type: string, value: string) {
+    await actions.tap(selectors.getByText(`Add ${type}`))
+    const input = selectors.getById(`advanced_input__${type.toLowerCase()}`)
+    await actions.scrollTo(input, 'down')
+    await actions.type(input, value)
+    if (type === 'Chain ID') {
+      await actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
+    } else {
+      await actions.tapEnterOnKeyboard()
+    }
+  }
+
+  async addNetwork(network: Network) {
+    const { name, data } = network
+    await this.tapAddNetworkBtn()
+    await this.setNetworkData('Network RPC URL', data?.rpcUrl ?? '')
+    await this.setNetworkData('Chain ID', data?.chainId ?? '')
+    await this.setNetworkData('token symbol', data?.tokenSymbol ?? '')
+    await this.setNetworkData('token name', data?.tokenName ?? '')
+    await this.addNetworkName(name)
+    await this.tapSaveNetworkBtn()
+  }
+
+  async tapSaveNetworkBtn() {
+    await actions.tap(this.saveNetworkBtn)
+  }
+
+  async editNetwork(networkName: string) {
+    await this.addNetworkName(networkName)
+    await this.tapSaveNetworkBtn()
+  }
+
+  async removeNetwork(networkName: string) {
+    await this.tapNetworkByName(networkName)
+    await common.tapDelete()
+    await common.tapDeleteAlert()
   }
 
   async verifySettingsRow(row: string, rightVal: string | undefined) {
-    await Actions.waitForElement(by.id(`right_value__${row}`))
+    await actions.waitFor(selectors.getById(`list_item__${row}`))
 
-    if (row === 'Currency') {
-      await Actions.waitForElement(by.id(`icon__${rightVal}`))
-    }
     if (rightVal) {
-      const text = await Actions.getElementText(by.id(`right_value__${row}`))
-      assert(
-        text === rightVal,
-        `Expected ${row} to have value ${rightVal}, but got "[${text}]"`
+      await actions.isVisible(selectors.getById(`right_value__${rightVal}`))
+    }
+  }
+
+  async verifyNetworkRow(
+    networkName: string,
+    hasToggle = false,
+    isEnabled = false
+  ) {
+    if (
+      !(await actions.getVisible(
+        selectors.getById(`network_list__${networkName}`)
+      ))
+    ) {
+      await actions.swipe('up', 0.2, this.networks)
+    }
+    await actions.waitFor(selectors.getById(`network_list__${networkName}`))
+    if (hasToggle) {
+      const toggle = isEnabled ? 'enabled' : 'disabled'
+      await actions.isVisible(
+        selectors.getById(`network_toggle_${toggle}__${networkName}`)
+      )
+    } else {
+      await actions.isNotVisible(
+        selectors.getById(`network_toggle_enabled__${networkName}`)
+      )
+      await actions.isNotVisible(
+        selectors.getById(`network_toggle_disabled__${networkName}`)
       )
     }
   }
 
-  async verifySelectedAppearance(selectedAppearance: string) {
-    await assertions.isVisible(by.id(`${selectedAppearance}_selected`))
+  async tapNetworkByName(networkName: string) {
+    await common.typeSearchBar(networkName)
+    await actions.tap(this.networkList(networkName))
   }
 
-  async verifyUnselectedAppearance(unselectedAppearance: string) {
-    await assertions.isVisible(by.id(`${unselectedAppearance}_unselected`))
+  async verifyNetworkDetails(network: Network) {
+    await this.tapNetworkByName(network.name)
+    if (network.secondName) {
+      await actions.waitFor(this.networkName(network.secondName))
+    } else {
+      await actions.waitFor(this.networkName(network.name))
+    }
+    if (![commonElsLoc.bitcoin, commonElsLoc.solana].includes(network.name)) {
+      await actions.isVisible(this.networkRpcUrl)
+      await actions.isVisible(this.networkDetails(network.data?.rpcUrl ?? ''))
+    }
+
+    if (network.data?.explorerUrl) {
+      await actions.isVisible(this.networkDetails(network.data?.explorerUrl))
+    }
+
+    await actions.isVisible(this.networkDetails(network.data?.chainId ?? ''))
+    await actions.isVisible(
+      this.networkDetails(network.data?.tokenSymbol ?? '')
+    )
+    await actions.isVisible(this.networkDetails(network.data?.tokenName ?? ''))
+    await common.goBack()
   }
 
-  async selectAppearance(appearance: string) {
-    await Actions.tapElementAtIndex(by.id(`${appearance}_unselected`), 0)
+  async tapNetworkSwitch(networkName: string, isEnabled = true) {
+    const toggle = isEnabled ? 'enabled' : 'disabled'
+    const networkPrefix = `network_toggle_${toggle}__${networkName}`
+    await actions.longPress(selectors.getById(networkPrefix))
   }
 
-  async verifyAppearanceScreen(
+  async tapNetworkSwitches(isEnabled = true, items = networks) {
+    for (const { name, haveToggle } of items) {
+      if (haveToggle) {
+        await common.typeSearchBar(name)
+        await this.tapNetworkSwitch(name, isEnabled)
+      }
+    }
+  }
+
+  async goToAccountDetail(walletName = 'Wallet 1', accountName = 'Account 1') {
+    await actions.tap(this.accountDetailIcon(walletName, accountName))
+  }
+
+  async tapShowPrivateKey() {
+    await actions.tap(common.listItem(settings.showPrivateKey))
+  }
+
+  async tapRenameAccount() {
+    await actions.tap(this.renameAccount)
+  }
+
+  async setNewAccountName(newAccountName: string) {
+    await actions.type(common.dialogInput, newAccountName)
+    try {
+      await actions.click(common.save)
+    } catch (e) {
+      await actions.tap(common.saveUpperCase)
+    }
+  }
+
+  async verifyMyWalletsAccountName(
+    accountName = 'Account 1',
+    walletName = 'Wallet 1'
+  ) {
+    await actions.waitFor(
+      this.manageAccountsAccountName(walletName, accountName)
+    )
+  }
+
+  async verifyMywalletsAccountNameNotVisible(
+    accountName = 'Account 1',
+    walletName = 'Wallet 1'
+  ) {
+    await actions.waitForNotVisible(
+      this.manageAccountsAccountName(walletName, accountName)
+    )
+  }
+
+  async tapAccount(accountName = 'Account 1', walletName = 'Wallet 1') {
+    await actions.tap(this.manageAccountsAccountName(walletName, accountName))
+  }
+
+  async switchAccountByCarousel(accountName: string) {
+    await actions.tap(
+      selectors.getById(`${settings.accountCarouselItemIdPrefix}${accountName}`)
+    )
+  }
+
+  async switchAccount(accountName = 'Account 1', walletName = 'Wallet 1') {
+    await common.goMyWallets()
+    await this.tapAccount(accountName, walletName)
+  }
+
+  async tapTheme() {
+    await actions.tap(this.theme)
+  }
+
+  async verifyTheme(
     selectedAppearance: string,
     [...unselectedAppearances]: string[]
   ) {
-    await Actions.waitForElement(this.appearanceTitle)
-    await assertions.isVisible(this.system)
-    await assertions.isVisible(this.light)
-    await assertions.isVisible(this.dark)
+    await actions.waitFor(this.themeTitle)
     await this.verifySelectedAppearance(selectedAppearance)
     await this.verifyUnselectedAppearance(unselectedAppearances[0] ?? '')
     await this.verifyUnselectedAppearance(unselectedAppearances[1] ?? '')
   }
 
-  async verifyShowRecoveryPhraseScreen() {
-    await Actions.waitForElement(this.showRecoveryPhraseTitle)
-    await assertions.isVisible(this.showRecoveryPhraseDescription)
-    await assertions.isVisible(this.showRecoveryPhraseWarning)
-    await assertions.isVisible(commonElsPage.copyPhrase)
+  async verifySelectedAppearance(selectedAppearance: string) {
+    await actions.isVisible(selectors.getById(`${selectedAppearance}_selected`))
   }
 
-  async goSettings() {
-    await Actions.tap(this.settingsBtn)
-    await delay(1000)
+  async verifyUnselectedAppearance(unselectedAppearance: string) {
+    await actions.isVisible(
+      selectors.getById(`${unselectedAppearance}_unselected`)
+    )
+  }
+
+  async selectTheme(appearance: string) {
+    await actions.tap(selectors.getById(`${appearance}_unselected`))
+  }
+
+  async tapAppIcon() {
+    await actions.tap(common.listItem(settings.appIcon))
+  }
+
+  async verifyAppIconScreen(selectedIconId: string) {
+    await actions.waitFor(selectors.getBySomeText(settings.appIconTitle))
+    const appIcons = [
+      'Core light',
+      'Old school Core',
+      'Bling',
+      'So shiny',
+      'Marker',
+      'Minimalism',
+      'Neon'
+    ]
+    if (selectedIconId !== settings.core) {
+      const idx = appIcons.indexOf(selectedIconId)
+      if (idx !== -1) {
+        appIcons.splice(idx, 1)
+      }
+      appIcons.push(settings.core)
+    }
+    await actions.isVisible(
+      selectors.getById(`app_icon_${selectedIconId}_selected`)
+    )
+    for (const icon of appIcons) {
+      await actions.isVisible(selectors.getById(`app_icon_${icon}`))
+    }
+  }
+
+  async selectAppIcon(iconId?: string) {
+    if (!iconId) {
+      iconId = [
+        'Core light',
+        'Old school Core',
+        'Bling',
+        'So shiny',
+        'Marker',
+        'Minimalism'
+      ][Math.floor(Math.random() * 6)] as string
+    }
+    await actions.tap(selectors.getById(`app_icon_${iconId}`))
+    if (driver.isAndroid) {
+      // Emulators kill the app process when changing the icon; real devices don't.
+      // activateApp fails after icon change because Android temporarily can't
+      // resolve the launchable activity alias — use startActivity explicitly.
+      await actions.delay(2000)
+      if (driver.isAndroid) {
+        const appId = getAndroidAppId()
+        await driver.terminateApp(appId)
+        await driver.activateApp(appId)
+        await onboardingPage.exitMetroAfterLogin()
+        await onboardingPage.unlockEnterPin()
+        await this.goSettings()
+      }
+    }
+    return iconId
+  }
+
+  async tapSecurityAndPrivacy(needSwipe = true) {
+    if (needSwipe) {
+      await actions.scrollTo(this.securityAndPrivacy, 'down')
+    }
+    await actions.tap(this.securityAndPrivacy)
+  }
+
+  async tapChangePin() {
+    await actions.tap(this.changePin)
+  }
+
+  async setNewPin(newPin = '111111') {
+    await actions.waitFor(this.enterYourNewPinTitle)
+    await onboardingPage.tapZero(newPin)
+    await actions.waitFor(this.confirmYourNewPinTitle)
+    await onboardingPage.tapZero(newPin)
   }
 
   async switchToTestnet() {
     try {
-      await assertions.isNotVisible(portfolioPage.testnetModeIsOn)
+      await actions.isNotVisible(portfolioPage.testnetModeIsOn)
       await this.goSettings()
-      await Actions.longPress(this.testnetSwitchOff)
+      await actions.longPress(this.testnetSwitchOff)
       return true
     } catch (e) {
       console.log('You are on testnet')
@@ -388,9 +923,9 @@ class Settings {
 
   async switchToMainnet() {
     try {
-      await assertions.isVisible(portfolioPage.testnetModeIsOn)
+      await actions.waitFor(portfolioPage.testnetModeIsOn)
       await this.goSettings()
-      await Actions.longPress(this.testnetSwitchOn)
+      await actions.longPress(this.testnetSwitchOn)
       return true
     } catch (e) {
       console.log('You are on mainnet')
@@ -398,368 +933,72 @@ class Settings {
     }
   }
 
-  async verifyCurrencyScreen(curr = 'USD') {
-    await Actions.waitForElement(this.selectCurrencyTitle)
-    await assertions.isVisible(commonElsPage.searchBar)
-    await assertions.isVisible(by.id(`selected_currency__${curr}`))
-    await assertions.isVisible(by.text(curr))
+  async verifyTestnetMode() {
+    await actions.waitFor(this.testnetSwitchOn)
+    await actions.isVisible(this.testnetAvatar)
+    await actions.waitForNotVisible(this.testnetIsOn)
+    await common.dismissBottomSheet()
+    await common.pullToRefresh()
+    await actions.waitFor(portfolioPage.testnetModeIsOn, 40000)
   }
 
-  async verifyAccountCarouselItem(accountName: string) {
-    await Actions.waitForElement(
-      by.id(`${settings.accountCarouselItemIdPrefix}${accountName}`)
-    )
+  async verifyMainnetMode() {
+    await actions.waitFor(this.testnetSwitchOff)
+    await actions.isVisible(this.mainnetAvatar)
+    await common.dismissBottomSheet()
+    await actions.isNotVisible(portfolioPage.testnetModeIsOn)
   }
 
-  async switchAccountByCarousel(accountName: string) {
-    await Actions.tap(
-      by.id(`${settings.accountCarouselItemIdPrefix}${accountName}`)
-    )
-  }
-
-  async selectCurrency(curr: string) {
-    await Actions.setInputText(commonElsPage.searchBar, curr)
-    await Actions.tap(by.id(`currency__${curr}`))
-  }
-
-  async tapManageAccountsBtn() {
-    await Actions.waitForElement(this.settingsScrollView, 10000)
-    while (!(await Actions.isVisible(this.manageAccountsBtn))) {
-      await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
-      await Actions.waitForElement(this.manageAccountsBtn, 3000, 0)
-    }
-    await Actions.tapElementAtIndex(this.manageAccountsBtn, 0)
-  }
-
-  async tapAddWalletBtn() {
-    await Actions.tap(this.addWalletBtn)
-  }
-
-  async tapAddNetworkBtn() {
-    await Actions.tap(this.addNetworkBtn)
-  }
-
-  async setNetworkData(type: string, value: string) {
-    await Actions.tap(by.text(`Add ${type}`))
-    await Actions.setInputText(
-      by.id(`advanced_input__${type.toLowerCase()}`),
-      value
-    )
-    await Actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
-  }
-
-  async verifyNetworkRow(
-    networkName: string,
-    hasToggle = false,
-    isEnabled = false
-  ) {
-    if (!(await Actions.isVisible(by.id(`network_list__${networkName}`)))) {
-      await Actions.swipe(this.networks, 'up', 'fast', 0.2)
-    }
-    await Actions.waitForElement(by.id(`network_list__${networkName}`))
-    if (hasToggle) {
-      const toggle = isEnabled ? 'enabled' : 'disabled'
-      await assertions.isVisible(
-        by.id(`network_toggle_${toggle}__${networkName}`)
-      )
+  async verifyAnalyticsSwitch(isOn = true) {
+    if (isOn) {
+      await actions.waitFor(this.analyticsOn)
     } else {
-      await assertions.isNotVisible(
-        by.id(`network_toggle_enabled__${networkName}`)
-      )
-      await assertions.isNotVisible(
-        by.id(`network_toggle_disabled__${networkName}`)
-      )
+      await actions.waitFor(this.analyticsOff)
     }
   }
 
-  async tapNetworkByName(networkName: string) {
-    if (!(await Actions.isVisible(by.id(`network_list__${networkName}`)))) {
-      await Actions.swipe(this.networks, 'up', 'fast', 0.2)
+  async tapAnalyticsSwitch(isOn = true) {
+    if (isOn) {
+      await actions.longPress(this.analyticsOn)
+    } else {
+      await actions.longPress(this.analyticsOff)
     }
-    await Actions.tap(by.id(`network_list__${networkName}`))
-  }
-
-  // eslint-disable-next-line max-params
-  async addNetwork(
-    networkName: string,
-    rpcUrl: string,
-    chainId: string,
-    nativeTokenSymbol: string,
-    nativeTokenName: string
-  ) {
-    await this.tapAddNetworkBtn()
-    await this.addContactOrNetworkName(networkName)
-    await this.setNetworkData('Network RPC URL', rpcUrl)
-    await this.setNetworkData('Chain ID', chainId)
-    await this.setNetworkData('token symbol', nativeTokenSymbol)
-    await this.setNetworkData('token name', nativeTokenName)
-    await commonElsPage.tapSave()
-  }
-
-  async addAccount(accountNum = 2, walletName = 'Wallet 1') {
-    const ele = by.id(
-      `manage_accounts_list__${walletName}__Account ${accountNum}`
-    )
-    while (!(await Actions.isVisible(ele))) {
-      await this.tapAddWalletBtn()
-      await Actions.tap(this.createNewAccountBtn)
-      await Actions.tapElementAtIndex(this.manageAccountsTitle, 0)
-    }
-  }
-
-  async tapBiometrics(on = true) {
-    await Actions.tap(on ? this.toggleBiometricsOn : this.toggleBiometricsOff)
   }
 
   async verifyNotificationsScreen(data: Record<string, string>) {
-    await Actions.waitForElement(this.notificationsPreferencesTitle)
-    for (const [title, subtitle] of Object.entries(data)) {
-      await assertions.isVisible(by.id(`${title}_enabled_switch`))
-      await assertions.isVisible(by.text(title))
-      await assertions.isVisible(by.text(subtitle))
+    await actions.waitFor(this.notificationsPreferencesTitle)
+    for (const [title] of Object.entries(data)) {
+      await actions.isVisible(selectors.getById(`${title}_enabled_switch`))
     }
+  }
+
+  async tapNotificationSwitch(isSwitchOn = 'enabled', notiType = 'Stake') {
+    const switchTestID = `${notiType}_${isSwitchOn}_switch`
+    await actions.longPress(selectors.getById(switchTestID))
   }
 
   async toggleAndVerify(isSwitchOn = 'enabled', notiType: string) {
     const toggled = isSwitchOn === 'enabled' ? 'disabled' : 'enabled'
     await this.tapNotificationSwitch(isSwitchOn, notiType)
-    await Actions.waitForElement(by.id(`${notiType}_${toggled}_switch`))
-    await commonElsPage.goBack()
-    await this.tapNotifications()
-    await Actions.waitForElement(by.id(`${notiType}_${toggled}_switch`))
+    await actions.isVisible(selectors.getById(`${notiType}_${toggled}_switch`))
   }
 
-  async tapNotificationSwitch(isSwitchOn = 'enabled', notiType = 'Stake') {
-    const switchTestID = `${notiType}_${isSwitchOn}_switch`
-    await Actions.longPress(by.id(switchTestID))
-  }
-
-  async tapNetworkSwitch(network: string, isEnabled = true) {
-    const toggle = isEnabled ? 'enabled' : 'disabled'
-    const networkPrefix = `network_toggle_${toggle}__${network}`
-    await Actions.longPress(by.id(networkPrefix))
-  }
-  async verifyTestnetMode() {
-    await Actions.waitForElement(this.testnetSwitchOn)
-    await assertions.isVisible(this.testnetAvatar)
-    await commonElsPage.dismissBottomSheet()
-    await Actions.waitForElement(portfolioPage.testnetModeIsOn, 20000)
-  }
-
-  async verifyMainnetMode() {
-    await Actions.waitForElement(this.testnetSwitchOff)
-    await assertions.isVisible(this.mainnetAvatar)
-    await commonElsPage.dismissBottomSheet()
-    await Actions.waitForElementNotVisible(portfolioPage.testnetModeIsOn, 20000)
-  }
-
-  async goToAccountDetail(
-    accountName: string,
-    walletName: string | undefined = undefined
-  ) {
-    const targetId = walletName
-      ? `${settings.accountDetailIconIdPrefix}${walletName}_${accountName}`
-      : `${settings.accountDetailIconIdPrefix}${accountName}`
-
-    await Actions.tap(by.id(targetId))
-  }
-
-  async verifyMangeAccountsScreen(walletName: string, accountName: string) {
-    await Actions.waitForElement(by.id(`manage_accounts_list__${accountName}`))
-    await Actions.waitForElement(
-      by.id(`manage_accounts_wallet_name__${walletName}`)
+  async quickSwapOn(enable = true) {
+    await this.goSettings()
+    await actions.scrollTo(this.advancedSettingsBtn, 'down')
+    await actions.tap(this.advancedSettingsBtn)
+    const isCurrentlyEnabled = await actions.isElementVisible(
+      this.quickSwapsEnabled,
+      3000
     )
-  }
-
-  async verifyAccountDetail(portfolioAccountName: string) {
-    // Copy address verification
-    await this.verifyAddressCopied(commonElsLoc.evm)
-    await this.verifyAddressCopied(commonElsLoc.xpChain)
-    await this.verifyAddressCopied(commonElsLoc.solana)
-    await this.verifyAddressCopied(commonElsLoc.bitcoin)
-
-    // Account name verification
-    await Actions.waitForElement(commonElsPage.evm)
-    await commonElsPage.verifyAccountName(portfolioAccountName)
-  }
-
-  async verifyAddressCopied(network: string) {
-    await Actions.tap(by.id(commonElsLoc.copyBtn + network))
-    await Actions.waitForElement(by.text(network + settings.addressCopied))
-  }
-
-  async tapRenameAccount() {
-    await Actions.tap(this.renameAccount)
-  }
-
-  async setNewAccountName(newAccountName: string) {
-    await commonElsPage.typeSearchBar(newAccountName, commonElsPage.dialogInput)
-    await commonElsPage.tapSave()
-    await delay(500)
-  }
-
-  async createNthAccount(account = 2, activeAccount = settings.account) {
-    await this.goSettings()
-    await this.tapManageAccountsBtn()
-    await this.addAccount(account)
-    await this.selectAccount(activeAccount)
-  }
-
-  async selectAccount(name: string) {
-    await Actions.tap(by.id(`manage_accounts_list__${name}`))
-  }
-
-  async switchAccount(name = settings.account) {
-    await this.goSettings()
-    await this.switchAccountByCarousel(name)
-  }
-
-  async quickSwitchAccount(name = settings.account) {
-    // You switch account on Settings view without entering the `manage accounts` screen
-    // settings > tap the account on the account carousel
-    await this.goSettings()
-    const ele = by.id(`account_carousel_item__${name}`)
-    while (!(await Actions.isVisible(ele, 0, 10000))) {
-      await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
+    if (isCurrentlyEnabled !== enable) {
+      const toggleToTap = enable
+        ? this.quickSwapsDisabled
+        : this.quickSwapsEnabled
+      await actions.longPress(toggleToTap)
     }
-    await Actions.tap(ele)
-  }
-
-  async enableNetwork(network = commonElsLoc.xChain) {
-    await this.goSettings()
-    await this.tapNetworksRow()
-    await Actions.setInputText(commonElsPage.searchBar, network)
-    try {
-      await Actions.longPress(by.id(`network_toggle_disabled__${network}`))
-    } catch (e) {
-      console.log(`Already enabled ${network}`)
-    }
-    await commonElsPage.dismissBottomSheet()
-  }
-
-  async verifyEmptyContactsScreen() {
-    await Actions.waitForElement(this.emptyContacts)
-    await assertions.isVisible(this.emptyContactsText)
-    await assertions.isVisible(this.addAddressButton)
-  }
-
-  async tapAddAddressButton() {
-    await Actions.tapElementAtIndex(this.addAddressButton, 0)
-  }
-
-  async addContactOrNetworkName(name: string, isEdit = false) {
-    await Actions.tapElementAtIndex(this.nameContactBtn, 0)
-    await commonElsPage.typeSearchBar(name, commonElsPage.dialogInput)
-    await commonElsPage.tapSave()
-    if (isEdit) {
-      await commonElsPage.tapSave()
-    }
-  }
-
-  async addContactAddress(
-    networkAndAddress: Record<string, string>, // {evm: '0x6d...', solana: '1234'}
-    contactName: string
-  ) {
-    // add contact name
-    await this.addContactOrNetworkName(contactName)
-
-    // add contact addresses
-    for (const [network, address] of Object.entries(networkAndAddress)) {
-      await this.setAddress(network, address)
-    }
-
-    // save contact
-    await commonElsPage.tapSave()
-  }
-
-  async setAddress(network: string, address: string) {
-    if (!(await Actions.isVisible(by.text(`Add ${network} address`)))) {
-      await Actions.swipe(this.nameContactBtn, 'up', 'fast', 0.5)
-    }
-    await Actions.tap(by.text(`Add ${network} address`))
-    await Actions.tap(this.typeInOrPasteAddress)
-    await Actions.setInputText(
-      by.id(`advanced_input__${network.toLowerCase()}`),
-      address
-    )
-    await Actions.dismissKeyboard(`advanced_input__${network.toLowerCase()}`)
-  }
-
-  async editContactAddress(
-    networkAndAddress: Record<string, string>,
-    contactName: string | undefined = undefined
-  ) {
-    // add contact name
-    if (contactName) {
-      await this.addContactOrNetworkName(contactName)
-    }
-
-    // add contact addresses
-    for (const [network, address] of Object.entries(networkAndAddress)) {
-      await Actions.tap(by.id(`contact_delete_btn__${network}`))
-      await commonElsPage.tapDelete()
-      await Actions.waitForElement(by.text(`Add ${network} address`))
-      await this.setAddress(network, address)
-    }
-
-    // exit the edit contact form
-    await commonElsPage.goBack()
-  }
-
-  async verifyContact(address: string, contactName: string) {
-    const previewAddress = address.slice(0, 5)
-    await Actions.waitForElement(by.text(contactName))
-    await assertions.isVisible(by.text(contactName))
-    await assertions.hasPartialText(this.contactPreviewAddress, previewAddress)
-  }
-
-  async tapContactByName(contactName: string) {
-    await Actions.tapElementAtIndex(by.text(contactName), 0)
-  }
-
-  async tapDisconnect(dappName: string) {
-    await Actions.tap(by.id(`disconnect__${dappName}`))
-  }
-
-  async disconnect(dappName: string) {
-    await bottomTabsPage.tapPortfolioTab()
-    await this.goSettings()
-    await this.tapSecurityAndPrivacy()
-    await this.tapConnectedSites()
-    await this.tapDisconnect(dappName)
-  }
-
-  async setNewPin(oldPin = '000000', newPin = '111111') {
-    try {
-      await Actions.waitForElement(this.enterYourCurrentPinTitle)
-      await commonElsPage.enterPin(oldPin)
-    } catch (e) {
-      console.log('Skpping the current pin check....')
-      // currently we have a bug around here on the dev build
-      // https://ava-labs.atlassian.net/browse/CP-11855
-    }
-    await Actions.waitForElement(this.enterYourNewPinTitle)
-    await commonElsPage.enterPin(newPin)
-    await Actions.waitForElement(this.confirmYourNewPinTitle)
-    await commonElsPage.enterPin(newPin)
-  }
-
-  async verifyNetworkDetails(network: string, networkData: any) {
-    const subtitle = 'advanced_subtitle__'
-    await Actions.waitForElement(by.id(`network_name__${network}`))
-    if (network === commonElsLoc.bitcoin || network === commonElsLoc.solana) {
-      await assertions.isNotVisible(this.networkRpcUrl)
-    } else {
-      await assertions.isVisible(this.networkRpcUrl)
-    }
-    await assertions.isVisible(this.chainId)
-    await assertions.isVisible(this.tokenSymbol)
-    await assertions.isVisible(this.tokenName)
-    await assertions.isVisible(this.explorerUrl)
-    await assertions.isVisible(by.id(`${subtitle}${networkData.explorerUrl}`))
-    await assertions.isVisible(by.id(`${subtitle}${networkData.chainId}`))
-    await assertions.isVisible(by.id(`${subtitle}${networkData.tokenSymbol}`))
-    await assertions.isVisible(by.id(`${subtitle}${networkData.tokenName}`))
+    await common.goBack()
+    await common.dismissBottomSheet()
   }
 }
 

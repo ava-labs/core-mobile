@@ -4,6 +4,7 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { isTokenVisible } from 'store/balance/utils'
 import { selectEnabledChainIds } from 'store/network'
 import { selectTokenVisibility } from 'store/portfolio'
+import { getSwappableBalance } from '../utils/getSwappableBalance'
 
 export const useFilteredSwapTokens = ({
   tokens,
@@ -28,9 +29,14 @@ export const useFilteredSwapTokens = ({
       enabledChainIds.includes(token.networkChainId)
     )
 
-    // Filter by balance if hideZeroBalance is true
+    // Filter by balance if hideZeroBalance is true. Use the swappable balance so
+    // a fully-staked P/X-chain AVAX position (available === 0n) is hidden from
+    // the swap-from picker instead of appearing as a "0 AVAX", unswappable row
+    // (CP-14788). No-op for other token types (swappable balance === balance).
     if (hideZeroBalance) {
-      filteredTokens = filteredTokens.filter(token => token.balance > 0n)
+      filteredTokens = filteredTokens.filter(
+        token => getSwappableBalance(token) > 0n
+      )
     }
 
     // Sort by balance in currency (highest first)

@@ -33,6 +33,7 @@ const SelectRecoveryMethodScreen = (): React.JSX.Element => {
     <ScrollScreen
       title="Verify recovery method"
       subtitle="Verify your recovery method(s) to continue."
+      disableHeaderSnap
       contentContainerStyle={{
         flex: 1,
         padding: 16

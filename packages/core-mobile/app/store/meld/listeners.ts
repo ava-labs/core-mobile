@@ -41,6 +41,8 @@ import { onAppUnlocked } from 'store/app'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { getTokensWithBalanceForAccountFromCache } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { AdjustedLocalTokenWithBalance } from 'services/balance/types'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
@@ -110,7 +112,9 @@ const handleOfframpSend = async (
   const tokens = getTokensWithBalanceForAccountFromCache({
     account: activeAccount,
     networks: selectEnabledNetworksMap(state),
-    isDeveloperMode
+    isDeveloperMode,
+    filterOutDustUtxos: selectIsFilterSmallUtxosActive(state),
+    currency: selectSelectedCurrency(state)
   })
 
   const token = tokens.find(

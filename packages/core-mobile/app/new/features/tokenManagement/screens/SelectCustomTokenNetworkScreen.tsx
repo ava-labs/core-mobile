@@ -35,8 +35,9 @@ export const SelectCustomTokenNetworkScreen = (): JSX.Element => {
   )
 
   const availableNetworks = useMemo(() => {
+    const enabledChainIds = new Set(enabledNetworks.map(n => n.chainId))
     const enabled = Object.values(networks).filter(n =>
-      enabledNetworks.includes(n)
+      enabledChainIds.has(n.chainId)
     )
 
     const filteredEnabled = enabled.filter(
@@ -47,7 +48,7 @@ export const SelectCustomTokenNetworkScreen = (): JSX.Element => {
     )
 
     const custom = Object.values(customNetworks).filter(
-      n => !enabled.includes(n)
+      n => !enabledChainIds.has(n.chainId)
     )
     return [...filteredEnabled, ...custom].sort(sortPrimaryNetworks)
   }, [customNetworks, enabledNetworks, networks])

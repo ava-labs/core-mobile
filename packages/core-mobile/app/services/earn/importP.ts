@@ -1,5 +1,6 @@
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { Account, XPAddressDictionary } from 'store/account'
@@ -75,7 +76,10 @@ export async function importP({
       maxRetries: maxTransactionCreationRetries
     })
   } catch (e) {
-    Logger.error('ISSUE_IMPORT_FAIL', e)
+    Logger.error('ISSUE_IMPORT_FAIL', e, {
+      source: SentryTag.Earn,
+      operation: 'importP'
+    })
     throw new FundsStuckError({
       name: 'ISSUE_IMPORT_FAIL',
       message: 'Sending import transaction failed ',
@@ -94,7 +98,10 @@ export async function importP({
       maxRetries: maxTransactionStatusCheckRetries
     })
   } catch (e) {
-    Logger.error('importP failed', e)
+    Logger.error('importP failed', e, {
+      source: SentryTag.Earn,
+      operation: 'importP'
+    })
     throw new FundsStuckError({
       name: 'CONFIRM_IMPORT_FAIL',
       message: 'Import did not finish',
@@ -131,7 +138,12 @@ const getUnlockedUnstakedAmount = async ({
       currency: selectedCurrency,
       avaxXPNetwork: network,
       xpAddresses,
-      xpub
+      xpub,
+      // CP-13903: intentionally unfiltered. This is the import-completion
+      // delta check (polls unlockedUnstaked before/after importP) — dust is
+      // constant across the import, and unfiltered totals detect the landed
+      // amount most accurately. Not a user-facing balance.
+      filterOutDustUtxos: false
     })
 
     return pChainBalance.balancePerType.unlockedUnstaked

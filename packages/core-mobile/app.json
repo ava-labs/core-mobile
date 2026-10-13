@@ -50,7 +50,6 @@
           ]
         }
       ],
-      "@config-plugins/detox",
       [
         "react-native-share",
         {

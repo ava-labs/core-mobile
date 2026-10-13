@@ -5,13 +5,14 @@ import { useEffect, useMemo, useRef } from 'react'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import TokenService from 'services/token/TokenService'
 
-// CoinGecko granularity by `days`: 2-90 → hourly, >90 → daily.
-// 1H and 1D use the range endpoint (null here) so we get 5-min data over a
-// fixed window (see RANGE_TO_WINDOW_SECONDS) — that's enough source points to
-// bucket into the target candle count without one-source-point-per-candle.
+// CoinGecko granularity by `days`: 1 → 5-minutely, 2-90 → hourly, >90 → daily.
+// The range endpoint only returns hourly points on our plan (5-minutely there
+// is an Enterprise feature), so 1D goes through `days=1` for 5-minutely
+// granularity. Only 1H uses the range endpoint (null here), where a sub-hour
+// window is the only way to ask for less than a day.
 const RANGE_TO_DAYS: Record<ChartRange, number | null> = {
   '1H': null,
-  '1D': null,
+  '1D': 1,
   '1W': 7,
   '1M': 30,
   '3M': 90,
@@ -29,8 +30,7 @@ const RANGE_TO_CANDLE_COUNT: Record<ChartRange, number> = {
 
 // Window passed to the range endpoint when `RANGE_TO_DAYS[range]` is null.
 const RANGE_TO_WINDOW_SECONDS: Partial<Record<ChartRange, number>> = {
-  '1H': 2 * 60 * 60,
-  '1D': 24 * 60 * 60
+  '1H': 2 * 60 * 60
 }
 
 type PriceDataPoint = { date: Date; value: number; volume?: number | null }
@@ -70,6 +70,11 @@ const sliceToCandle = (slice: PriceDataPoint[]): OhlcCandle | null => {
   }
 }
 
+// A one-point bucket yields open === close === high === low, which renders
+// as a flat 1px dash with no wick. Prefer fewer, fatter candles over
+// degenerate ones when upstream granularity is coarser than bucketCount.
+const MIN_POINTS_PER_CANDLE = 2
+
 // Approximate OHLC: upstream only provides close prices, so `open` is the
 // first close in the bucket and `close` is the last. Per-bucket volume is
 // summed when source points carry it (null when no point in the bucket has
@@ -79,11 +84,22 @@ const bucketPointsIntoCandles = (
   bucketCount: number
 ): OhlcCandle[] => {
   if (points.length === 0 || bucketCount <= 0) return []
-  const pointsPerBucket = Math.max(1, Math.ceil(points.length / bucketCount))
+  const affordable = Math.floor(points.length / MIN_POINTS_PER_CANDLE)
+  const buckets = Math.max(1, Math.min(bucketCount, affordable))
+  const pointsPerBucket = Math.max(1, Math.ceil(points.length / buckets))
   const candles: OhlcCandle[] = []
   for (let i = 0; i < points.length; i += pointsPerBucket) {
-    const candle = sliceToCandle(points.slice(i, i + pointsPerBucket))
+    const remaining = points.length - i
+    const tail = remaining - pointsPerBucket
+    // Fold a short trailing slice into this bucket rather than emitting a
+    // flat rightmost candle.
+    const end =
+      tail > 0 && tail < MIN_POINTS_PER_CANDLE
+        ? points.length
+        : i + pointsPerBucket
+    const candle = sliceToCandle(points.slice(i, end))
     if (candle) candles.push(candle)
+    if (end >= points.length) break
   }
   return candles
 }

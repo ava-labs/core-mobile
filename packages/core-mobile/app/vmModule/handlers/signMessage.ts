@@ -1,29 +1,26 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import {
-  ApprovalResponse,
-  RpcMethod,
-  TypedData,
-  MessageTypes,
-  TypedDataV1
-} from '@avalabs/vm-module-types'
+import { ApprovalResponse } from '@avalabs/vm-module-types'
 import WalletService, { isEvmSignMethod } from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
-import { WalletType } from 'services/wallet/types'
+import {
+  MessageSigningRequest,
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType,
+  isUnsupportedWalletTypeError
+} from 'services/wallet/types'
 
 export const signMessage = async ({
   walletId,
   walletType,
-  method,
-  data,
+  signingData,
   account,
   network,
   resolve
 }: {
   walletId: string
   walletType: WalletType
-  method: RpcMethod
-  data: string | TypedData<MessageTypes> | TypedDataV1
+  signingData: MessageSigningRequest
   network: Network
   account: Account
   resolve: (value: ApprovalResponse) => void
@@ -32,11 +29,12 @@ export const signMessage = async ({
     const signedMessage = await WalletService.signMessage({
       walletId,
       walletType,
-      rpcMethod: method,
-      data,
+      signingData,
       accountIndex: account.index,
       network,
-      fromAddress: isEvmSignMethod(method) ? account.addressC : undefined
+      fromAddress: isEvmSignMethod(signingData.type)
+        ? account.addressC
+        : undefined
     })
 
     resolve({
@@ -45,7 +43,9 @@ export const signMessage = async ({
   } catch (error) {
     resolve({
       error: rpcErrors.internal({
-        message: `Failed to sign ${network.vmName} message`,
+        message: isUnsupportedWalletTypeError(error)
+          ? UNSUPPORTED_WALLET_TYPE_ERROR
+          : `Failed to sign ${network.vmName} message`,
         data: { cause: error }
       })
     })

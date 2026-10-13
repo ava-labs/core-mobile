@@ -2,7 +2,12 @@ import { renderHook } from '@testing-library/react-hooks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TokenType } from '@avalabs/vm-module-types'
 import React from 'react'
-import { useRecurringQuote } from './useRecurringQuote'
+import {
+  useRecurringQuote,
+  computeRecurringQuoteRefetchInterval,
+  RECURRING_QUOTE_REFRESH_BUFFER_MS,
+  RECURRING_QUOTE_REFRESH_FLOOR_MS
+} from './useRecurringQuote'
 
 const mockQuote = jest.fn()
 jest.mock('features/swap/services/FusionService', () => ({
@@ -104,5 +109,36 @@ describe('useRecurringQuote', () => {
       { wrapper: wrap }
     )
     expect(mockQuote).not.toHaveBeenCalled()
+  })
+})
+
+describe('computeRecurringQuoteRefetchInterval', () => {
+  const NOW = 1_000_000_000_000 // fixed reference time in ms
+
+  it('returns false when there is no quote yet (nothing to keep alive)', () => {
+    expect(computeRecurringQuoteRefetchInterval(undefined, NOW)).toBe(false)
+  })
+
+  it('schedules the refetch a buffer before the quote expires', () => {
+    // Expires 60s from now → refetch (60s - buffer) from now.
+    const expiredAt = NOW / 1000 + 60
+    expect(computeRecurringQuoteRefetchInterval(expiredAt, NOW)).toBe(
+      60_000 - RECURRING_QUOTE_REFRESH_BUFFER_MS
+    )
+  })
+
+  it('floors the interval for a quote near expiry instead of busy-looping', () => {
+    // Expires in 2s → naive (2s - buffer) is negative → clamp to the floor.
+    const expiredAt = NOW / 1000 + 2
+    expect(computeRecurringQuoteRefetchInterval(expiredAt, NOW)).toBe(
+      RECURRING_QUOTE_REFRESH_FLOOR_MS
+    )
+  })
+
+  it('floors the interval for an already-expired quote', () => {
+    const expiredAt = NOW / 1000 - 30 // expired 30s ago
+    expect(computeRecurringQuoteRefetchInterval(expiredAt, NOW)).toBe(
+      RECURRING_QUOTE_REFRESH_FLOOR_MS
+    )
   })
 })

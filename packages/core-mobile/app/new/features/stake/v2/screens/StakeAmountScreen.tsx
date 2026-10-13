@@ -24,23 +24,28 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getMaximumStakeEndDate } from 'services/earn/utils'
-import { selectIsFastStakeFeeBlocked } from 'store/posthog'
+import {
+  selectFastStakeFeeRate,
+  selectIsFastStakeFeeBlocked
+} from 'store/posthog'
 import { Seconds } from 'types/siUnits'
 import { stringToBigint } from 'utils/bigNumbers/stringToBigint'
 import { xpChainToken } from 'utils/units/knownTokens'
-import { FAST_STAKE_FEE_RATE } from '../constants'
 
 // we can't stake the full amount because of fees; when the user maxes out
 // we stake 99.99% of the balance so there's room to cover fees.
 const STAKING_MAX_BALANCE_PERCENTAGE = 0.9999
 
-// Dial granularity, matched to the 2-decimal input precision. Passing this
-// explicitly is important: without a `step` the dial floors it to
-// `max(0.1, max/1000)` = 0.1 for small balances, which both snaps the amount
-// to coarse 0.1 increments AND widens the preset-highlight tolerance
-// (`step / max`) to ~5% of the arc — wide enough that the minimum stake (~47%
-// of a ~2 AVAX max) lights up the "50%" chip. 0.01 keeps both tight.
-const STAKING_DIAL_STEP = 0.01
+// Dial granularity. 0.1 keeps swiping controllable — at 0.01 every pixel of
+// drag crossed several steps, making it hard to land on an intended amount.
+// Manual input is NOT snapped to this (typed values keep their 2-decimal
+// precision; only drag/preset values snap). Passing `step` explicitly still
+// matters: without it the dial derives `max(0.1, max/1000)`, which grows
+// coarser than 0.1 on large balances. Known trade-off on small balances
+// (~2 AVAX): the preset-highlight tolerance (`step / max`) widens to ~5% of
+// the arc, so a value near a chip's fraction can light the chip up slightly
+// early.
+const STAKING_DIAL_STEP = 0.1
 
 // P-chain AVAX has 9 decimals; used to convert the dial's plain number back
 // into a TokenUnit (the rest of the stake flow speaks TokenUnit). We bridge
@@ -102,6 +107,9 @@ const StakeAmountScreen = ({
 
   const isFastStakeFeeBlocked = useSelector(selectIsFastStakeFeeBlocked)
   const isFastStakeFeeEnabled = !isFastStakeFeeBlocked
+  // Flag-driven (multivariate variant in bps; no variant → 0 → fee off)
+  // — see `selectFastStakeFeeRate`.
+  const fastStakeFeeRate = useSelector(selectFastStakeFeeRate)
 
   // This screen doesn't know the stake duration yet (it's picked on the next
   // screen), so reserve room for the fee at the MAX duration (1y) — the
@@ -131,10 +139,8 @@ const StakeAmountScreen = ({
     const reward = referenceReward?.estimatedTokenReward
     const minStake = minStakeAmount.toDisplay({ asNumber: true })
     if (!reward || minStake <= 0) return 0
-    return (
-      (reward.toDisplay({ asNumber: true }) * FAST_STAKE_FEE_RATE) / minStake
-    )
-  }, [isFastStakeFeeEnabled, referenceReward, minStakeAmount])
+    return (reward.toDisplay({ asNumber: true }) * fastStakeFeeRate) / minStake
+  }, [isFastStakeFeeEnabled, fastStakeFeeRate, referenceReward, minStakeAmount])
 
   const formatInCurrency = useCallback(
     (amount: TokenUnit): string => {

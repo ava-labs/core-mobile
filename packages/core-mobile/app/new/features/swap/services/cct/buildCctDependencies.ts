@@ -2,6 +2,7 @@ import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { selectActiveAccount } from 'store/account/slice'
 import type { XPAddressDictionary } from 'store/account/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
 import { selectWalletById } from 'store/wallet/slice'
 import type { AppListenerEffectAPI } from 'store/types'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
@@ -48,5 +49,7 @@ export const buildCctDependencies = (
         isDeveloperMode: selectIsDeveloperMode(state)
       })
     },
-    request: createInAppRequest(listenerApi.dispatch, listenerApi.getState)
+    request: createInAppRequest(listenerApi.dispatch, listenerApi.getState),
+    getFilterSmallUtxos: () =>
+      selectIsFilterSmallUtxosActive(listenerApi.getState())
   })

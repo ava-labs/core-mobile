@@ -179,6 +179,32 @@ describe('walletConnect - listeners', () => {
       expect(mockWCPair).toHaveBeenCalledWith(uri)
     })
 
+    it('should not pair or show an error when the wc uri has already expired', () => {
+      // a syntactically valid v2 uri whose expiryTimestamp is in the past.
+      // the in-app browser can re-surface such a stale uri on every navigation,
+      // which previously spammed "Failed to pair with dApp" toasts (CORE-REACT-NATIVE-62P).
+      const expiredUri =
+        'wc:1111111111111111111111111111111111111111111111111111111111111111@2?relay-protocol=irn&symKey=2222222222222222222222222222222222222222222222222222222222222222&expiryTimestamp=0'
+      store.dispatch(newSession(expiredUri))
+
+      expect(mockWCPair).not.toHaveBeenCalled()
+      expect(transactionSnackbar.error).not.toHaveBeenCalled()
+    })
+
+    it('should show a single informative snackbar for an expired uri, even when re-delivered', () => {
+      // a distinct expired uri (not reused elsewhere) so the per-uri toast dedupe
+      // isn't affected by other tests in this file.
+      const expiredUri =
+        'wc:3333333333333333333333333333333333333333333333333333333333333333@2?relay-protocol=irn&symKey=4444444444444444444444444444444444444444444444444444444444444444&expiryTimestamp=0'
+      store.dispatch(newSession(expiredUri))
+      store.dispatch(newSession(expiredUri))
+
+      expect(mockWCPair).not.toHaveBeenCalled()
+      expect(transactionSnackbar.error).not.toHaveBeenCalled()
+      // friendly, deduped feedback: one toast for the same expired link, not spam
+      expect(showSnackbar).toHaveBeenCalledTimes(1)
+    })
+
     it('should show error message when failed to start a new session', () => {
       const testError = new Error('test error')
       mockWCPair.mockImplementationOnce(() => {

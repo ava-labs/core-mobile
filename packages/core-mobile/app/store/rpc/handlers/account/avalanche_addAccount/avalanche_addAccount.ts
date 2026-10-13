@@ -10,9 +10,32 @@ import {
   selectActiveAccount
 } from 'store/account/slice'
 import { CoreAccountType } from '@avalabs/types'
+import { UNSUPPORTED_WALLET_TYPE_ERROR } from 'services/wallet/types'
 import { Account, PrimaryAccount } from 'store/account'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { parseRequestParams } from './util'
+
+const FALLBACK_ADD_ACCOUNT_ERROR_MESSAGE = 'Failed to add account'
+
+// createAsyncThunk's unwrap() throws RTK's miniSerializeError output (a
+// plain { name?, message?, stack?, code? } object) rather than a real Error
+// instance, since `addAccount` doesn't use rejectWithValue — so this can't
+// check `error instanceof Error` to recover the dapp-facing message.
+const extractAddAccountErrorMessage = (error: unknown): string => {
+  const message =
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string'
+      ? (error as { message: string }).message
+      : ''
+
+  // An empty/whitespace-only message is as useless to the dapp as a missing
+  // one — fall back to the generic string rather than surfacing blank text.
+  return message.trim().length > 0
+    ? message
+    : FALLBACK_ADD_ACCOUNT_ERROR_MESSAGE
+}
 
 export type AvalancheAddAccountRpcRequest =
   RpcRequest<RpcMethod.AVALANCHE_ADD_ACCOUNT>
@@ -60,7 +83,29 @@ class AvalancheAddAccountHandler
       walletId
     ).length
 
-    await dispatch(addAccount(walletId)).unwrap()
+    try {
+      await dispatch(addAccount(walletId)).unwrap()
+    } catch (error) {
+      const message = extractAddAccountErrorMessage(error)
+
+      // A blocked Keystone wallet is expected user behavior, not an app
+      // failure, so it must not reach Sentry via Logger.error. Matched on the
+      // message rather than `isUnsupportedWalletTypeError` because `unwrap()`
+      // rethrows RTK's serialized plain object, which is never an `Error`.
+      if (message === UNSUPPORTED_WALLET_TYPE_ERROR) {
+        Logger.warn(
+          'avalanche_addAccount: blocked, wallet type is no longer supported'
+        )
+      } else {
+        Logger.error('avalanche_addAccount: failed to add account', error)
+      }
+
+      return {
+        success: false,
+        error: rpcErrors.internal(message)
+      }
+    }
+
     AnalyticsService.capture('CreatedANewAccountSuccessfully', {
       walletType: selectedWallet.type
     })

@@ -46,14 +46,33 @@ export function useAccountBalanceSummary(
       }
     }
 
-    const isBalanceLoaded = data.length > 0 || isError || isOffline
+    // `useAccountBalances`' own `isLoading` already resolves to `false` once
+    // that hook's fetch attempt has settled (including the "some network
+    // never reported back" edge case — see its comment), so folding `!isLoading`
+    // in here keeps this looser "got at least one balance" formula from being
+    // the one thing still holding the loading gate open in that same edge case.
+    const isBalanceLoaded =
+      data.length > 0 || isError || isOffline || !isLoading
 
     const isAllBalancesInaccurate =
       data.length > 0 && data.every(balance => balance.dataAccurate === false)
     const isAllBalancesError =
       isError ||
       isOffline ||
-      (data.length > 0 && data.every(balance => balance.error != null))
+      (data.length > 0 && data.every(balance => balance.error != null)) ||
+      // Every enabled network can — in the same silent-drop edge case that
+      // makes `useAccountBalances` latch `isLoading` false without full data
+      // (see its comment) — end up with ZERO entries in `data`: no success,
+      // no per-network error object, nothing. `isBalanceLoaded` above still
+      // needs to flip true here so we don't spin forever, but without this
+      // clause that reads as "loaded and confirmed empty", which renders a
+      // confident "you have no assets" empty state for what may be a funded
+      // wallet that simply failed to load. Route it to the error state
+      // instead. Legitimate zero-balance wallets don't hit this: every
+      // successfully-resolved network still contributes one entry (even with
+      // an empty token list), so `data.length` only reads 0 when nothing
+      // resolved at all.
+      (!isLoading && data.length === 0)
 
     // Calculate total balance
     const balancesForAccount = data.filter(

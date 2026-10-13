@@ -130,7 +130,10 @@ export const CollectiblesProvider = ({
             ...prevData,
             [localId]: NftLocalStatus.Unprocessable
           }))
-          Logger.error(e)
+          // Expected in the field (dead/overloaded IPFS gateways, bad URIs,
+          // device offline) and already handled by marking the collectible
+          // unprocessable — not worth a Sentry error.
+          Logger.warn('[CollectiblesContext] failed to process NFT image', e)
         })
     },
     []
@@ -160,7 +163,13 @@ export const CollectiblesProvider = ({
               ...prevData,
               [localId]: NftLocalStatus.Unprocessable
             }))
-            Logger.error(e)
+            // Same failure class as processImageData above — expected in the
+            // field and already handled by marking the collectible
+            // unprocessable.
+            Logger.warn(
+              '[CollectiblesContext] failed to process NFT metadata',
+              e
+            )
           })
       else
         setStatusData(prevData => ({

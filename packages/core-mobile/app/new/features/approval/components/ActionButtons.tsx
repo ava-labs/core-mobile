@@ -24,7 +24,7 @@ export type ActionButtonsProps = {
     isLoading?: boolean
     testID?: string
   }
-  cancel: {
+  cancel?: {
     label: string
     onPress: () => void
     disabled?: boolean
@@ -67,15 +67,17 @@ export const ActionButtons = ({
           }>
           {confirm.isLoading ? <ActivityIndicator /> : confirm.label}
         </Button>
-        <Button
-          size="large"
-          type="tertiary"
-          style={{ marginTop: 16 }}
-          onPress={() => cancel.onPress()}
-          disabled={cancel.disabled}
-          testID="reject_button">
-          {cancel.label}
-        </Button>
+        {cancel && (
+          <Button
+            size="large"
+            type="tertiary"
+            style={{ marginTop: 16 }}
+            onPress={() => cancel.onPress()}
+            disabled={cancel.disabled}
+            testID="reject_button">
+            {cancel.label}
+          </Button>
+        )}
       </View>
     )
   }, [confirm, cancel, alert, alertConfirmed])
@@ -87,7 +89,7 @@ export const ActionButtons = ({
       } else if (alertType === AlertType.WARNING) {
         return (
           <Icons.Device.GPPMaybe
-            color={colors.$textPrimary}
+            color={colors.$textDanger}
             width={20}
             height={20}
           />
@@ -108,6 +110,10 @@ export const ActionButtons = ({
   const renderAlertSection = useCallback(
     (alertData: Alert) => {
       const isDangerAlert = alertData.type === AlertType.DANGER
+      // WARNING (e.g. "Manual approval required") shows red text/icon to
+      // match the extension's sign UI, but without the confirm toggle that
+      // DANGER requires.
+      const isRedAlert = isDangerAlert || alertData.type === AlertType.WARNING
 
       return (
         <View>
@@ -139,7 +145,7 @@ export const ActionButtons = ({
                 sx={{
                   fontSize: 13,
                   textAlign: 'left',
-                  color: isDangerAlert ? '$textDanger' : '$textPrimary'
+                  color: isRedAlert ? '$textDanger' : '$textPrimary'
                 }}>
                 {alertData.message}
               </Text>

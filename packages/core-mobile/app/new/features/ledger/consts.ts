@@ -80,11 +80,19 @@ export const LEDGER_TIMEOUTS = {
   SCAN_TIMEOUT: 30000, // 30 seconds
   CONNECTION_TIMEOUT: 30000, // 30 seconds
   APP_WAIT_TIMEOUT: 30000, // 30 seconds for waiting for app
-  APP_POLLING_INTERVAL: 2000, // 2 seconds between app checks
   APP_CHECK_DELAY: 1000, // 1 second delay between app detection attempts
-  REQUEST_DELAY: 3000, // 3s delay between APDU commands
-  RECONNECT_MAX_RETRIES: 3, // max auto-reconnect attempts after unexpected disconnect
-  RECONNECT_BASE_DELAY: 1000 // 1s base delay between reconnect attempts (doubles each retry)
+  REQUEST_DELAY: 3000, // 3s settle delay between quitting and opening an app
+  // Hard ceiling on a single APDU round trip. The kit serializes commands per
+  // session, so one command that never settles stalls every later one.
+  APDU_TIMEOUT: 15000,
+  // Explicit app-detection poll. The kit's session refresher only reports the
+  // running app once the session reaches a Ready state, which does not happen
+  // reliably over this transport, so the app type is read directly.
+  APP_POLLING_INTERVAL: 2000,
+  // How long to wait for the BLE link to come back after a command that makes
+  // the device leave an app (open/close). The transport reconnects the same
+  // session; callers just have to wait for it.
+  RECONNECT_WAIT: 15000
 } as const
 
 export const LEDGER_DEVICE_BRIEF_DELAY_MS = 1000

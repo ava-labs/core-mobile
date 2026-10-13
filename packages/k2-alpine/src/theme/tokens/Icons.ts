@@ -6,6 +6,7 @@ import IconFaceID from '../../assets/icons/face_id.svg'
 import IconTouchID from '../../assets/icons/touch_id.svg'
 import IconPin from '../../assets/icons/pin.svg'
 import IconInfo from '../../assets/icons/info.svg'
+import IconHelp from '../../assets/icons/help.svg'
 import IconCheckCircleOutline from '../../assets/icons/check_circle_outline.svg'
 import IconCheckCircle from '../../assets/icons/check_circle.svg'
 import IconErrorOutline from '../../assets/icons/error_outline.svg'
@@ -38,6 +39,7 @@ import IconCompass from '../../assets/icons/compass.svg'
 import IconElectricBolt from '../../assets/icons/electric_bolt.svg'
 import IconBolt from '../../assets/icons/bolt.svg'
 import IconDatabaseSearch from '../../assets/icons/database_search.svg'
+import IconDatabase from '../../assets/icons/database.svg'
 import IconWalletConnect from '../../assets/icons/wallet_connect.svg'
 import IconContactLess from '../../assets/icons/contactless.svg'
 import IconOutbound from '../../assets/icons/outbound_filled.svg'
@@ -236,6 +238,7 @@ import ZAR from '../../assets/currency-flagKit/currency-zar.svg'
 export const Icons = {
   Action: {
     Info: IconInfo,
+    Help: IconHelp,
     CheckCircleOutline: IconCheckCircleOutline,
     CheckCircle: IconCheckCircle,
     Clear: IconClear,
@@ -314,6 +317,7 @@ export const Icons = {
     ElectricBolt: IconElectricBolt,
     Bolt: IconBolt,
     DatabaseSearch: IconDatabaseSearch,
+    Database: IconDatabase,
     QRCodeScanner: IconQrCodeScanner,
     Contactless: IconContactLess,
     RedExclamation: IconRedExclamation,

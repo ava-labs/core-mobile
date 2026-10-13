@@ -35,7 +35,12 @@ type SendTokenUnitInputWidgetProps = {
     symbol: string
   }
   onChange?(amount: TokenUnit): void
-  formatInCurrency(amount: TokenUnit): string
+  /**
+   * Omit to hide the fiat line entirely, for amounts that have no fiat value
+   * to show (testnet funds). Matches the optional prop on `TokenUnitInput`,
+   * which this widget forwards to.
+   */
+  formatInCurrency?(amount: TokenUnit): string
   validateAmount?(amount: TokenUnit): Promise<void>
   accessory?: JSX.Element
   sx?: SxProp

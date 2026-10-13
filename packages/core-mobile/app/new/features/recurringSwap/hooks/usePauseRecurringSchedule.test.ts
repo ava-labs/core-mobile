@@ -152,9 +152,7 @@ describe('usePauseRecurringSchedule', () => {
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapPausedByUser', {
       chainId: PAUSE_ARGS.chainId,
-      encrypted: {
-        orderId: PAUSE_ARGS.orderId
-      }
+      orderId: PAUSE_ARGS.orderId
     })
   })
 

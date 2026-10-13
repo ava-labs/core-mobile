@@ -228,6 +228,16 @@ export function isGasOnlyNetworkFeeError(error: FusionQuoteError): boolean {
   return error.kind === 'network-fee-only'
 }
 
+/**
+ * Matches more than a genuine empty quote set: the bare chain-alias address
+ * guard in useQuoteStreaming deliberately reuses `fusionErrors.noQuotes()` so
+ * a corrupted stored address inherits the same "Quotes unavailable" alert
+ * instead of failing silently.
+ */
+export function isNoQuotesError(error: unknown): boolean {
+  return error instanceof FusionQuoteError && error.reason === 'no-quotes'
+}
+
 // EIP-1193 standard code for a user-rejected request. The rejection can reach
 // us either as an Error instance OR as a plain JSON-RPC error object — e.g.
 // `providerErrors.userRejectedRequest()` serialized to `{ code, message }`
@@ -313,6 +323,16 @@ export function getSwapErrorMessage(error: unknown): string {
   // of the raw internal guard string. See CP-14507.
   if (message.includes(CCT_CALLBACKS_ERROR_TAG)) {
     return "This account isn't set up for cross-chain swaps. Please try a different account."
+  }
+
+  // Defensive: an import-only recovery (a CCT amountIn=0 route run from the
+  // swap screen) found no atomic UTXOs to import. That failed transfer is
+  // re-thrown as "Transfer failed: <reason>" and reaches the "Swap failed"
+  // toast here, so map it rather than leak the raw SDK reason. The UI normally
+  // only offers recovery once stuck funds are detected, so this shouldn't reach
+  // a user. See CP-14364.
+  if (message.toLowerCase().includes('no atomic utxos available to import')) {
+    return 'Nothing to recover for this route.'
   }
 
   // Common error patterns

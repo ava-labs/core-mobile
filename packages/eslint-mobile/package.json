@@ -19,7 +19,6 @@
     "@typescript-eslint/utils": "5.62.0",
     "eslint": "8.50.0",
     "eslint-config-prettier": "8.10.0",
-    "eslint-plugin-detox": "1.0.0",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-jest": "28.8.3",
     "eslint-plugin-prettier": "4.2.1",

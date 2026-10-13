@@ -70,19 +70,6 @@ apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.grad
 apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 
 /**
- * The preferred build flavor of JavaScriptCore (JSC)
- *
- * For example, to use the international variant, you can use:
- * `def jscFlavor = 'org.webkit:android-jsc-intl:+'`
- *
- * The international variant includes ICU i18n library and necessary data
- * allowing to use e.g. `Date.toLocaleString` and `String.localeCompare` that
- * give correct results when using with locales other than en-US. Note that
- * this variant is about 6MiB larger per architecture than default.
- */
-def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
-
-/**
  * Run Proguard to shrink the Java bytecode in release builds.
  */
 def isLocalBuild = System.env.CI != 'true'
@@ -181,12 +168,8 @@ dependencies {
     implementation("com.facebook.react:react-android")
 
     implementation "com.google.android.gms:play-services-ads-identifier:18.0.1"
-    
-    if (hermesEnabled.toBoolean()) {
-        implementation("com.facebook.react:hermes-android")
-    } else {
-        implementation jscFlavor
-    }
+
+    implementation("com.facebook.react:hermes-android")
 }
 
 task deleteDuplicateDependencies(type: Delete) {

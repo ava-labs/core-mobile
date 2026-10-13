@@ -19,7 +19,7 @@
     "postinstall": "node_modules/.bin/patch-package"
   },
   "dependencies": {
-    "@avalabs/core-utils-sdk": "3.1.0-canary.672f5c3.0",
+    "@avalabs/core-utils-sdk": "3.1.0-alpha.101",
     "@shopify/react-native-skia": "2.6.2",
     "big.js": "6.2.2",
     "bn.js": "5.2.1",
@@ -41,13 +41,13 @@
     "react-native-dialog": "9.3.0",
     "react-native-gesture-handler": "~2.31.1",
     "react-native-modal-datetime-picker": "18.0.0",
-    "react-native-reanimated": "4.4.1",
+    "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "15.15.5",
-    "react-native-worklets": "0.9.2"
+    "react-native-worklets": "0.10.1"
   },
   "peerDependencies": {
-    "@avalabs/core-utils-sdk": "3.1.0-canary.672f5c3.0",
+    "@avalabs/core-utils-sdk": "3.1.0-alpha.101",
     "@react-native-masked-view/masked-view": "0.3.2",
     "@shopify/react-native-skia": "2.6.2",
     "expo-blur": "~56.0.3",
@@ -58,10 +58,10 @@
     "react-native": "0.85.3",
     "react-native-gesture-handler": "~2.31.1",
     "react-native-modal-datetime-picker": "18.0.0",
-    "react-native-reanimated": "4.4.1",
+    "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "15.15.5",
-    "react-native-worklets": "0.9.2"
+    "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",

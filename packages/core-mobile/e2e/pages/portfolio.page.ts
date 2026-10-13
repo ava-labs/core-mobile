@@ -1,428 +1,423 @@
+/* eslint-disable max-params */
 import assert from 'assert'
-import Assert from '../helpers/assertions'
-import Action from '../helpers/actions'
+import { actions } from '../helpers/actions'
+import { selectors } from '../helpers/selectors'
+import commonEls from '../locators/commonEls.loc'
 import portfolio from '../locators/portfolio.loc'
-import { Platform } from '../helpers/constants'
-import cl from '../locators/commonEls.loc'
-import accountManageLoc from '../locators/accountManage.loc'
-import ActivityTabPage from './activityTab.page'
-import collectiblesPage from './collectibles.page'
-import accountManagePage from './accountManage.page'
+import { Network } from '../helpers/networks'
 import bottomTabsPage from './bottomTabs.page'
 import commonElsPage from './commonEls.page'
+import txPage from './transactions.page'
 
-const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 class PortfolioPage {
   get avaxNetwork() {
-    return by.text(portfolio.avaxNetwork)
+    return selectors.getByText(portfolio.avaxNetwork)
   }
 
   get avaxPNetwork() {
-    return by.text(portfolio.avaxPNetwork)
+    return selectors.getByText(portfolio.avaxPNetwork)
   }
 
   get avaxXNetwork() {
-    return by.text(portfolio.avaxXNetwork)
+    return selectors.getByText(portfolio.avaxXNetwork)
   }
 
   get arbitrumNetwork() {
-    return by.text(portfolio.arbitrumNetwork)
+    return selectors.getByText(portfolio.arbitrumNetwork)
   }
 
   get addAssetsButton() {
-    return by.text(portfolio.addAssetsButton)
+    return selectors.getByText(portfolio.addAssetsButton)
   }
 
   get addAssetsMessage() {
-    return by.text(portfolio.addAssetsMessage)
+    return selectors.getByText(portfolio.addAssetsMessage)
   }
 
   get avaxFujiToken() {
-    return by.text(portfolio.avaxFujiToken)
+    return selectors.getByText(portfolio.avaxFujiToken)
   }
 
   get btcTokenItem() {
-    return by.text(portfolio.btcTokenItem)
+    return selectors.getByText(portfolio.btcTokenItem)
   }
 
   get colectiblesTab() {
-    return by.text(portfolio.collectiblesTab)
+    return selectors.getByText(portfolio.collectiblesTab)
+  }
+
+  get collectiblesHandler() {
+    return selectors.getById(portfolio.collectiblesHandler)
   }
 
   get collectiblesTab() {
-    return by.text(portfolio.collectiblesTab)
+    return selectors.getByText(portfolio.collectiblesTab)
   }
 
   get defiTab() {
-    return by.text(portfolio.defiTab)
+    return selectors.getByText(portfolio.defiTab)
   }
 
   get activityTab() {
-    return by.text(portfolio.activityTab)
+    return selectors.getByText(portfolio.activityTab)
   }
 
   get tokensTab() {
-    return by.text(portfolio.tokensTab)
+    return selectors.getByText(portfolio.tokensTab)
   }
 
   get btcNetwork() {
-    return by.text(portfolio.btcNetwork)
+    return selectors.getByText(portfolio.btcNetwork)
   }
 
   get ethNetwork() {
-    return by.text(portfolio.ethNetwork)
+    return selectors.getByText(portfolio.ethNetwork)
   }
 
   get ethSepoliaNetwork() {
-    return by.text(portfolio.ethSepoliaNetwork)
+    return selectors.getByText(portfolio.ethSepoliaNetwork)
   }
 
   get assetsTab() {
-    return by.text(portfolio.assetsTab)
+    return selectors.getByText(portfolio.assetsTab)
   }
 
   get viewAllBtn() {
-    return by.text(portfolio.viewAll)
+    return selectors.getByText(portfolio.viewAll)
   }
 
   get favoritesHeader() {
-    return by.text(portfolio.favoritesHeader)
+    return selectors.getByText(portfolio.favoritesHeader)
   }
 
   get manageNetworks() {
-    return by.text(portfolio.manageNetworks)
+    return selectors.getByText(portfolio.manageNetworks)
   }
 
   get manageTokens() {
-    return by.text(portfolio.manageTokens)
+    return selectors.getByText(portfolio.manageTokens)
   }
 
   get networksHeader() {
-    return by.text(portfolio.networksHeader)
+    return selectors.getByText(portfolio.networksHeader)
   }
 
   get noAssetsHeader() {
-    return by.text(portfolio.noAssetsHeader)
-  }
-
-  get networksDropdownBTC() {
-    return by.id(portfolio.networksDropdownBTC)
-  }
-
-  get networksDropdownBTCTestNet() {
-    return by.id(portfolio.networksDropdownBTCTestNet)
-  }
-
-  get networksDropdownETH() {
-    return by.id(portfolio.networksDropdownETH)
-  }
-
-  get networksDropdownAVAX() {
-    return by.id(portfolio.networksDropdownAVAX)
-  }
-
-  get networksDropdownPChain() {
-    return by.id(portfolio.networksDropdownPChain)
-  }
-
-  get networksDropdownXChain() {
-    return by.id(portfolio.networksDropdownXChain)
-  }
-
-  get networksDropdownManage() {
-    return by.id(portfolio.networksDropdownManage)
+    return selectors.getByText(portfolio.noAssetsHeader)
   }
 
   get networksDropdown() {
-    return by.id(portfolio.networksDropdown)
+    return selectors.getById(portfolio.networksDropdown)
   }
 
   get polygonNetwork() {
-    return by.text(portfolio.polygonNetwork)
+    return selectors.getByText(portfolio.polygonNetwork)
   }
 
   get sendPendingToast() {
-    return by.id(portfolio.sendPendingToast)
+    return selectors.getById(portfolio.sendPendingToast)
   }
 
   get sendSuccessToast() {
-    return by.id(portfolio.sendSuccessToast)
+    return selectors.getById(portfolio.sendSuccessToast)
   }
 
   get benqi() {
-    return by.text(portfolio.benqi)
+    return selectors.getByText(portfolio.benqi)
   }
 
   get activeNetworkBalance() {
-    return by.id(portfolio.activeNetworkBalance)
+    return selectors.getById(portfolio.activeNetworkBalance)
   }
 
   get tokensTabListView() {
-    return by.id(portfolio.tokensTabListView)
+    return selectors.getById(portfolio.tokensTabListView)
   }
 
   get portfolioTokenList() {
-    return by.id(portfolio.portfolioTokenList)
+    return selectors.getById(portfolio.portfolioTokenList)
   }
 
   get testnetModeIsOn() {
-    return by.text(portfolio.testnetModeIsOn)
+    return selectors.getById(portfolio.testnetModeIsOn)
   }
 
   get sendButton() {
-    return by.id(portfolio.sendButton)
+    return selectors.getById(portfolio.sendButton)
   }
 
   get swapButton() {
-    return by.id(portfolio.swapButton)
+    return selectors.getById(portfolio.swapButton)
   }
 
   get buyButton() {
-    return by.id(portfolio.buyButton)
-  }
-
-  get bridgeButton() {
-    return by.id(portfolio.bridgeButton)
-  }
-
-  get receiveButton() {
-    return by.id(portfolio.receiveButton)
+    return selectors.getById(portfolio.buyButton)
   }
 
   get sort() {
-    return by.id(portfolio.sort)
+    return selectors.getById(portfolio.sort)
   }
 
   get view() {
-    return by.id(portfolio.view)
+    return selectors.getById(portfolio.view)
+  }
+
+  get defiDetailTitle() {
+    return selectors.getById(portfolio.defiDetailTitle)
+  }
+
+  get defiDetailPrice() {
+    return selectors.getById(portfolio.defiDetailPrice)
+  }
+
+  get defiEmptyScreenTitle() {
+    return selectors.getByText(portfolio.defiEmptyScreenTitle)
+  }
+
+  get defiEmptyScreenDescription() {
+    return selectors.getByText(portfolio.defiEmptyScreenDescription)
+  }
+
+  get defiEmptyScreenExploreBtn() {
+    return selectors.getByText(portfolio.defiEmptyScreenExploreBtn)
+  }
+
+  get defiDetailBrowserBtn() {
+    return selectors.getById(portfolio.defiDetailBrowserBtn)
+  }
+
+  get hideBtn() {
+    return selectors.getById(portfolio.hideBtn)
+  }
+
+  get resetFilterBtn() {
+    return selectors.getById(portfolio.resetFilterBtn)
+  }
+
+  get noCollectiblesTitle() {
+    return selectors.getByText(portfolio.noCollectiblesTitle)
+  }
+
+  get noCollectiblesDescription() {
+    return selectors.getBySomeText(portfolio.noCollectiblesDescription)
+  }
+
+  get collectibleHero() {
+    return selectors.getById(portfolio.collectibleHero)
+  }
+
+  get nftCreatedByTitle() {
+    return selectors.getById(portfolio.nftCreatedByTitle)
+  }
+
+  get nftStandardTitle() {
+    return selectors.getById(portfolio.nftStandardTitle)
+  }
+
+  get nftChainTitle() {
+    return selectors.getById(portfolio.nftChainTitle)
+  }
+
+  get refreshBtn() {
+    return selectors.getById(portfolio.refreshBtn)
+  }
+
+  get setAsMyAvatarBtn() {
+    return selectors.getById(portfolio.setAsMyAvatarBtn)
+  }
+
+  get untitledDisplayed() {
+    return selectors.getById(portfolio.untitledDisplayed)
+  }
+
+  get portfolioBalanceHeader() {
+    return selectors.getById(portfolio.portfolioBalanceHeader)
+  }
+
+  get noAssetsFound() {
+    return selectors.getByText(portfolio.noAssetsFound)
+  }
+
+  get loadingPortfolioBalanceHeader() {
+    return selectors.getById(portfolio.loadingPortfolioBalanceHeader)
+  }
+
+  get portfolioAccountName() {
+    return selectors.getById(portfolio.portfolioAccountName)
+  }
+
+  get tokenHeaderFiatBalance() {
+    return selectors.getById(portfolio.tokenHeaderFiatBalance)
+  }
+
+  tokenHeaderName(token: string) {
+    return selectors.getById(`token_header_name__${token}`)
   }
 
   async verifyPorfolioScreen() {
-    await Assert.isVisible(this.viewAllBtn)
-    await Assert.isVisible(this.favoritesHeader)
-    await Assert.isVisible(this.networksHeader)
-    await Assert.isVisible(this.assetsTab)
-    await Assert.isVisible(this.colectiblesTab)
+    await actions.isVisible(this.viewAllBtn)
+    await actions.isVisible(this.favoritesHeader)
+    await actions.isVisible(this.networksHeader)
+    await actions.isVisible(this.assetsTab)
+    await actions.isVisible(this.colectiblesTab)
   }
 
-  async verifySubTab(tab: string) {
-    if (tab === 'Assets') {
-      await Assert.isVisible(this.favoritesHeader)
-      await Assert.isVisible(this.networksHeader)
-      await Assert.isNotVisible(collectiblesPage.gridItem)
-    } else if (tab === 'Collectibles') {
-      await Assert.isVisible(collectiblesPage.gridItem)
-      await Assert.isVisible(collectiblesPage.listSvg)
-      await Assert.isNotVisible(this.networksHeader)
-    } else {
-      await Assert.isVisible(this.benqi)
-      await Assert.isNotVisible(this.networksHeader)
-      await Assert.isNotVisible(collectiblesPage.gridItem)
-    }
+  async swipeUpForNftDetails() {
+    await actions.dragAndDrop(this.collectiblesHandler, [0, -1000])
   }
 
   async verifySubTabs(all = true) {
-    await Assert.isVisible(this.assetsTab)
-    await Assert.isVisible(this.defiTab)
+    await actions.isVisible(this.assetsTab)
+    await actions.isVisible(this.defiTab)
     if (all) {
-      await Assert.isVisible(this.collectiblesTab)
+      await actions.isVisible(this.collectiblesTab)
     } else {
-      await Assert.isNotVisible(this.collectiblesTab)
+      await actions.isNotVisible(this.collectiblesTab)
     }
   }
 
-  async goToActivityTab() {
-    await this.tapAvaxNetwork()
-    await this.tapActivityTab()
-    await ActivityTabPage.refreshActivityPage()
-  }
-
-  async tapActivityTab() {
-    await Action.waitForElementNotVisible(this.sendSuccessToast, 10000)
-    await Action.tapElementAtIndex(this.activityTab, 0)
-  }
-
   async tapTokensTab() {
-    await Action.tapElementAtIndex(this.tokensTab, 0)
+    await actions.tap(this.tokensTab)
   }
 
   async tapArbitrumNetwork() {
-    await Action.tapElementAtIndex(this.arbitrumNetwork, 1)
+    await actions.tap(this.arbitrumNetwork)
   }
 
   async tapAvaxNetwork() {
-    await Action.tapElementAtIndex(this.avaxNetwork, 1)
+    await actions.tap(this.avaxNetwork)
   }
 
   async tapBtcFavoriteToken() {
-    await Action.tapElementAtIndex(this.btcTokenItem, 0)
+    await actions.tap(this.btcTokenItem)
   }
 
   async tapFavoriteToken(token: string) {
-    await Action.tapElementAtIndex(
-      by.id(`watchlist_carousel__${token.toLowerCase()}`),
-      0
+    await actions.tap(
+      selectors.getById(`watchlist_carousel__${token.toLowerCase()}`)
     )
   }
 
   async tapAssetsTab() {
-    await Action.tapElementAtIndex(this.assetsTab, 0)
+    await actions.tap(this.assetsTab)
+    await actions.delay(1000)
   }
 
   async tapCollectiblesTab() {
-    await Action.tapElementAtIndex(this.collectiblesTab, 0)
+    await actions.click(this.collectiblesTab)
   }
 
   async tapDefiTab() {
-    await Action.tapElementAtIndex(this.defiTab, 0)
+    await actions.longPress(this.defiTab)
+    await actions.delay(1000)
+  }
+
+  async tapActivityTab() {
+    await actions.tap(this.activityTab)
+    await actions.delay(1000)
   }
 
   async tapEthNetwork() {
-    await Action.tapElementAtIndex(this.ethNetwork, 1)
+    await actions.tap(this.ethNetwork)
   }
 
   async tapEthSepoliaNetwork() {
-    await Action.tapElementAtIndex(this.ethSepoliaNetwork, 1)
+    await actions.tap(this.ethSepoliaNetwork)
   }
 
   async tapManageTokens() {
-    await Action.tapElementAtIndex(this.manageTokens, 0)
+    await actions.tap(this.manageTokens)
   }
 
   async tapNetworksDropdown() {
-    await Action.tapElementAtIndex(this.networksDropdown, 0)
-  }
-
-  async tapNetworksDropdownBTC() {
-    try {
-      await Action.tapElementAtIndex(this.networksDropdownBTC, platformIndex)
-    } catch (error) {
-      console.log(error)
-      await Action.tapElementAtIndex(this.manageNetworks, 1)
-    }
-  }
-
-  async tapNetworksDropdownBTCTestNet() {
-    await Action.tapElementAtIndex(
-      this.networksDropdownBTCTestNet,
-      platformIndex
-    )
-  }
-
-  async tapNetworksDropdownETH() {
-    await Action.tapElementAtIndex(this.networksDropdownETH, platformIndex)
-  }
-
-  async tapNetworksDropdownAVAX(network = this.networksDropdownAVAX) {
-    if (Action.platform() === 'ios') {
-      await Action.tapElementAtIndex(network, 1)
-    } else {
-      await Action.tapElementAtIndex(network, 0)
-    }
+    await actions.click(this.networksDropdown)
   }
 
   async tapManageNetworks() {
-    await Action.tapElementAtIndex(this.manageNetworks, platformIndex)
-  }
-
-  async tapPolygonNetwork() {
-    await Action.waitForElement(by.id('active_network__Polygon Mainnet'), 60000)
-    await Action.tapElementAtIndex(by.id('active_network__Polygon Mainnet'), 0)
+    await actions.tap(this.manageNetworks)
   }
 
   async verifyWatchListCarousel(tokens: string[]) {
     for (const token of tokens) {
-      await Action.waitForElement(
-        by.id(`watchlist_carousel__${token.toLowerCase()}`)
+      await actions.waitFor(
+        selectors.getById(`watchlist_carousel__${token.toLowerCase()}`)
       )
-      await Assert.isVisible(
-        by.id(`watchlist_carousel__${token.toLowerCase()}`)
+      await actions.isVisible(
+        selectors.getById(`watchlist_carousel__${token.toLowerCase()}`)
       )
     }
   }
 
   async tapActiveNetwork(network = 'Avalanche (C-Chain)') {
-    await Action.waitForElement(by.id(portfolio.activeNetwork + network), 60000)
-    await Action.tap(by.id(portfolio.activeNetwork + network))
+    await actions.waitFor(
+      selectors.getById(portfolio.activeNetwork + network),
+      60000
+    )
+    await actions.tap(selectors.getById(portfolio.activeNetwork + network))
   }
 
   async tapToken(token = 'Avalanche') {
-    await Action.waitAndTap(by.id(`${portfolio.portfolioTokenItem}${token}`))
-  }
-
-  async verifyActiveNetwork(network: string) {
-    await Action.waitForElement(by.id(portfolio.activeNetwork + network), 60000)
-    await this.tapNetworksDropdown()
-    await Action.waitForElement(
-      by.id(portfolio.networkDropdownCheckMark + network)
+    const normalizedToken = token.replace(/\s(P|X)-Chain$/, '')
+    await actions.tap(
+      selectors.getById(`${portfolio.portfolioTokenItem}${normalizedToken}`)
     )
-    await Action.tapElementAtIndex(by.text(network), platformIndex)
   }
 
-  async verifyInactiveNetworks(networks: string[]) {
-    await Action.scrollToBottom(this.tokensTabListView)
-    for (const network of networks) {
-      await Action.waitForElement(by.id(portfolio.inactiveNetwork + network))
+  async getFiatBalance() {
+    const balance = await actions.getText(this.tokenHeaderFiatBalance)
+    const amount = balance.split(' ')[0] || '0'
+    console.log(`Fiat balance: ${amount}`)
+    return amount
+  }
+
+  async verifyOwnedTokenActionButtons(buttons: string[]) {
+    for (const button of buttons) {
+      if (button) {
+        await actions.waitFor(selectors.getById(`action_button__${button}`))
+      }
     }
-    await Action.scrollToTop(this.tokensTabListView)
   }
 
-  async verifyNetworkRemoved(network: string) {
-    await this.tapNetworksDropdown()
-    await Action.waitForElementNotVisible(
-      by.id(portfolio.networksDropdownItem + network)
-    )
-    await this.tapNetworksDropdownAVAX()
+  async verifyNetworksRemoved(networks: Network[]) {
+    await this.tapAssetsTab()
+    await this.tapFilterDropdown()
+    for (const { name, haveToggle } of networks) {
+      if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
+    }
+    await commonElsPage.selectDropdownItem(commonEls.allNetworks)
   }
 
-  async getAllAvailableTokens() {
-    let output: string[] = []
-    await this.tapAvaxNetwork()
-    await this.tapTokensTab()
-    output = await Action.getElementsTextByTestId('portfolio_list_item')
-    console.log(output)
-    console.log('nothing?')
-    return output
+  async dismissNetworkDropdown(network = commonEls.cChain) {
+    if (driver.isAndroid) {
+      await actions.click(selectors.getBySomeText(network))
+    }
+  }
+
+  async tapFilterDropdown() {
+    await actions.click(commonElsPage.filterDropdown)
+  }
+
+  async verifyNetworksAdded(networks: Network[]) {
+    await this.tapAssetsTab()
+    await this.tapFilterDropdown()
+    for (const { name, haveToggle } of networks) {
+      if (haveToggle) await actions.isVisible(selectors.getByText(name))
+    }
+    await commonElsPage.selectDropdownItem(commonEls.allNetworks)
   }
 
   async verifyAccountName(name: string) {
-    await Assert.hasText(accountManagePage.accountDropdownTitle, name)
+    await actions.isVisible(selectors.getByText(name))
   }
 
-  async getTotalBalance(): Promise<number> {
+  async getTotalBalance() {
     // The total balance on Portfolio header
-    const bal = await Action.getElementText(by.id('portfolio_balance__total'))
-    return Action.getAmount(bal)
+    return await actions.getText(selectors.getById('portfolio_balance__total'))
   }
 
-  async getActiveNetworkBalance(): Promise<number> {
+  async getActiveNetworkBalance() {
     // Balance of the active network on Portfolio tab
-    const bal = await Action.getElementText(this.activeNetworkBalance)
-    return Action.getAmount(bal)
-  }
-
-  async getNetworkTokensBalance(
-    network = 'Avalanche (C-Chain)'
-  ): Promise<number> {
-    // The selected network tokens' balance (e.g. Avalanche (C-Chain) tokens' balance)
-    await Action.waitForElement(this.portfolioTokenList)
-    const bal = await Action.getElementText(
-      by.id(`network_tokens_header_balance__${network}`)
-    )
-    return Action.getAmount(bal)
-  }
-
-  async getTokenBalance(token: string): Promise<number> {
-    await Action.waitForElement(this.portfolioTokenList)
-    await Action.scrollListUntil(
-      by.id(`portfolio_list_item__${token}_balance`),
-      this.portfolioTokenList,
-      100
-    )
-    const bal = await Action.getElementText(
-      by.id(`portfolio_list_item__${token}_balance`)
-    )
-    return Action.getAmount(bal)
+    return await actions.getText(this.activeNetworkBalance)
   }
 
   //////// NEW GEN ////////
@@ -433,84 +428,313 @@ class PortfolioPage {
 
   async verifyAssetRow(index: number, isListView = true) {
     const prefix = isListView ? 'list' : 'grid'
-    await Action.waitForElement(by.id(`${prefix}_fiat_balance__${index}`))
-    await Action.waitForElement(by.id(`${prefix}_token_balance__${index}`))
-    await Action.waitForElement(by.id(`${prefix}_token_name__${index}`))
+    await actions.waitFor(selectors.getById(`${prefix}_fiat_balance__${index}`))
+    await actions.waitFor(
+      selectors.getById(`${prefix}_token_balance__${index}`)
+    )
+  }
+
+  async verifyCollectibleRow(isListView = false) {
+    const viewType = isListView ? 'list' : 'grid'
+    await actions.waitFor(selectors.getById(`nft_${viewType}_item__0`), 60000)
+  }
+
+  async verifyCollectiblesByNetwork(networkId: string | undefined = undefined) {
+    if (networkId) {
+      const shouldNotVisibleNetworkId =
+        networkId === commonEls.cChainId
+          ? commonEls.ethChainId
+          : commonEls.cChainId
+      await actions.isVisible(selectors.getById(`nft_by_network__${networkId}`))
+      await actions.isNotVisible(
+        selectors.getById(`nft_by_network__${shouldNotVisibleNetworkId}`)
+      )
+    } else {
+      await actions.isVisible(
+        selectors.getById(`nft_by_network__${commonEls.cChainId}`)
+      )
+      await actions.isVisible(
+        selectors.getById(`nft_by_network__${commonEls.ethChainId}`)
+      )
+    }
   }
 
   async displayAssetsByNetwork(network: string) {
-    if (network !== cl.bitcoinNetwork) {
-      if (network === cl.pChain_2 || network === cl.xChain_2) {
+    if (network !== commonEls.bitcoin) {
+      if (network === commonEls.pChain_2 || network === commonEls.xChain_2) {
         try {
-          await Action.waitForElement(by.text('No assets yet'))
+          await actions.waitFor(selectors.getByText('No assets yet'))
           return
         } catch (e) {
           console.log('No assets yet message not found')
         }
       }
-      await Action.waitForElement(by.id(`network_logo__${network}`))
+      await actions.waitFor(selectors.getById(`network_logo__${network}`))
     }
 
     const networksToHide = {
-      [cl.cChain_2]: [cl.pChain_2, cl.xChain_2, cl.ethereum],
-      [cl.pChain_2]: [cl.cChain_2, cl.xChain_2, cl.ethereum],
-      [cl.xChain_2]: [cl.pChain_2, cl.cChain_2, cl.ethereum],
-      [cl.ethereum]: [cl.pChain_2, cl.xChain_2, cl.cChain_2],
-      default: [cl.pChain_2, cl.xChain_2, cl.ethereum, cl.cChain_2]
+      [commonEls.cChain_2]: [
+        commonEls.pChain_3,
+        commonEls.xChain_3,
+        commonEls.ethereum
+      ],
+      [commonEls.pChain_3]: [
+        commonEls.cChain_2,
+        commonEls.xChain_3,
+        commonEls.ethereum
+      ],
+      [commonEls.xChain_3]: [
+        commonEls.pChain_2,
+        commonEls.cChain_2,
+        commonEls.ethereum
+      ],
+      [commonEls.ethereum]: [
+        commonEls.pChain_3,
+        commonEls.xChain_3,
+        commonEls.cChain_2
+      ],
+      default: [
+        commonEls.pChain_3,
+        commonEls.xChain_3,
+        commonEls.ethereum,
+        commonEls.cChain_2
+      ]
     }
 
     for (const hiddenNetwork of networksToHide[network] ||
       networksToHide.default) {
-      await Action.waitForElementNotVisible(
-        by.id(`network_logo__${hiddenNetwork}`)
+      await actions.isNotVisible(
+        selectors.getById(`network_logo__${hiddenNetwork}`)
       )
     }
   }
 
   async displayAssetsByAllNetwork() {
-    await Action.waitForElement(by.id(`network_logo__${cl.cChain_2}`))
-    await Action.waitForElement(by.id(`network_logo__${cl.ethereum}`))
+    await actions.waitFor(
+      selectors.getById(`network_logo__${commonEls.cChain_2}`)
+    )
+    await actions.waitFor(
+      selectors.getById(`network_logo__${commonEls.ethereum}`)
+    )
   }
 
   async verifyFiatCurrency(currency = '$') {
-    await Action.waitForElement(by.id('list_fiat_balance__0'))
+    await actions.waitFor(selectors.getById('list_fiat_balance__0'))
     const fiatBal =
-      (await Action.getElementText(by.id('list_fiat_balance__0'))) ?? ''
+      (await actions.getText(selectors.getById('list_fiat_balance__0'))) ?? ''
     console.log(`${fiatBal}`)
     assert(fiatBal.includes(currency), 'Fiat currency not found')
   }
 
-  async tapSend() {
-    await Action.waitAndTap(this.sendButton, 2000)
-  }
-
-  async tapSwap() {
-    await Action.waitAndTap(this.swapButton, 2000)
-  }
-
   async tapBuy() {
-    await Action.waitAndTap(this.buyButton, 2000)
+    await actions.tap(this.buyButton)
   }
 
-  async tapBridge() {
-    await Action.waitAndTap(this.bridgeButton, 2000)
-  }
-
-  async tapReceive() {
-    await Action.waitAndTap(this.receiveButton, 2000)
-  }
-
-  async verifyActivityItem(
-    from = accountManageLoc.accountOneAddress,
-    to = accountManageLoc.accountTwoAddress
+  async verifySendOnTokenDetail(
+    network: string,
+    token: string,
+    title: string,
+    from = commonEls.accountOneAddress,
+    to = commonEls.accountTwoAddress
   ) {
-    await Action.waitForElement(by.id(`tx__from_${from}_to_${to}`))
-    console.log(`Verified the transaction activity: tx__from_${from}_to_${to}`)
+    await this.tapAssetsTab()
+    await commonElsPage.filter(network)
+    await this.tapToken(token)
+    await actions.waitFor(selectors.getById(`tx__from_${from}_to_${to}`))
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifyXPSendOnTokenDetail(title: string) {
+    await this.tapActivityTab()
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifyXPSendOnActivityTab(title: string, network?: string) {
+    await this.tapActivityTab()
+    await actions.delay(2000)
+    if (network) {
+      await commonElsPage.filter(network, commonElsPage.networkFilterDropdown)
+    }
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifySendOnActivityTab(
+    network = commonEls.cChain_2,
+    title: string,
+    from = commonEls.accountOneAddress,
+    to = commonEls.accountTwoAddress
+  ) {
+    await this.tapActivityTab()
+    if (network !== commonEls.cChain_2) {
+      await commonElsPage.filter(network, commonElsPage.networkFilterDropdown)
+    }
+    await actions.waitFor(selectors.getById(`tx__from_${from}_to_${to}`))
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifyActivityNotVisible(title: string) {
+    await actions.isNotVisible(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifySwapActivityHistory(title: string) {
+    if (driver.isAndroid) {
+      await actions.waitFor(selectors.getBySomeId(`tx__title__${title}`))
+    } else {
+      await actions.waitFor(selectors.getBySomeTextV2(title))
+    }
   }
 
   async selectView(viewType = 'List view') {
-    await Action.tap(this.view)
+    await actions.click(this.view)
     await commonElsPage.selectDropdownItem(viewType)
+  }
+
+  async verifyOwnedTokenDetail(token: string, buttons: string[]) {
+    await commonElsPage.pullToRefresh()
+    await this.tapToken(token)
+    await actions.waitFor(this.tokenHeaderName(token))
+    await this.verifyOwnedTokenActionButtons(buttons)
+    const fiatBalance = await this.getFiatBalance()
+    await commonElsPage.goBack(selectors.getByText(fiatBalance))
+    await actions.waitFor(selectors.getByText(fiatBalance))
+  }
+
+  async toggleCollectible(goOff = true, prefix = 'The Free Mint') {
+    const testID = goOff ? `${prefix}_displayed` : `${prefix}_blocked`
+    await actions.longPress(selectors.getById(testID))
+  }
+
+  async verifyCollectibleDetail(isCChain = true, index = 0) {
+    const network = isCChain ? commonEls.cChain_2 : commonEls.ethereum
+    await actions.tap(selectors.getById(`${portfolio.nftListItem}${index}`))
+    await actions.waitFor(this.collectibleHero)
+    await this.swipeUpForNftDetails()
+    // top actions buttons
+    await actions.waitFor(this.hideBtn)
+    await actions.isVisible(txPage.sendButton)
+    // contents
+    await actions.isVisible(this.nftCreatedByTitle)
+    await actions.verifyText('ERC1155', this.nftStandardTitle)
+    await actions.verifyText(network, this.nftChainTitle)
+    // bottom buttons
+    if (isCChain) {
+      await actions.isVisible(this.refreshBtn)
+    }
+  }
+
+  async verifyNftEmptyScreen(isEmpty = true) {
+    if (isEmpty) {
+      await actions.waitFor(this.noCollectiblesTitle)
+      await actions.isVisible(this.noCollectiblesDescription)
+    } else {
+      await actions.isNotVisible(this.noCollectiblesTitle)
+      await actions.isNotVisible(this.noCollectiblesDescription)
+    }
+  }
+
+  async verifyDefiSort(ascending = true, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridTitle : portfolio.defiListTitle
+    const first = await actions.getText(selectors.getById(`${prefix}__0`))
+    const second = await actions.getText(selectors.getById(`${prefix}__1`))
+    console.log(`First: ${first}, Second: ${second}, Ascending: ${ascending}`)
+    const compare = first.localeCompare(second)
+    const isSorted = ascending ? compare <= 0 : compare >= 0
+    assert.ok(isSorted, `Defi not sorted ${ascending ? 'A-Z' : 'Z-A'}`)
+  }
+
+  async verifyCollectiblesSort(ascending = true) {
+    const prefix = portfolio.collectibleListTitle
+    const first = await actions.getText(selectors.getById(`${prefix}__0`))
+    const second = await actions.getText(selectors.getById(`${prefix}__1`))
+    console.log(`First: ${first}, Second: ${second}, Ascending: ${ascending}`)
+    const compare = first.localeCompare(second)
+    const isSorted = ascending ? compare <= 0 : compare >= 0
+    assert.ok(isSorted, `Defi not sorted ${ascending ? 'A-Z' : 'Z-A'}`)
+  }
+
+  async tapDefiItem(index = 0, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridItem : portfolio.defiListItem
+    await actions.waitFor(selectors.getById(`${prefix}__${index}`))
+    await actions.tap(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async tapDefiDetailBrowserBtn() {
+    await actions.tap(this.defiDetailBrowserBtn)
+  }
+
+  async tapDefiBrowserBtn(index = 0, isGrid = true) {
+    const prefix = isGrid
+      ? portfolio.defiGridBrowserBtn
+      : portfolio.defiListBrowserBtn
+    await actions.tap(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async getDefiItemPrice(index = 0, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridPrice : portfolio.defiListPrice
+    return await actions.getText(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async getDefiItemTitle(index = 0, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridTitle : portfolio.defiListTitle
+    return await actions.getText(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async verifyDefiItem(price: string, title: string) {
+    await actions.waitFor(this.defiDetailPrice)
+    await actions.isVisible(this.defiDetailTitle)
+    await actions.verifyText(price, this.defiDetailPrice)
+    await actions.verifyText(title, this.defiDetailTitle)
+  }
+
+  async verifyEmptyDefiScreen() {
+    await actions.waitFor(this.defiEmptyScreenTitle)
+    await actions.isVisible(this.defiEmptyScreenDescription)
+    await actions.isVisible(this.defiEmptyScreenExploreBtn)
+  }
+
+  async tapHide() {
+    await actions.tap(this.hideBtn)
+    await actions.delay(1000)
+  }
+
+  async tapResetFilterBtn() {
+    await actions.tap(this.resetFilterBtn)
+  }
+
+  async verifyCollectibleHidden(nft = portfolio.managedNft) {
+    await commonElsPage.typeSearchBar(nft)
+    await this.toggleCollectible(true, nft)
+    await commonElsPage.dismissBottomSheet()
+    await actions.isNotVisible(selectors.getByText(nft))
+  }
+
+  async verifyCollectibleShown(nft = portfolio.managedNft) {
+    await commonElsPage.typeSearchBar(nft)
+    await this.toggleCollectible(false, nft)
+    await commonElsPage.dismissBottomSheet()
+    await actions.isVisible(selectors.getByText(nft))
+  }
+
+  async verifyUnreachableHidden() {
+    await actions.isEnabled(this.untitledDisplayed, false)
+    await commonElsPage.dismissBottomSheet()
+    await actions.isNotVisible(selectors.getByText(portfolio.untitledNft))
+  }
+
+  async verifyBalanceHeader() {
+    await actions.waitFor(this.portfolioBalanceHeader)
+    await actions.isNotVisible(this.loadingPortfolioBalanceHeader)
+  }
+
+  async verifyAssetsList(token = 'Avalanche') {
+    const start = performance.now()
+    await actions.waitFor(this.portfolioBalanceHeader)
+    await actions.isNotVisible(commonElsPage.inProgress)
+    await actions.isVisible(this.portfolioTokenList)
+    await actions.isVisible(
+      selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
+    )
+    return start
   }
 }
 

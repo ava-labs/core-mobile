@@ -7,7 +7,9 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import Logger from 'utils/Logger'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { DefiMarket, MarketNames } from 'features/defiMarket/types'
+import { useResolvedDefiMarkets } from 'features/defiMarket/hooks/useResolvedDefiMarkets'
 import { getBenqiDepositedBalance } from 'features/defiMarket/utils/getBenqiDepositedBalance'
 import { getBenqiBorrowApyPercent } from 'features/defiMarket/utils/getBenqiBorrowApyPercent'
 import { getBenqiSupplyApyPercent } from 'features/defiMarket/utils/getBenqiSupplyApyPercent'
@@ -24,7 +26,6 @@ import {
 } from 'features/defiMarket/consts'
 import { formatAmount } from 'features/defiMarket/utils/formatInterest'
 import { bigIntToBig } from 'features/defiMarket/utils/bigInt'
-import { useGetCChainToken } from '../useGetCChainToken'
 import { useBenqiAccountSnapshot } from './useBenqiAccountSnapshot'
 
 export const useBenqiAvailableMarkets = ({
@@ -42,7 +43,7 @@ export const useBenqiAvailableMarkets = ({
   refetch: () => Promise<QueryObserverResult<DefiMarket[], Error>>
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
-  const getCChainToken = useGetCChainToken()
+  const cChainNetwork = useCChainNetwork()
   const activeAccount = useSelector(selectActiveAccount)
   const addressEVM = activeAccount?.addressC
   const {
@@ -179,11 +180,6 @@ export const useBenqiAvailableMarkets = ({
                     borrowRate
                   })
 
-                  const token = getCChainToken(
-                    underlying.symbol,
-                    underlying.token
-                  )
-
                   // Get balance from account snapshot if available
                   const maybeSnapshot =
                     accountSnapshot?.accountMarketSnapshots.find(
@@ -211,7 +207,7 @@ export const useBenqiAvailableMarkets = ({
                       mintTokenAddress: qTokenAddress as Address,
                       assetName: underlying.name,
                       decimals: underlyingTokenDecimals,
-                      iconUrl: token?.logoUri,
+                      iconUrl: undefined,
                       symbol: underlying.symbol,
                       contractAddress,
                       mintTokenBalance: getBenqiDepositedBalance({
@@ -265,8 +261,14 @@ export const useBenqiAvailableMarkets = ({
     return refetchMarkets()
   }, [refetchAccountSnapshot, refetchMarkets])
 
+  const { data: resolvedData } = useResolvedDefiMarkets({
+    network,
+    markets: data,
+    nativeIconUrl: cChainNetwork?.networkToken.logoUri
+  })
+
   return {
-    data,
+    data: resolvedData,
     error,
     isLoading: isLoading || isLoadingAccountSnapshot,
     isPending,

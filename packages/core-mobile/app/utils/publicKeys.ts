@@ -6,6 +6,7 @@ export const emptyAddresses = (): Record<NetworkVMType, string> => ({
   [NetworkVMType.CoreEth]: '',
   [NetworkVMType.EVM]: '',
   [NetworkVMType.HVM]: '',
+  [NetworkVMType.HYPERCORE]: '',
   [NetworkVMType.PVM]: '',
   [NetworkVMType.SVM]: ''
 })
