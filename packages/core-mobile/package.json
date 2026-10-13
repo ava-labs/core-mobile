@@ -41,7 +41,7 @@
     "@avalabs/crypto-nitro": "0.3.2",
     "@avalabs/crypto-sdk": "1.0.2",
     "@avalabs/evm-module": "5.0.0",
-    "@avalabs/fusion-sdk": "0.28.1",
+    "@avalabs/fusion-sdk": "0.28.2",
     "@avalabs/glacier-sdk": "3.1.0-alpha.101",
     "@avalabs/hw-app-avalanche": "2.1.0",
     "@avalabs/k2-alpine": "workspace:*",
