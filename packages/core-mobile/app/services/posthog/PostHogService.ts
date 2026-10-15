@@ -6,10 +6,12 @@ import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { JsonMap } from 'store/posthog'
 import { applyTempChainIdConversion } from 'utils/caip2ChainIds'
 import { PostHogServiceNoop } from 'services/posthog/PostHogServiceNoop'
-import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 import {
-  FeatureGates,
-  FeatureVars,
+  sanitizeFeatureFlagPayloads,
+  sanitizeFeatureFlags
+} from './sanitizeFeatureFlags'
+import {
+  FetchFeatureFlagsResult,
   PostHogDecideResponse,
   PostHogServiceInterface
 } from './types'
@@ -119,9 +121,7 @@ class PostHogService implements PostHogServiceInterface {
 
   async fetchFeatureFlags(
     distinctId: string
-  ): Promise<
-    Partial<Record<FeatureGates | FeatureVars, string | boolean>> | undefined
-  > {
+  ): Promise<FetchFeatureFlagsResult | undefined> {
     const appVersion = DeviceInfoService.getAppVersion()
 
     const fetchWithPosthogFallback =
@@ -171,7 +171,14 @@ class PostHogService implements PostHogServiceInterface {
     try {
       const responseJson = await fetchWithPosthogFallback()
 
-      return sanitizeFeatureFlags(responseJson, appVersion, isE2EBuild)
+      return {
+        featureFlags: sanitizeFeatureFlags(
+          responseJson,
+          appVersion,
+          isE2EBuild
+        ),
+        featureFlagPayloads: sanitizeFeatureFlagPayloads(responseJson)
+      }
     } catch (e) {
       Logger.error('failed to fetch feature flags', e)
     }

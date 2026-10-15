@@ -22,6 +22,7 @@ import {
 } from 'services/ledger/types'
 import { LedgerDeviceList } from './LedgerDeviceList'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
+import { LedgerAvalancheAppOutdatedHint } from './LedgerAvalancheAppOutdatedHint'
 
 export enum AppConnectionStep {
   AVALANCHE_CONNECT = 'avalanche-connect',
@@ -440,6 +441,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           testID="connected_device_list"
         />
       )}
+
+      <LedgerAvalancheAppOutdatedHint sx={{ marginTop: 16 }} />
 
       {renderStepContent()}
     </View>
