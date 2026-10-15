@@ -999,6 +999,88 @@ describe('LedgerService', () => {
   })
 
   // -------------------------------------------------------------------------
+  describe('getAvalancheAppVersion', () => {
+    afterEach(() => {
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+    })
+
+    it('is empty until the Avalanche app has been seen', async () => {
+      jest.useFakeTimers()
+      setAppInfo('Solana', '1.4.1')
+      await LedgerService.connect(DEVICE_ID)
+
+      expect(LedgerService.getAvalancheAppVersion()).toBe('')
+    })
+
+    it('records the version from the immediate connect probe', async () => {
+      jest.useFakeTimers()
+      setAppInfo('Avalanche', '0.8.3')
+      await LedgerService.connect(DEVICE_ID)
+
+      expect(LedgerService.getAvalancheAppVersion()).toBe('0.8.3')
+    })
+
+    it('keeps the Avalanche version after switching to another app', async () => {
+      jest.useFakeTimers()
+      await LedgerService.connect(DEVICE_ID)
+
+      setAppInfo('Avalanche', '0.8.3')
+      await pollOnce()
+      setAppInfo('Solana', '1.4.1')
+      await pollOnce()
+      failAppInfo()
+      await pollOnce()
+
+      expect(LedgerService.getCurrentAppVersion()).toBe('1.4.1')
+      expect(LedgerService.getAvalancheAppVersion()).toBe('0.8.3')
+    })
+
+    it('tracks an updated Avalanche version', async () => {
+      jest.useFakeTimers()
+      setAppInfo('Avalanche', '0.8.3')
+      await LedgerService.connect(DEVICE_ID)
+
+      setAppInfo('Avalanche', '0.9.0')
+      await pollOnce()
+
+      expect(LedgerService.getAvalancheAppVersion()).toBe('0.9.0')
+    })
+
+    it('is cleared when the session is torn down', async () => {
+      jest.useFakeTimers()
+      setAppInfo('Avalanche', '0.8.3')
+      await LedgerService.connect(DEVICE_ID)
+
+      await LedgerService.disconnect()
+
+      expect(LedgerService.getAvalancheAppVersion()).toBe('')
+    })
+
+    it('ignores an app-info read that resolves after its session was replaced', async () => {
+      jest.useFakeTimers()
+      await LedgerService.connect(DEVICE_ID)
+      const staleRead = deferred<unknown>()
+      commandHandlers.getAppAndVersion = () => staleRead.promise
+      await pollOnce()
+
+      await LedgerService.disconnect()
+      mockDmk.connect.mockResolvedValueOnce('replacement-session-id' as never)
+      setAppInfo('Solana', '1.4.1')
+      await LedgerService.connect(DEVICE_ID)
+
+      staleRead.resolve({
+        status: 'SUCCESS',
+        data: { name: 'Avalanche', version: '0.8.3' }
+      })
+      await jest.advanceTimersByTimeAsync(0)
+
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.SOLANA)
+      expect(LedgerService.getAvalancheAppVersion()).toBe('')
+    })
+  })
+
+  // -------------------------------------------------------------------------
   describe('connection state', () => {
     it('reports unreachable when the device status drops, keeping the session', async () => {
       const listener = jest.fn()

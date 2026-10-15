@@ -30,12 +30,13 @@ describe('PostHogService', () => {
         status: 200
       })
 
-      const flags = await PostHogService.fetchFeatureFlags('distinctId')
+      const result = await PostHogService.fetchFeatureFlags('distinctId')
 
-      expect(flags).toEqual({
+      expect(result?.featureFlags).toEqual({
         [FeatureGates.SOLANA_SUPPORT]: false,
         [FeatureGates.FUSION]: true
       })
+      expect(result?.featureFlagPayloads).toEqual({})
     })
 
     it('returns feature flags as false when the version range in payload is not satisfied', async () => {
@@ -52,11 +53,41 @@ describe('PostHogService', () => {
         status: 200
       })
 
-      const flags = await PostHogService.fetchFeatureFlags('distinctId')
+      const result = await PostHogService.fetchFeatureFlags('distinctId')
 
-      expect(flags).toEqual({
+      expect(result?.featureFlags).toEqual({
         [FeatureGates.SOLANA_SUPPORT]: true,
         [FeatureGates.FUSION]: false
+      })
+    })
+
+    it('returns the ledger recommended-version payload without version-range gating', async () => {
+      mockFetch.mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            featureFlags: {
+              [FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION]: true
+            },
+            featureFlagPayloads: {
+              [FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION]:
+                JSON.stringify({ recommendedVersion: '1.2.3' })
+            }
+          }),
+        ok: true,
+        status: 200
+      })
+
+      const result = await PostHogService.fetchFeatureFlags('distinctId')
+
+      expect(result).toEqual({
+        featureFlags: {
+          [FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION]: true
+        },
+        featureFlagPayloads: {
+          [FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION]: {
+            recommendedVersion: '1.2.3'
+          }
+        }
       })
     })
   })
