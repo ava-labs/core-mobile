@@ -61,7 +61,11 @@ import {
   SolanaTransactionRequest,
   MessageSigningRequest
 } from './types'
-import { getAddressDerivationPath, handleLedgerError } from './utils'
+import {
+  assertSvmTransactionSigner,
+  getAddressDerivationPath,
+  handleLedgerError
+} from './utils'
 
 // The Bitcoin signer kit wraps every call in OpenAppDeviceAction({ appName:
 // 'Bitcoin' }) and matches the running app by exact name, so it closes the
@@ -751,11 +755,14 @@ export class LedgerWallet implements Wallet {
 
     try {
       const [deviceKey] = await LedgerService.getSolanaKeys(accountIndex)
-      if (transaction.account !== deviceKey?.key) {
-        throw new Error(
-          `Account mismatch: transaction account ${transaction.account} does not match Ledger account ${deviceKey?.key}`
-        )
+      if (!deviceKey) {
+        throw new Error('Ledger returned no Solana key for this account')
       }
+      // Helper logs addresses internally; the RPC error must not embed them.
+      assertSvmTransactionSigner({
+        derivedAddress: deviceKey.key,
+        expectedAddress: transaction.account
+      })
 
       Logger.info('Signing transaction with Ledger')
       const signResult = await signer.signTx(

@@ -5,10 +5,14 @@ import {
 } from 'store/account/slice'
 import { selectWalletById } from 'store/wallet/slice'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
-import { rpcErrors } from '@metamask/rpc-errors'
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import {
+  getAccountScope,
+  isAccountInSession
+} from 'store/rpc/utils/sessionAccountScope/sessionAccountScope'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 
 export type AvalancheGetAccountsRpcRequest =
@@ -20,9 +24,17 @@ class AvalancheGetAccountsHandler
   methods = [RpcMethod.AVALANCHE_GET_ACCOUNTS]
 
   handle = async (
-    _request: AvalancheGetAccountsRpcRequest,
+    request: AvalancheGetAccountsRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
+    const scope = getAccountScope(request)
+    if (scope.kind === 'denied') {
+      return {
+        success: false,
+        error: providerErrors.unauthorized('No session for this request')
+      }
+    }
+
     const state = listenerApi.getState()
     const activeAccount = selectActiveAccount(state)
     const isDeveloperMode = selectIsDeveloperMode(state)
@@ -43,7 +55,16 @@ class AvalancheGetAccountsHandler
       }
     }
 
-    const accounts = selectAccountsByWalletId(state, activeAccount.walletId)
+    const walletAccounts = selectAccountsByWalletId(
+      state,
+      activeAccount.walletId
+    )
+    const accounts =
+      scope.kind === 'session'
+        ? walletAccounts.filter(account =>
+            isAccountInSession(account, scope.namespaces)
+          )
+        : walletAccounts
 
     // Process accounts and add xpubXP and xpAddresses where available
     const accountsArray = await Promise.all(

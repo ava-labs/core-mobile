@@ -1,6 +1,9 @@
 import {
   RpcRequest,
+  Alert,
+  CurrencyItem,
   DetailItem,
+  DetailSection,
   RpcMethod,
   DetailItemType,
   SigningData,
@@ -64,6 +67,37 @@ export const overrideContractItem = (
   }
 
   return item
+}
+
+export const getPeerTrustWarning = (
+  request: RpcRequest
+): string | undefined => {
+  const warning = request.context?.[RequestContext.PEER_TRUST_WARNING]
+  return typeof warning === 'string' && warning.length > 0 ? warning : undefined
+}
+
+export const getAlertMessage = (
+  alert: Alert | undefined
+): string | undefined => {
+  if (!alert) return undefined
+
+  const { title, description } = alert.details
+  const trimmedTitle = title?.trim()
+
+  if (!trimmedTitle || description.trimStart().startsWith(trimmedTitle)) {
+    return description
+  }
+
+  return `${trimmedTitle}\n${description}`
+}
+
+export const getAlertReasons = (alert: Alert | undefined): string[] => {
+  if (!alert) return []
+
+  const { body, detailedDescription } = alert.details
+  const detail = detailedDescription?.trim()
+
+  return [...(body ?? []), ...(detail ? [detail] : [])]
 }
 
 export const getAccountSelector = (
@@ -154,6 +188,77 @@ export const getInitialGasLimit = (data: SigningData): number | undefined => {
     return Number(data.data.gasLimit || 0)
   }
   return undefined
+}
+
+/**
+ * Skip for Ledger (controller navigates) and after unmount (route may show
+ * another request).
+ */
+export const shouldNavigateBackAfterApprove = (
+  isLedger: boolean,
+  isMounted: boolean
+): boolean => !isLedger && isMounted
+
+/**
+ * Warning when there is no successful simulation (service failure or a
+ * simulated failure); Blockaid verdicts arrive as alerts.
+ */
+export const SIMULATION_UNAVAILABLE_MESSAGE =
+  "We couldn't get a successful simulation of this transaction. The service may be unavailable, or the transaction may fail. Its effects on your balances aren't shown, so review the details carefully before approving."
+
+export const getNativeAmountItem = ({
+  signingData,
+  symbol,
+  maxDecimals
+}: {
+  signingData: SigningData
+  symbol: string
+  maxDecimals: number
+}): CurrencyItem | undefined => {
+  if (signingData.type !== RpcMethod.ETH_SEND_TRANSACTION) return undefined
+
+  let value: bigint
+
+  try {
+    value = BigInt(signingData.data.value ?? 0)
+  } catch {
+    // A value we can't parse can't be rendered honestly — leave the row out
+    // rather than showing a placeholder. Fee validation surfaces the problem.
+    return undefined
+  }
+
+  if (value <= 0n) return undefined
+
+  return {
+    type: DetailItemType.CURRENCY,
+    label: 'Amount',
+    value,
+    maxDecimals,
+    symbol
+  }
+}
+
+/**
+ * Prepend the native-amount row unless the module already itemised one in the
+ * same token.
+ */
+export const withNativeAmountItem = (
+  section: DetailSection,
+  amountItem: CurrencyItem | undefined
+): DetailSection => {
+  if (!amountItem) return section
+
+  const alreadyItemised = section.items.some(
+    item =>
+      typeof item !== 'string' &&
+      (item.type === DetailItemType.CURRENCY ||
+        item.type === DetailItemType.FUNDS_RECIPIENT) &&
+      item.symbol === amountItem.symbol
+  )
+
+  if (alreadyItemised) return section
+
+  return { ...section, items: [amountItem, ...section.items] }
 }
 
 export const getHasBalanceChange = (

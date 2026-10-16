@@ -3,6 +3,7 @@ import { TokenType } from '@avalabs/vm-module-types'
 import { MaxUint256 } from 'ethers'
 import Web3 from 'web3'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
+import { act } from '@testing-library/react-hooks'
 import { Limit, useSpendLimits } from './useSpendLimits'
 
 const SPENDER = '0x1111111111111111111111111111111111111111'
@@ -74,5 +75,84 @@ describe('useSpendLimits', () => {
     )
     expect(result.current.spendLimits[0]?.limitType).toBe(Limit.DEFAULT)
     expect(result.current.spendLimits[0]?.value?.bn).toBe(DEFAULT_BN)
+  })
+})
+
+describe('useSpendLimits with more than one approval', () => {
+  const SECOND_SPENDER = '0x3333333333333333333333333333333333333333'
+  const SECOND_TOKEN = '0x4444444444444444444444444444444444444444'
+
+  const multiApprovals = {
+    isEditable: true,
+    approvals: [
+      tokenApprovals.approvals[0],
+      {
+        token: {
+          type: TokenType.ERC20,
+          symbol: 'WETH',
+          decimals: 18,
+          name: 'Wrapped Ether',
+          address: SECOND_TOKEN
+        },
+        value: '0x' + MaxUint256.toString(16),
+        spenderAddress: SECOND_SPENDER
+      }
+    ]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any
+
+  it('exposes every approval, not just the first', () => {
+    const { result } = renderHook(() => useSpendLimits(multiApprovals))
+    expect(result.current.spendLimits).toHaveLength(2)
+    expect(result.current.spendLimits[1]?.limitType).toBe(Limit.UNLIMITED)
+    expect(result.current.spendLimits[1]?.tokenApproval.spenderAddress).toBe(
+      SECOND_SPENDER
+    )
+  })
+
+  it('withholds editing rather than rewriting a multi-approval transaction', () => {
+    const { result } = renderHook(() => useSpendLimits(multiApprovals))
+    expect(result.current.canEdit).toBe(false)
+  })
+
+  it('keeps every approval when an edit is attempted', () => {
+    const { result } = renderHook(() => useSpendLimits(multiApprovals))
+
+    act(() => {
+      result.current.updateSpendLimit({
+        limitType: Limit.UNLIMITED,
+        tokenApproval: multiApprovals.approvals[0]
+      })
+    })
+
+    expect(result.current.spendLimits).toHaveLength(2)
+    expect(result.current.hashedCustomSpend).toBeUndefined()
+  })
+
+  it('seeds an override against the matching entry without dropping the others', () => {
+    const calldata = encodeApprove('5000000')
+    const { result } = renderHook(() =>
+      useSpendLimits(multiApprovals, calldata)
+    )
+
+    expect(result.current.spendLimits).toHaveLength(2)
+    expect(result.current.spendLimits[0]?.limitType).toBe(Limit.CUSTOM)
+    expect(result.current.spendLimits[1]?.limitType).toBe(Limit.UNLIMITED)
+  })
+
+  it('still allows editing a single-approval request', () => {
+    const { result } = renderHook(() => useSpendLimits(tokenApprovals))
+    expect(result.current.canEdit).toBe(true)
+
+    act(() => {
+      result.current.updateSpendLimit({
+        limitType: Limit.UNLIMITED,
+        tokenApproval: tokenApprovals.approvals[0]
+      })
+    })
+
+    expect(result.current.spendLimits).toHaveLength(1)
+    expect(result.current.spendLimits[0]?.limitType).toBe(Limit.UNLIMITED)
+    expect(result.current.hashedCustomSpend).toBeDefined()
   })
 })
