@@ -40,7 +40,8 @@ export const WebView = ({
       }
       injectedJavaScriptBeforeContentLoadedForMainFrameOnly={true}
       source={{ uri: url }}
-      setSupportMultipleWindows={false}
+      // Enabled so the native layer fires `onCreateWindow`/`onOpenWindow`
+      setSupportMultipleWindows={true}
       onError={event => {
         onError?.(event)
         // Load failures are external (site down, connection lost, bad cert)

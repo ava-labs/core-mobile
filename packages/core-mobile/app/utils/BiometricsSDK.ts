@@ -2,7 +2,6 @@ import * as LocalAuthentication from 'expo-local-authentication'
 import { Platform } from 'react-native'
 import Aes from 'react-native-aes-crypto'
 import Keychain, {
-  BaseOptions,
   GetOptions,
   getSupportedBiometryType,
   hasGenericPassword,
@@ -11,6 +10,7 @@ import Keychain, {
 import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { Result } from 'types/result'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
+import SentryService from 'services/sentry/SentryService'
 import Logger from './Logger'
 import { assertNotNull } from './assertions'
 
@@ -66,6 +66,7 @@ export const passcodeGetOptions: GetOptions = {
 
 export const passcodeSetOptions: SetOptions = {
   ...passcodeGetOptions,
+  accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
   securityLevel: iOS ? undefined : Keychain.SECURITY_LEVEL.ANY
 }
 
@@ -81,8 +82,19 @@ export const bioSetOptions: SetOptions = {
   accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
 }
 
-export const walletSecretOptions = (walletId: string): BaseOptions => ({
-  service: getWalletServiceKey(walletId)
+export const walletSecretOptions = (
+  walletId: string,
+  // Prefer hardware keys; fall back when the post-generation level check
+  // throws (no secure hardware).
+  secureHardware = true
+): SetOptions => ({
+  service: getWalletServiceKey(walletId),
+  accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  securityLevel: iOS
+    ? undefined
+    : secureHardware
+    ? Keychain.SECURITY_LEVEL.SECURE_HARDWARE
+    : Keychain.SECURITY_LEVEL.SECURE_SOFTWARE
 })
 
 class BiometricsSDK {
@@ -315,12 +327,47 @@ class BiometricsSDK {
   }
 
   // Wallet Secret Management
+  /**
+   * react-native-keychain checks `securityLevel` only after generating the key,
+   * so attempt SECURE_HARDWARE once: a retry reuses that key without a check.
+   */
   async storeWalletSecret(walletId: string, secret: string): Promise<boolean> {
     const encrypted = await encrypt(secret, this.encryptionKey)
+    if (iOS) {
+      await Keychain.setGenericPassword(
+        'walletSecret',
+        encrypted,
+        walletSecretOptions(walletId)
+      )
+      return true
+    }
+    try {
+      await Keychain.setGenericPassword(
+        'walletSecret',
+        encrypted,
+        walletSecretOptions(walletId, true)
+      )
+      return true
+    } catch (e) {
+      const message =
+        'Hardware-backed keystore unavailable, falling back to software keystore'
+      Logger.warn(message, e)
+      try {
+        SentryService.captureMessage(
+          `[BiometricsSDK] ${message}`,
+          { error: e instanceof Error ? e.message : String(e) },
+          undefined,
+          undefined,
+          'warning'
+        )
+      } catch {
+        // telemetry must never skip the software-keystore retry
+      }
+    }
     await Keychain.setGenericPassword(
       'walletSecret',
       encrypted,
-      walletSecretOptions(walletId)
+      walletSecretOptions(walletId, false)
     )
     return true
   }

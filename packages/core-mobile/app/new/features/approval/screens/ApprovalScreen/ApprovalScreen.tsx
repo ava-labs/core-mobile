@@ -17,7 +17,7 @@ import { ActionSheet } from 'new/common/components/ActionSheet'
 import { AlertBody } from 'new/features/approval/components/AlertBody'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { Warning } from 'new/common/components/Warning'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
 import {
@@ -44,9 +44,16 @@ import {
   getEthSendTxValidationError,
   getHasBalanceChange,
   getInitialGasLimit,
+  getAlertMessage,
+  getAlertReasons,
+  getNativeAmountItem,
+  getPeerTrustWarning,
   isRequestedAccountUnavailable,
   overrideContractItem,
   removeWebsiteItemIfNecessary,
+  SIMULATION_UNAVAILABLE_MESSAGE,
+  shouldNavigateBackAfterApprove,
+  withNativeAmountItem,
   isAvalancheSigningData,
   isAvalancheBaseTx
 } from './utils'
@@ -56,28 +63,29 @@ import {
 // pre-existing limit — the `if (isMalformed) return null` is a security
 // invariant (must short-circuit before Approve is reachable), not a render
 // branch we want inlined into the main component's JSX.
-const ApprovalScreen = (props: {
+const ApprovalScreen = ({
+  params
+}: {
   params: ApprovalParams
 }): JSX.Element | null => {
+  // Destructure so exhaustive-deps tracks the handler, not the params receiver.
+  const { onReject } = params
   const rejectAndClose = useCallback(
     (message?: string) => {
-      props.params.onReject(message)
+      onReject(message)
       if (router.canGoBack()) {
         router.back()
       } else if (router.canDismiss()) {
         router.dismissAll()
       }
     },
-    [props.params.onReject]
+    [onReject]
   )
   const { recurringContext, isRecurringContextMalformed } =
-    useRecurringApprovalContext(props.params.request, rejectAndClose)
+    useRecurringApprovalContext(params.request, rejectAndClose)
   if (isRecurringContextMalformed) return null
   return (
-    <ApprovalScreenInner
-      params={props.params}
-      recurringContext={recurringContext}
-    />
+    <ApprovalScreenInner params={params} recurringContext={recurringContext} />
   )
 }
 
@@ -173,6 +181,20 @@ const ApprovalScreenInner = ({
     submitting ||
     amountError !== undefined
 
+  const nativeAmountItem = useMemo(
+    () =>
+      network?.networkToken
+        ? getNativeAmountItem({
+            signingData,
+            // `getNetworkSymbol` only overrides the chains with a wrong symbol
+            // upstream; otherwise the network's own token symbol is correct.
+            symbol: symbol ?? network.networkToken.symbol,
+            maxDecimals: network.networkToken.decimals
+          })
+        : undefined,
+    [signingData, symbol, network?.networkToken]
+  )
+
   const filteredSections = useMemo(() => {
     return displayData.details.map(detailSection => {
       if (detailSection.title !== 'Transaction Details') {
@@ -183,9 +205,12 @@ const ApprovalScreenInner = ({
         .filter(item => removeWebsiteItemIfNecessary(item, request))
         .map(item => overrideContractItem(item, request))
 
-      return { ...detailSection, items: filteredItems }
+      return withNativeAmountItem(
+        { ...detailSection, items: filteredItems },
+        nativeAmountItem
+      )
     })
-  }, [displayData.details, request])
+  }, [displayData.details, request, nativeAmountItem])
 
   const isAvalancheTx = isAvalancheSigningData(signingData)
   const isBaseTx = isAvalancheBaseTx(signingData)
@@ -242,13 +267,15 @@ const ApprovalScreenInner = ({
       })
       // For Ledger, the controller sets the store and navigation is handled
       // by ApprovalController.handleGoBackIfNeeded after signing completes
-      if (!isLedger) {
+      if (shouldNavigateBackAfterApprove(isLedger, isMountedRef.current)) {
         router.canGoBack() && router.back()
       }
     } catch (error: unknown) {
       Logger.error('Error approving transaction', error)
     } finally {
-      setSubmitting(false)
+      if (isMountedRef.current) {
+        setSubmitting(false)
+      }
     }
   }, [
     approveDisabled,
@@ -307,6 +334,14 @@ const ApprovalScreenInner = ({
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
   }, [])
 
+  const isMountedRef = useRef(true)
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
   useEffect(() => {
     if (isSeedlessSigningBlocked) {
       showAlert({
@@ -356,6 +391,19 @@ const ApprovalScreenInner = ({
       />
     )
   }, [gaslessError])
+
+  const peerTrustWarning = getPeerTrustWarning(request)
+
+  const renderPeerTrustWarning = useCallback((): JSX.Element | null => {
+    if (!peerTrustWarning) return null
+
+    return (
+      <Warning
+        message={peerTrustWarning}
+        sx={{ marginBottom: 12, marginRight: 16 }}
+      />
+    )
+  }, [peerTrustWarning])
 
   const renderAccountUnavailableWarning =
     useCallback((): JSX.Element | null => {
@@ -486,6 +534,21 @@ const ApprovalScreenInner = ({
     return <BalanceChange balanceChange={balanceChange} />
   }, [balanceChange, hasBalanceChange])
 
+  // False = no successful simulation (service failure or simulated failure);
+  // warn but do not block.
+  const renderSimulationUnavailableWarning =
+    useCallback((): JSX.Element | null => {
+      if (displayData.isSimulationSuccessful !== false) return null
+      if (hasBalanceChange) return null
+
+      return (
+        <Warning
+          message={SIMULATION_UNAVAILABLE_MESSAGE}
+          sx={{ marginBottom: 12, marginRight: 16 }}
+        />
+      )
+    }, [displayData.isSimulationSuccessful, hasBalanceChange])
+
   const renderSpendLimits = (): JSX.Element | null => {
     if (spendLimits.length === 0) {
       return null
@@ -532,19 +595,20 @@ const ApprovalScreenInner = ({
       amountError
     ])
 
-  const alert = displayData.alert
-    ? {
-        type: displayData.alert.type,
-        message: displayData.alert.details.description
-      }
-    : undefined
+  const alertMessage = getAlertMessage(displayData.alert)
+  const alert =
+    displayData.alert && alertMessage
+      ? { type: displayData.alert.type, message: alertMessage }
+      : undefined
 
   const renderAlertBody = useCallback((): JSX.Element | null => {
-    const body = displayData.alert?.details.body
-    if (isAvalancheTx || !body || body.length === 0) return null
+    if (isAvalancheTx) return null
 
-    return <AlertBody reasons={body} />
-  }, [displayData.alert?.details.body, isAvalancheTx])
+    const reasons = getAlertReasons(displayData.alert)
+    if (reasons.length === 0) return null
+
+    return <AlertBody reasons={reasons} />
+  }, [displayData.alert, isAvalancheTx])
 
   return (
     <ActionSheet
@@ -571,8 +635,10 @@ const ApprovalScreenInner = ({
       }}
       renderFooterOverride={isLedger ? renderLedgerFooter : undefined}>
       {renderDappInfoOrTitle()}
+      {renderPeerTrustWarning()}
       {renderAccountUnavailableWarning()}
       {renderGaslessAlert()}
+      {renderSimulationUnavailableWarning()}
       {renderBalanceChange()}
       {/* If a request carries `RECURRING_SWAP` context, only render the preview
           on the actual recurring action signature (not on any preceding ERC-20
@@ -590,4 +656,6 @@ const ApprovalScreenInner = ({
   )
 }
 
-export default withWalletConnectCache('approvalParams')(ApprovalScreen)
+export default withWalletConnectCache('approvalParams', {
+  requestIdParam: 'requestId'
+})(ApprovalScreen)

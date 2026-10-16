@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import { useActiveWalletId } from 'common/hooks/useActiveWallet'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
+import { sensitiveDataStore } from 'utils/sensitiveDataStore'
 
 const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
   const { replace } = useRouter()
@@ -15,12 +16,8 @@ const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
       if (!result.success) {
         throw result.error
       }
-      const walletSecret = result.value
-
-      replace({
-        pathname: '/accountSettings/showRecoveryPhrase',
-        params: { mnemonic: walletSecret }
-      })
+      sensitiveDataStore.setMnemonic(result.value)
+      replace({ pathname: '/accountSettings/showRecoveryPhrase' })
     } catch (err) {
       Logger.error('Error loading wallet secret', err)
     }

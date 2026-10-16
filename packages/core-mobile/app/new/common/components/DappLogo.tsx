@@ -7,14 +7,22 @@ import { TokenLogo } from './TokenLogo'
 
 export const DappLogo = ({
   peerMeta,
-  size = 62
+  size = 62,
+  trusted = false
 }: {
   peerMeta: PeerMeta
   size?: number
+  /**
+   * Whether the peer's identity has been verified (e.g. WC Verify attested Core
+   * domain). The first-party Core logo is rendered ONLY when this is true —
+   * `peerMeta.name` is attacker-controlled, so keying the official logo off the
+   * name alone lets any dApp masquerade as Core by naming itself "Core".
+   */
+  trusted?: boolean
 }): JSX.Element => {
   const selectedColorScheme = useSelector(selectSelectedColorScheme)
 
-  if (peerMeta.name === 'Core') {
+  if (trusted && peerMeta.name === 'Core') {
     return (
       <View
         sx={{

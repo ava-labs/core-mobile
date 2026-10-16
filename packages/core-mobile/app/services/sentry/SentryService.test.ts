@@ -8,7 +8,8 @@ import DeviceInfo from 'react-native-device-info'
 const mockScope = {
   setContext: jest.fn(),
   setTags: jest.fn(),
-  setFingerprint: jest.fn()
+  setFingerprint: jest.fn(),
+  setLevel: jest.fn()
 }
 
 // ---------------------------------------------------------------------------
@@ -324,6 +325,20 @@ describe('SentryService', () => {
         service.captureMessage('msg', undefined, { source: 'fusion-sdk' })
 
         expect(mockScope.setTags).toHaveBeenCalledWith({ source: 'fusion-sdk' })
+      })
+
+      it('sets the level on the scope only when one is provided', () => {
+        service.captureMessage('msg')
+        expect(mockScope.setLevel).not.toHaveBeenCalled()
+
+        service.captureMessage(
+          'msg',
+          undefined,
+          undefined,
+          undefined,
+          'warning'
+        )
+        expect(mockScope.setLevel).toHaveBeenCalledWith('warning')
       })
 
       it('does not call setTags when no tags are provided', () => {
