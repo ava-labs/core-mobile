@@ -13,6 +13,7 @@ import { NodeValidator } from 'types/earn'
 import { truncateNodeId } from 'utils/Utils'
 import { determineNodeTags } from '../utils/determineNodeTags'
 import { formatUptime } from '../utils/formatUptime'
+import { getUptimeColor } from '../utils/uptimeRequirement'
 import { NodeTagPill } from './NodeTagPill'
 
 // Delegator count is an integer — format with thousands separators and no
@@ -109,10 +110,15 @@ export const DelegateNodeItem = ({
             sx={{ height: 1, backgroundColor: theme.colors.$borderPrimary }}
           />
           {/* Web's `ValidatorItem` shows only uptime + available capacity as
-           * the trailing stats (uptime always in the success colour), with
-           * the delegator count folded into the subtitle above. */}
+           * the trailing stats, with the delegator count folded into the
+           * subtitle above. Uptime colour follows the Figma list rather than
+           * web's always-green: green at or above the reward requirement, red
+           * below it. */}
           <View sx={{ gap: 2 }}>
-            <Text variant="body2" sx={{ color: '$textSuccess' }}>
+            <Text
+              variant="body2"
+              testID="delegate_node_uptime"
+              sx={{ color: getUptimeColor(node.uptime) ?? '$textPrimary' }}>
               {`${formatUptime(node.uptime)}% uptime`}
             </Text>
             <Text variant="body2" sx={{ color: '$textPrimary' }}>
