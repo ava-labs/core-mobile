@@ -224,7 +224,8 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
           ? {
               nodeID: node.nodeID,
               endTime: node.endTime,
-              delegationFee: node.delegationFee
+              delegationFee: node.delegationFee,
+              uptime: node.uptime
             }
           : undefined,
       isFetching: isRestake ? isFetchingValidators : false,
