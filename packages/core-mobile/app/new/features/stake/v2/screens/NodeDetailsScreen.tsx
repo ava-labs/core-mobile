@@ -100,8 +100,6 @@ const NodeDetailsScreen = (): JSX.Element => {
   const handleSelect = useCallback((): void => {
     // The picked node lives in the delegate node-selection store, so the
     // amount → duration → confirm steps read it from there (no params).
-    // Below the reward uptime requirement the user is warned first; they can
-    // continue anyway or go back to the picker.
     proceedOrWarnLowUptime({
       uptime: node?.uptime,
       onProceed: () => navigate({ pathname: '/addStakeV2/delegate/amount' }),

@@ -163,13 +163,7 @@ const isRestakeEntry = (
   restakeNodeId: string | undefined
 ): boolean => Boolean(preferredNodeId || restakeNodeId)
 
-/**
- * The review's "Uptime" row: advanced path only (the Fast Stake review in
- * Figma has no uptime row; its low-uptime alert still fires on slide).
- * Omitted when the source has no usable uptime (never a blank or "NaN%"),
- * red when below the reward requirement. Module-level so the branching
- * stays out of the component's cognitive-complexity budget.
- */
+// Advanced only: Figma's Fast Stake review has no Uptime row (its alert still fires).
 const buildUptimeRows = (
   uptime: string | undefined,
   isAdvanced: boolean
@@ -195,19 +189,10 @@ const buildUptimeRows = (
   ]
 }
 
-/**
- * True when any hold applies. Module-level so the CTA's long hold list stays
- * out of the component's cognitive-complexity budget.
- */
+// Not an `||` chain: keeps the component under the cognitive-complexity lint limit.
 const isAnyTrue = (...conditions: boolean[]): boolean =>
   conditions.some(Boolean)
 
-/**
- * Continue on the low-uptime alert: runs the latest delegate handler, unless
- * the CTA became disabled while the alert was open (the slider has already
- * reset, so the user can slide again once the review is ready). Module-level
- * so the branch stays out of the component's cognitive-complexity budget.
- */
 const delegateIfStillSubmittable = (
   isSubmitDisabledRef: React.MutableRefObject<boolean>,
   handleDelegateRef: React.MutableRefObject<() => void>
@@ -217,13 +202,11 @@ const delegateIfStillSubmittable = (
 }
 
 /**
- * V2 "Review your stake" screen.
- *
  * Designed to be shared across staking flows (Fast Stake today; the
  * advanced delegate flow once it's built out). Data + fee policy come
  * from the `source` prop (validator resolution, convenience fee). Route
- * metadata (`isAdvanced`: analytics labeling and the advanced-only Uptime
- * row) is passed as a sibling prop so it stays out of the source contract.
+ * metadata (`isAdvanced`) is passed as a sibling prop so it stays out of the
+ * source contract.
  *
  * The screen itself only deals with the parts that are universally
  * shared: reward computation, the review layout, the submit state
@@ -235,10 +218,10 @@ const StakeConfirmScreen = ({
 }: {
   source: StakeReviewSource
   /**
-   * Stamped onto `StakeDelegationSuccess` / `StakeDelegationFail`, and
-   * gates the review's Uptime row (advanced only). `true` when the user
-   * reached the confirm screen via the advanced delegate path (they picked
-   * a specific node), `false` for the Fast Stake auto-selection path.
+   * Stamped onto `StakeDelegationSuccess` / `StakeDelegationFail`. `true`
+   * when the user reached the confirm screen via the advanced delegate
+   * path (they picked a specific node), `false` for the Fast Stake
+   * auto-selection path.
    */
   isAdvanced: boolean
 }): JSX.Element => {
@@ -800,17 +783,11 @@ const StakeConfirmScreen = ({
     ]
   )
 
-  // The low-uptime alert can stay open while the review keeps changing
-  // (`useNow` ticks the start/end times, the validator refetches, funding is
-  // re-checked). Continue reads these refs so it submits with the latest
-  // handler, and only if the CTA would still be enabled.
+  // Refs, not closures: the alert can outlive start-time ticks and refetches,
+  // so Continue must see the latest handler and CTA state.
   const handleDelegateRef = useRef<() => void>(() => handleDelegate())
   const isSubmitDisabledRef = useRef(true)
 
-  // Every commit point warns on low uptime. Continue runs the
-  // unchanged delegate handler (Ledger branch included); "Select a new node"
-  // abandons this review and returns to the picker. Returns synchronously
-  // either way, so the SlidingButton resets while the alert is open.
   const handleConfirmSlide = useCallback((): void => {
     proceedOrWarnLowUptime({
       uptime: validator?.uptime,
@@ -820,8 +797,7 @@ const StakeConfirmScreen = ({
     })
   }, [validator?.uptime, dismissTo])
 
-  // Leaving with the alert still open must not block later warnings, and a
-  // Continue pressed on an alert that outlived the screen must not submit.
+  // Don't block later warnings or let an alert that outlived the screen submit.
   useEffect(
     () => () => {
       isSubmitDisabledRef.current = true

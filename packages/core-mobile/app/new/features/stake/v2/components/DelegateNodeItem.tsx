@@ -111,9 +111,7 @@ export const DelegateNodeItem = ({
           />
           {/* Web's `ValidatorItem` shows only uptime + available capacity as
            * the trailing stats, with the delegator count folded into the
-           * subtitle above. Uptime colour follows the Figma list rather than
-           * web's always-green: green at or above the reward requirement, red
-           * below it. */}
+           * subtitle above. Uptime colour follows Figma, not web's always-green. */}
           <View sx={{ gap: 2 }}>
             <Text
               variant="body2"
