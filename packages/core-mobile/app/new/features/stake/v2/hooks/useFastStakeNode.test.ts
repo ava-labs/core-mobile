@@ -94,9 +94,7 @@ describe('toFastStakeValidator', () => {
     }
 
     // `nodeID`, `endTime` and `delegationFee` are surfaced (the fee feeds
-    // the reward estimate), and Glacier's `uptimePerformance` (0-100) is
-    // carried as `uptime` so the review screen can show it and run the
-    // low-uptime check.
+    // the reward estimate), plus `uptime` for the low-uptime alert.
     expect(toFastStakeValidator(glacier)).toEqual({
       nodeID: 'NodeID-A',
       endTime: '2000000',

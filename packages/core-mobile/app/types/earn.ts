@@ -19,9 +19,6 @@ export type NodeValidators = NodeValidator[]
  * stay locked to the canonical PVM shape: adding a field to `NodeValidator`
  * never silently changes `StakeTargetValidator`, and renames propagate
  * through TypeScript instead of drifting.
- *
- * `uptime` (percent, 0-100) is optional: the review screen shows it and runs
- * the low-uptime check when present, and omits both when absent.
  */
 export type StakeTargetValidator = Pick<
   NodeValidator,

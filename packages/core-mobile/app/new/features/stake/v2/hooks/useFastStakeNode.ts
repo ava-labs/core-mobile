@@ -190,10 +190,9 @@ export const pickActiveValidators = <T extends { validationStatus: string }>(
 /**
  * Converts Glacier's `ActiveValidatorDetails` to the minimal, flow-neutral
  * `StakeTargetValidator` shape the stake confirm flow expects. Glacier
- * returns `nodeId` (lowercase d), a numeric `endTimestamp` and a numeric
- * `uptimePerformance`; we mirror PVM's `nodeID` / string `endTime` / string
- * `uptime` so the consumer can treat both sources interchangeably. Exported
- * for tests.
+ * returns `nodeId` (lowercase d) and a numeric `endTimestamp`; we mirror
+ * PVM's `nodeID` / string `endTime` so the consumer can treat both sources
+ * interchangeably. Exported for tests.
  */
 export const toFastStakeValidator = (
   v: ActiveValidatorDetails

@@ -7,7 +7,6 @@ import {
 } from './lowUptimeAlertCopy'
 import { isUptimeBelowRequirement } from './uptimeRequirement'
 
-/** The "Uptime too low" warning. Never blocks: Continue always proceeds. */
 export const showLowUptimeAlert = ({
   onContinue,
   onSelectNewNode
@@ -22,32 +21,19 @@ export const showLowUptimeAlert = ({
       { text: LOW_UPTIME_ALERT_CONTINUE, onPress: onContinue },
       { text: LOW_UPTIME_ALERT_SELECT_NEW_NODE, onPress: onSelectNewNode }
     ],
-    // Non-cancelable so the buttons stay the only user exit. Android can still
-    // drop the dialog on activity recreation, so onDismiss clears the flag too.
+    // Android can still drop a non-cancelable alert on activity recreation.
     options: { cancelable: false, onDismiss: resetLowUptimeAlertState }
   })
 }
 
-// True while the warning is on screen. The alert is non-cancelable, so its
-// buttons are the only exit; a repeat tap meanwhile must not stack a second one.
+// Stops a repeat tap from stacking a second alert while one is open.
 let isLowUptimeAlertOpen = false
 
-/**
- * Clears the in-flight flag. The screens that raise the alert call this on
- * unmount, so an alert closed without a button press (e.g. the screen went
- * away under it) cannot block every later warning; tests call it between cases.
- */
 export const resetLowUptimeAlertState = (): void => {
   isLowUptimeAlertOpen = false
 }
 
-/**
- * Commit-point guard shared by Node details ("Select this node") and the
- * review screen ("Slide to stake"). Runs `onProceed` straight away when the
- * node meets the uptime requirement (or uptime is unknown); otherwise shows
- * the warning and lets the user continue or pick another node. Returns
- * synchronously in both cases so a calling SlidingButton resets right away.
- */
+// Must stay synchronous so a calling SlidingButton resets right away.
 export const proceedOrWarnLowUptime = ({
   uptime,
   onProceed,
@@ -75,7 +61,6 @@ export const proceedOrWarnLowUptime = ({
       }
     })
   } catch (error) {
-    // No alert is on screen, so do not leave later warnings blocked.
     isLowUptimeAlertOpen = false
     throw error
   }

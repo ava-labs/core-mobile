@@ -30,8 +30,6 @@ import { getRestakePrefill } from '../store'
 const STAKING_MAX_BALANCE_PERCENTAGE = 0.9999
 
 /**
- * Advanced delegate "Enter an amount" screen.
- *
  * Delegate-flow specific (unlike the shared Fast Stake `StakeAmountScreen`,
  * which uses the `CircularDial`): this one uses V1's `TokenUnitInputWidget`
  * keypad. Adds the node-capacity check — the amount can exceed the selected
