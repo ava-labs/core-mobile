@@ -94,13 +94,25 @@ describe('toFastStakeValidator', () => {
     }
 
     // `nodeID`, `endTime` and `delegationFee` are surfaced (the fee feeds
-    // the reward estimate); uptime is intentionally dropped to keep the
-    // shape flow-neutral.
+    // the reward estimate), and Glacier's `uptimePerformance` (0-100) is
+    // carried as `uptime` so the review screen can show it and run the
+    // low-uptime check.
     expect(toFastStakeValidator(glacier)).toEqual({
       nodeID: 'NodeID-A',
       endTime: '2000000',
-      delegationFee: '2'
+      delegationFee: '2',
+      uptime: '99'
     })
+  })
+
+  it('maps a missing `uptimePerformance` to undefined, not the string "undefined"', () => {
+    const glacier = {
+      nodeId: 'NodeID-A',
+      endTimestamp: 2_000_000,
+      delegationFee: '2'
+    } as unknown as ActiveValidatorDetails
+
+    expect(toFastStakeValidator(glacier).uptime).toBeUndefined()
   })
 })
 

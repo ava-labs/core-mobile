@@ -190,9 +190,10 @@ export const pickActiveValidators = <T extends { validationStatus: string }>(
 /**
  * Converts Glacier's `ActiveValidatorDetails` to the minimal, flow-neutral
  * `StakeTargetValidator` shape the stake confirm flow expects. Glacier
- * returns `nodeId` (lowercase d) and a numeric `endTimestamp`; we mirror
- * PVM's `nodeID` / string `endTime` so the consumer can treat both sources
- * interchangeably. Exported for tests.
+ * returns `nodeId` (lowercase d), a numeric `endTimestamp` and a numeric
+ * `uptimePerformance`; we mirror PVM's `nodeID` / string `endTime` / string
+ * `uptime` so the consumer can treat both sources interchangeably. Exported
+ * for tests.
  */
 export const toFastStakeValidator = (
   v: ActiveValidatorDetails
@@ -202,5 +203,7 @@ export const toFastStakeValidator = (
   // Glacier types the fee as optional; the Fast Stake query filters on
   // `maxFeePercentage`, so it's present in practice. Fall back to '0' (a
   // gross estimate) rather than inventing a fee.
-  delegationFee: v.delegationFee ?? '0'
+  delegationFee: v.delegationFee ?? '0',
+  // Already on the 0-100 scale, like PVM's `uptime` string.
+  uptime: v.uptimePerformance == null ? undefined : String(v.uptimePerformance)
 })
