@@ -1,4 +1,4 @@
-import { rpcErrors } from '@metamask/rpc-errors'
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { CoreAccountType } from '@avalabs/types'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import { AppListenerEffectAPI } from 'store/types'
@@ -10,6 +10,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { addAccount } from 'store/account/thunks'
+import { VerifyContext } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { avalancheAddAccountHandler as handler } from './avalanche_addAccount'
 
 jest.mock('store/account/thunks', () => ({
@@ -58,10 +59,15 @@ const buildState = ({
   }
 })
 
+const verifiedCoreContext = {
+  verified: { origin: 'https://core.app', validation: 'VALID', verifyUrl: '' }
+} as VerifyContext
+
 const createRequest = (
-  params: unknown
+  params: unknown,
+  options: { provider?: RpcProvider; verifyContext?: VerifyContext } = {}
 ): RpcRequest<RpcMethod.AVALANCHE_ADD_ACCOUNT> => ({
-  provider: RpcProvider.WALLET_CONNECT,
+  provider: options.provider ?? RpcProvider.WALLET_CONNECT,
   method: RpcMethod.AVALANCHE_ADD_ACCOUNT,
   data: {
     id: 1677366383831712,
@@ -69,7 +75,9 @@ const createRequest = (
     params: {
       request: { method: RpcMethod.AVALANCHE_ADD_ACCOUNT, params },
       chainId: 'eip155:43113'
-    }
+    },
+    verifyContext:
+      'verifyContext' in options ? options.verifyContext : verifiedCoreContext
   },
   peerMeta: mockSession.peer.metadata
 })
@@ -197,5 +205,85 @@ describe('avalanche_addAccount handler', () => {
       'CreatedANewAccountSuccessfully',
       { walletType: WalletType.MNEMONIC }
     )
+  })
+
+  const newAccountState = (): ReturnType<typeof buildState> =>
+    buildState({
+      accounts: {
+        'account-0': {
+          id: 'account-0',
+          index: 0,
+          walletId,
+          type: CoreAccountType.PRIMARY
+        },
+        'account-1': {
+          id: 'account-1',
+          index: 1,
+          walletId,
+          type: CoreAccountType.PRIMARY
+        }
+      },
+      activeAccountId: 'account-1'
+    })
+
+  it('adds an account for a verified Core domain over WalletConnect', async () => {
+    mockGetState
+      .mockReturnValueOnce(buildState())
+      .mockReturnValueOnce(newAccountState())
+    mockDispatch.mockReturnValue({ unwrap: () => Promise.resolve() })
+
+    const result = await handler.handle(
+      createRequest([walletId]),
+      mockListenerApi
+    )
+
+    expect(mockAddAccount).toHaveBeenCalledWith(walletId)
+    expect(result).toEqual({ success: true, value: 'account-1' })
+  })
+
+  it('rejects an unverified WalletConnect request without adding an account', async () => {
+    mockGetState.mockReturnValue(buildState())
+    const unverified = {
+      verified: {
+        origin: 'https://core.app',
+        validation: 'UNKNOWN',
+        verifyUrl: ''
+      }
+    } as VerifyContext
+
+    for (const verifyContext of [unverified, undefined]) {
+      const result = await handler.handle(
+        createRequest([walletId], { verifyContext }),
+        mockListenerApi
+      )
+
+      expect(result).toEqual({
+        success: false,
+        error: providerErrors.unauthorized(
+          'Request is not from a verified Core domain'
+        )
+      })
+    }
+    expect(mockAddAccount).not.toHaveBeenCalled()
+    expect(mockDispatch).not.toHaveBeenCalled()
+    expect(Logger.warn).toHaveBeenCalledTimes(2)
+  })
+
+  it('adds an account for an in-app request without a verify context', async () => {
+    mockGetState
+      .mockReturnValueOnce(buildState())
+      .mockReturnValueOnce(newAccountState())
+    mockDispatch.mockReturnValue({ unwrap: () => Promise.resolve() })
+
+    const result = await handler.handle(
+      createRequest([walletId], {
+        provider: RpcProvider.CORE_MOBILE,
+        verifyContext: undefined
+      }),
+      mockListenerApi
+    )
+
+    expect(mockAddAccount).toHaveBeenCalledWith(walletId)
+    expect(result).toEqual({ success: true, value: 'account-1' })
   })
 })

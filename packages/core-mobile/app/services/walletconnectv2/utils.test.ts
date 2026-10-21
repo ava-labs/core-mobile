@@ -203,34 +203,31 @@ describe('isAddressApprovedInNamespace', () => {
 })
 
 describe('updateAccountListInNamespace', () => {
-  it('adds the CAIP-10 entry for an already approved address', () => {
+  it('adds a new CAIP-10 entry', () => {
     const accounts = ['eip155:1:0xAbC']
 
-    expect(
-      updateAccountListInNamespace({ account: 'eip155:137:0xAbC', accounts })
-    ).toBe(true)
+    updateAccountListInNamespace({ account: 'eip155:137:0xAbC', accounts })
     expect(accounts).toEqual(['eip155:1:0xAbC', 'eip155:137:0xAbC'])
   })
 
   it('is a no-op when the entry is already present', () => {
     const accounts = ['eip155:1:0xAbC']
 
-    expect(
-      updateAccountListInNamespace({ account: 'eip155:1:0xAbC', accounts })
-    ).toBe(true)
+    updateAccountListInNamespace({ account: 'eip155:1:0xAbC', accounts })
     expect(accounts).toEqual(['eip155:1:0xAbC'])
   })
 
-  it('refuses to add an unapproved account and leaves the list untouched', () => {
+  it('adds an address the session was not approved for', () => {
     const accounts = ['eip155:1:0xAbC']
 
-    expect(
-      updateAccountListInNamespace({
-        account: 'eip155:1:0x000000000000000000000000000000000000dEaD',
-        accounts
-      })
-    ).toBe(false)
-    expect(accounts).toEqual(['eip155:1:0xAbC'])
+    updateAccountListInNamespace({
+      account: 'eip155:1:0x000000000000000000000000000000000000dEaD',
+      accounts
+    })
+    expect(accounts).toEqual([
+      'eip155:1:0xAbC',
+      'eip155:1:0x000000000000000000000000000000000000dEaD'
+    ])
   })
 })
 

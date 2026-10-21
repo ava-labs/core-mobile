@@ -3,11 +3,6 @@ import { CoreAccountType } from '@avalabs/types'
 import { Account } from 'store/account'
 import WalletConnectService from './WalletConnectService'
 
-const mockShowSnackbar = jest.fn()
-jest.mock('new/common/utils/toast', () => ({
-  showSnackbar: (...args: unknown[]) => mockShowSnackbar(...args)
-}))
-
 const APPROVED_ADDRESS = '0x241b0073b66bfc19FCB54308861f604F5Eb8f51b'
 const UNAPPROVED_ADDRESS = '0x000000000000000000000000000000000000dEaD'
 
@@ -46,10 +41,6 @@ const makeSession = (
     optionalNamespaces: { eip155: { chains: declaredChains } }
   } as unknown as SessionTypes.Struct)
 
-const flushPromises = async (): Promise<void> => {
-  for (let i = 0; i < 5; i++) await Promise.resolve()
-}
-
 const updateSession = jest.fn().mockResolvedValue(undefined)
 const emitSessionEvent = jest.fn().mockResolvedValue(undefined)
 const ping = jest.fn().mockResolvedValue(undefined)
@@ -58,7 +49,6 @@ beforeEach(() => {
   updateSession.mockClear()
   emitSessionEvent.mockClear()
   ping.mockClear()
-  mockShowSnackbar.mockClear()
   // @ts-expect-error — inject a stand-in for the WalletKit client
   WalletConnectService.client = {
     updateSession,
@@ -67,43 +57,30 @@ beforeEach(() => {
   }
 })
 
-describe('WalletConnectService.updateSession', () => {
-  it('tells the user when the active account is not in the approved set', async () => {
-    const result = await WalletConnectService.updateSession({
-      session: makeSession(),
-      chainId: 1,
-      account: makeAccount(UNAPPROVED_ADDRESS),
-      notifyUnapprovedAccount: true
-    })
-    expect(result).toBe(false)
-    expect(mockShowSnackbar).toHaveBeenCalledWith(
-      'This dApp is connected to a different account. Switch accounts in the dApp.'
-    )
-    expect(emitSessionEvent).not.toHaveBeenCalled()
-  })
-
-  it('no snackbar for an unapproved account when notify is omitted', async () => {
-    const result = await WalletConnectService.updateSession({
+// CP-15152: the active account follows into every session, like 1.0.41.
+describe('WalletConnectService.updateSession account switch', () => {
+  it('adds an account not in the session and emits accountsChanged', async () => {
+    await WalletConnectService.updateSession({
       session: makeSession(),
       chainId: 1,
       account: makeAccount(UNAPPROVED_ADDRESS)
     })
-    expect(result).toBe(false)
-    expect(mockShowSnackbar).not.toHaveBeenCalled()
+
+    expect(ping).toHaveBeenCalledWith({ topic: 'topic-1' })
+    const { namespaces } = updateSession.mock.calls[0][0]
+    expect(namespaces.eip155.accounts).toEqual([
+      `eip155:1:${APPROVED_ADDRESS}`,
+      `eip155:1:${UNAPPROVED_ADDRESS}`
+    ])
+
+    const events = emitSessionEvent.mock.calls.map(([arg]) => arg.event)
+    expect(events).toEqual([
+      { name: 'chainChanged', data: 1 },
+      { name: 'accountsChanged', data: [`eip155:1:${UNAPPROVED_ADDRESS}`] }
+    ])
   })
 
-  it('does not show the snackbar for an approved account', async () => {
-    const result = await WalletConnectService.updateSession({
-      session: makeSession(),
-      chainId: 1,
-      account: makeAccount(APPROVED_ADDRESS),
-      notifyUnapprovedAccount: true
-    })
-    expect(result).toBe(true)
-    expect(mockShowSnackbar).not.toHaveBeenCalled()
-  })
-
-  it('updateSessions shows at most one snackbar across unapproved sessions', async () => {
+  it('updateSessions adds the account to every session without a snackbar', async () => {
     const s1 = { ...makeSession(), topic: 't1' }
     const s2 = { ...makeSession(), topic: 't2' }
     // @ts-expect-error — inject a stand-in for the WalletKit client
@@ -113,45 +90,27 @@ describe('WalletConnectService.updateSession', () => {
       engine: { signClient: { ping } },
       getActiveSessions: () => ({ t1: s1, t2: s2 })
     }
+
     await WalletConnectService.updateSessions({
       chainId: 1,
-      account: makeAccount(UNAPPROVED_ADDRESS),
-      notifyUnapprovedAccount: true
+      account: makeAccount(UNAPPROVED_ADDRESS)
     })
-    expect(mockShowSnackbar).toHaveBeenCalledTimes(1)
-  })
 
-  it('does nothing for a chain the session never declared', async () => {
-    const session = makeSession(['eip155:1']) // 137 undeclared
-    await WalletConnectService.updateSession({
-      session,
-      chainId: 137,
-      account: makeAccount(APPROVED_ADDRESS)
-    })
-    expect(updateSession).not.toHaveBeenCalled()
-    expect(emitSessionEvent).not.toHaveBeenCalled()
-    expect(session.namespaces.eip155?.accounts).not.toContain(
-      `eip155:137:${APPROVED_ADDRESS}`
+    expect(updateSession).toHaveBeenCalledTimes(2)
+    for (const [{ namespaces }] of updateSession.mock.calls) {
+      expect(namespaces.eip155.accounts).toContain(
+        `eip155:1:${UNAPPROVED_ADDRESS}`
+      )
+    }
+    const accountsChanged = emitSessionEvent.mock.calls.filter(
+      ([arg]) => arg.event.name === 'accountsChanged'
     )
-  })
-
-  it('undeclared chain + unapproved account pushes nothing and emits no events', async () => {
-    await WalletConnectService.updateSession({
-      session: makeSession(['eip155:1']),
-      chainId: 137,
-      account: makeAccount(UNAPPROVED_ADDRESS),
-      notifyUnapprovedAccount: true
-    })
-    expect(updateSession).not.toHaveBeenCalled()
-    expect(emitSessionEvent).not.toHaveBeenCalled()
-    expect(mockShowSnackbar).not.toHaveBeenCalled()
+    expect(accountsChanged).toHaveLength(2)
   })
 
   it('syncs the chain and emits events for an approved account', async () => {
-    const session = makeSession()
-
     await WalletConnectService.updateSession({
-      session,
+      session: makeSession(),
       chainId: 137,
       account: makeAccount(APPROVED_ADDRESS)
     })
@@ -169,84 +128,24 @@ describe('WalletConnectService.updateSession', () => {
       { name: 'accountsChanged', data: [`eip155:137:${APPROVED_ADDRESS}`] }
     ])
   })
-
-  it('does not add an account the session was never approved for', async () => {
-    const session = makeSession()
-
-    await WalletConnectService.updateSession({
-      session,
-      chainId: 1,
-      account: makeAccount(UNAPPROVED_ADDRESS)
-    })
-
-    await flushPromises()
-    const { namespaces } = updateSession.mock.calls[0][0]
-    expect(namespaces.eip155.accounts).toEqual([`eip155:1:${APPROVED_ADDRESS}`])
-    expect(namespaces.eip155.chains).toEqual(['eip155:1'])
-  })
-
-  it('emits no accountsChanged for an unapproved account', async () => {
-    await WalletConnectService.updateSession({
-      session: makeSession(),
-      chainId: 1,
-      account: makeAccount(UNAPPROVED_ADDRESS)
-    })
-
-    expect(emitSessionEvent).not.toHaveBeenCalled()
-  })
-
-  it('does not leak an unapproved account when the network also changes', async () => {
-    const session = makeSession()
-
-    await WalletConnectService.updateSession({
-      session,
-      chainId: 43114,
-      account: makeAccount(UNAPPROVED_ADDRESS)
-    })
-
-    // 43114 is not declared by the session, so nothing is pushed at all.
-    expect(updateSession).not.toHaveBeenCalled()
-    expect(emitSessionEvent).not.toHaveBeenCalled()
-  })
-
-  it('still pushes the session so a wagmi dApp picks up approved methods/events', async () => {
-    await WalletConnectService.updateSession({
-      session: makeSession(),
-      chainId: 1,
-      account: makeAccount(UNAPPROVED_ADDRESS)
-    })
-    await flushPromises()
-
-    expect(updateSession).toHaveBeenCalledTimes(1)
-  })
-
-  it('does not reject when the background push fails', async () => {
-    ping.mockRejectedValueOnce(new Error('peer gone'))
-    await expect(
-      WalletConnectService.updateSession({
-        session: makeSession(),
-        chainId: 1,
-        account: makeAccount(UNAPPROVED_ADDRESS)
-      })
-    ).resolves.toBe(false)
-    await flushPromises()
-  })
 })
 
-// The chain axis: an approved account is necessary but not sufficient — the
-// chain must also be one the dApp proposed.
+// The chain axis is still gated: only chains the dApp proposed are synced.
 describe('WalletConnectService.updateSession chain scope', () => {
-  it('does not extend the session to a chain the dApp never proposed', async () => {
+  it('does nothing for a chain the session never declared', async () => {
+    const session = makeSession(['eip155:1'])
+
     await WalletConnectService.updateSession({
-      // dApp only ever declared eip155:1.
-      session: makeSession(['eip155:1']),
+      session,
       chainId: 56,
-      account: makeAccount(APPROVED_ADDRESS)
+      account: makeAccount(UNAPPROVED_ADDRESS)
     })
 
-    // an undeclared chain short-circuits before any session update is pushed
     expect(updateSession).not.toHaveBeenCalled()
     expect(emitSessionEvent).not.toHaveBeenCalled()
+    expect(session.namespaces.eip155?.accounts).toEqual([
+      `eip155:1:${APPROVED_ADDRESS}`
+    ])
   })
 
   it('still extends to a chain the dApp declared as optional', async () => {
@@ -258,119 +157,5 @@ describe('WalletConnectService.updateSession chain scope', () => {
 
     const { namespaces } = updateSession.mock.calls[0][0]
     expect(namespaces.eip155.chains).toEqual(['eip155:1', 'eip155:56'])
-  })
-})
-
-// The unapproved-account verdict is local, so it must not wait on the peer.
-describe('WalletConnectService unapproved account does not wait on the peer', () => {
-  const UNAPPROVED_MESSAGE =
-    'This dApp is connected to a different account. Switch accounts in the dApp.'
-
-  beforeEach(() => {
-    jest.useFakeTimers()
-    // an offline/backgrounded dApp never answers the ping
-    ping.mockImplementation(() => new Promise(() => undefined))
-  })
-
-  afterEach(() => {
-    jest.useRealTimers()
-    ping.mockReset()
-    ping.mockResolvedValue(undefined)
-  })
-
-  it('updateSessionWithTimeout resolves false without waiting for ping', async () => {
-    const promise = WalletConnectService.updateSessionWithTimeout({
-      session: makeSession(),
-      chainId: 1,
-      account: makeAccount(UNAPPROVED_ADDRESS)
-    })
-    await jest.advanceTimersByTimeAsync(1000)
-
-    await expect(promise).resolves.toBe(false)
-  })
-
-  it('updateSessions shows the snackbar well inside the timeout when ping hangs', async () => {
-    const session = { ...makeSession(), topic: 't1' }
-    // @ts-expect-error — inject a stand-in for the WalletKit client
-    WalletConnectService.client = {
-      updateSession,
-      emitSessionEvent,
-      engine: { signClient: { ping } },
-      getActiveSessions: () => ({ t1: session })
-    }
-
-    const promise = WalletConnectService.updateSessions({
-      chainId: 1,
-      account: makeAccount(UNAPPROVED_ADDRESS),
-      notifyUnapprovedAccount: true
-    })
-    await jest.advanceTimersByTimeAsync(1000)
-
-    expect(mockShowSnackbar).toHaveBeenCalledWith(UNAPPROVED_MESSAGE)
-    await promise
-  })
-})
-
-describe('WalletConnectService updateSessions with a dead session', () => {
-  beforeEach(() => {
-    jest.useFakeTimers()
-    // the approved (dead) session never answers the ping
-    ping.mockImplementation(() => new Promise(() => undefined))
-  })
-
-  afterEach(() => {
-    jest.useRealTimers()
-    ping.mockReset()
-    ping.mockResolvedValue(undefined)
-  })
-
-  it('shows the snackbar once, before the dead session times out', async () => {
-    const live = { ...makeSession(), topic: 'live' }
-    const dead = {
-      ...makeSession(),
-      topic: 'dead',
-      namespaces: {
-        eip155: {
-          chains: ['eip155:1'],
-          accounts: [`eip155:1:${UNAPPROVED_ADDRESS}`],
-          methods: ['eth_sendTransaction'],
-          events: ['chainChanged', 'accountsChanged']
-        }
-      }
-    } as unknown as SessionTypes.Struct
-    // @ts-expect-error — inject a stand-in for the WalletKit client
-    WalletConnectService.client = {
-      updateSession,
-      emitSessionEvent,
-      engine: { signClient: { ping } },
-      getActiveSessions: () => ({ live, dead })
-    }
-
-    const promise = WalletConnectService.updateSessions({
-      chainId: 1,
-      account: makeAccount(UNAPPROVED_ADDRESS),
-      notifyUnapprovedAccount: true
-    })
-    await jest.advanceTimersByTimeAsync(2000)
-
-    expect(mockShowSnackbar).toHaveBeenCalledTimes(1)
-
-    await jest.advanceTimersByTimeAsync(20000)
-    await promise
-    expect(mockShowSnackbar).toHaveBeenCalledTimes(1)
-  })
-})
-
-describe('WalletConnectService approved account still round-trips to the peer', () => {
-  it('pings the dApp, updates the session and emits events', async () => {
-    await WalletConnectService.updateSession({
-      session: makeSession(),
-      chainId: 1,
-      account: makeAccount(APPROVED_ADDRESS)
-    })
-
-    expect(ping).toHaveBeenCalledWith({ topic: 'topic-1' })
-    expect(updateSession).toHaveBeenCalledTimes(1)
-    expect(emitSessionEvent).toHaveBeenCalledTimes(2)
   })
 })

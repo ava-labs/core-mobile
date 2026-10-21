@@ -75,23 +75,16 @@ export const isAddressApprovedInNamespace = ({
   })
 }
 
-/** Add `account` only when the session is already approved for that address. */
 export const updateAccountListInNamespace = ({
   account,
   accounts
 }: {
   account: string
   accounts: string[]
-}): boolean => {
-  if (!isAddressApprovedInNamespace({ caip10Account: account, accounts })) {
-    return false
-  }
-
+}): void => {
   if (!accounts.includes(account)) {
     accounts.push(account)
   }
-
-  return true
 }
 
 /** Approved plus required/optional declared chains. */
