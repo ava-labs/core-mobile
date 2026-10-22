@@ -99,10 +99,12 @@ export interface WalletConnectServiceInterface {
 
   updateSessions({
     chainId,
-    account
+    account,
+    addActiveAccount
   }: {
     chainId: number
     account: Account
+    addActiveAccount?: boolean
   }): Promise<void>
 
   updateSessionWithTimeoutForNonEvm({

@@ -63,7 +63,8 @@ describe('WalletConnectService.updateSession account switch', () => {
     await WalletConnectService.updateSession({
       session: makeSession(),
       chainId: 1,
-      account: makeAccount(UNAPPROVED_ADDRESS)
+      account: makeAccount(UNAPPROVED_ADDRESS),
+      addActiveAccount: true
     })
 
     expect(ping).toHaveBeenCalledWith({ topic: 'topic-1' })
@@ -93,7 +94,8 @@ describe('WalletConnectService.updateSession account switch', () => {
 
     await WalletConnectService.updateSessions({
       chainId: 1,
-      account: makeAccount(UNAPPROVED_ADDRESS)
+      account: makeAccount(UNAPPROVED_ADDRESS),
+      addActiveAccount: true
     })
 
     expect(updateSession).toHaveBeenCalledTimes(2)
@@ -163,6 +165,19 @@ describe('WalletConnectService.updateSession chain scope', () => {
 // The post-approval refresh (addActiveAccount: false) must not expose an active
 // account the user did not pick on the connect screen.
 describe('WalletConnectService.updateSession post-approval refresh', () => {
+  it('defaults to not adding or announcing an unapproved active account', async () => {
+    await WalletConnectService.updateSession({
+      session: makeSession(),
+      chainId: 1,
+      account: makeAccount(UNAPPROVED_ADDRESS)
+    })
+
+    expect(updateSession).toHaveBeenCalledTimes(1)
+    const { namespaces } = updateSession.mock.calls[0][0]
+    expect(namespaces.eip155.accounts).toEqual([`eip155:1:${APPROVED_ADDRESS}`])
+    expect(emitSessionEvent).not.toHaveBeenCalled()
+  })
+
   it('pushes the session without adding or announcing an unapproved active account', async () => {
     const session = makeSession()
 

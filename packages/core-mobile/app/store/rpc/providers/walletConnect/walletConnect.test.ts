@@ -487,10 +487,13 @@ describe('walletConnectProvider', () => {
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           chainId: 1,
-          account: mockActiveAccount,
-          addActiveAccount: false
+          account: mockActiveAccount
         })
       )
+      expect(
+        (WalletConnectService.updateSessionWithTimeout as jest.Mock).mock
+          .calls[0][0].addActiveAccount
+      ).not.toBe(true)
     })
   })
 })

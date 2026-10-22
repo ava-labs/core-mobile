@@ -202,7 +202,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
     session,
     chainId,
     account,
-    addActiveAccount = true
+    addActiveAccount = false
   }: {
     session: SessionTypes.Struct
     chainId: number
@@ -249,8 +249,8 @@ class WalletConnectService implements WalletConnectServiceInterface {
       `updating WC session '${session.peer.metadata.name}' with chainId '${caip2ChainId}' and account '${addressWithCaip2ChainId}'`
     )
 
-    // the post-approval refresh must not expose an active account the user
-    // did not approve at connect; only real account switches add it (CP-15152)
+    // fail closed: only a real account switch opts in to adding an account
+    // the user did not approve for this session (CP-15152)
     const shouldAnnounceAccount =
       addActiveAccount ||
       isAddressApprovedInNamespace({
@@ -351,10 +351,12 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
   updateSessions = async ({
     chainId,
-    account
+    account,
+    addActiveAccount = false
   }: {
     chainId: number
     account: Account
+    addActiveAccount?: boolean
   }): Promise<void> => {
     const promises: Promise<void>[] = []
 
@@ -362,7 +364,8 @@ class WalletConnectService implements WalletConnectServiceInterface {
       const promise = this.updateSessionWithTimeout({
         session,
         chainId,
-        account
+        account,
+        addActiveAccount
       })
       promises.push(promise)
     })
