@@ -2,6 +2,11 @@ const coverageThreshold = require('./coverage-thresholds.json')
 
 module.exports = {
   preset: '@react-native/jest-preset',
+  // Reanimated >= 4.6 splits shared files into .native/.web variants; under Jest the
+  // .native ones would be picked and crash at import (`setCSSEventHandler` is not
+  // available in JSReanimated). The shipped resolver maps them to the web variants and
+  // chains to react-native-worklets' resolver.
+  resolver: 'react-native-reanimated/jest/resolver',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   clearMocks: true,
   coverageDirectory: '<rootDir>/coverage',

@@ -1,0 +1,96 @@
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
+index e0762e8..4a0ecd1 100644
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
+@@ -174,12 +174,20 @@ open class CustomToolbar(
+         // respective edge is not opted out. If there are no cutout displays, we want to apply the
+         // additional top padding to respect the status bar. Top and bottom are controlled
+         // independently so that disabling one does not silently drop the other.
+-        val topInset =
++        var topInset =
+             if (shouldHandleTopInset) {
+                 max(cutoutInsets.top, if (shouldApplyTopInset) systemBarInsets.top else 0)
+             } else {
+                 0
+             }
++        // Patched: fall back to the system status_bar_height resource when WindowInsets
++        // reports 0 (common on Android emulators without a display cutout).
++        if (topInset == 0 && shouldHandleTopInset && shouldApplyTopInset) {
++            val resId = resources.getIdentifier("status_bar_height", "dimen", "android")
++            if (resId > 0) {
++                topInset = resources.getDimensionPixelSize(resId)
++            }
++        }
+         val bottomInset = if (shouldHandleBottomInset) cutoutInsets.bottom else 0
+         val verticalInsets = InsetsCompat.of(0, topInset, 0, bottomInset)
+ 
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt
+index b9e6e2e..f59322c 100644
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt
+@@ -392,7 +392,7 @@ class ScreenStackFragment :
+         return sheetDelegate.createSheetExitAnimator(sheetAnimationContext)
+     }
+ 
+-    private fun createBottomSheetBehaviour(): BottomSheetBehavior<Screen> = BottomSheetBehavior<Screen>()
++    private fun createBottomSheetBehaviour(): BottomSheetBehavior<Screen> = GestureAwareBottomSheetBehavior<Screen>()
+ 
+     private fun resolveBackgroundColor(screen: Screen): Int? {
+         val screenColor =
+@@ -604,3 +604,27 @@ class ScreenStackFragment :
+         private const val TAG = "ScreenStackFragment"
+     }
+ }
++
++// Patched (CP-14976): stock BottomSheetBehavior hands a gesture off to the sheet
++// (onNestedPreScroll moves it, onStopNestedScroll -> shouldHide dismisses it unconditionally
++// when skipCollapsed=true) as soon as the target can't scroll up further *at any point* during
++// the gesture. That lets a drag which starts mid-list reach the top and keep going into a
++// dismiss. Declining nested-scroll participation up front for any gesture (touch or fling) that
++// starts already scrolled means the behavior never receives those callbacks for it, so the
++// ScrollView just scrolls/flings and clamps at top on its own; a gesture that starts at the top
++// is unaffected and still hands off normally.
++private class GestureAwareBottomSheetBehavior<V : View> : BottomSheetBehavior<V>() {
++    override fun onStartNestedScroll(
++        coordinatorLayout: CoordinatorLayout,
++        child: V,
++        directTargetChild: View,
++        target: View,
++        axes: Int,
++        type: Int,
++    ): Boolean {
++        if (target.canScrollVertically(-1)) {
++            return false
++        }
++        return super.onStartNestedScroll(coordinatorLayout, child, directTargetChild, target, axes, type)
++    }
++}
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
+index 8004079..262499a 100644
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
+@@ -433,7 +433,13 @@ class SheetDelegate(
+     // the footer repositions itself. The footer can't get these frames via dispatch (Screen has
+     // DISPATCH_MODE_STOP), so we push them in here.
+     internal fun handleKeyboardInsetsProgress(insets: WindowInsetsCompat) {
+-        screen.sheetAnimationCoordinator.handleKeyboardInsetsProgress(insets)
++        // Patched(CP-14221): do NOT translate the form sheet with the keyboard.
++        // Keyboard avoidance is handled at the content level by
++        // react-native-keyboard-controller (KeyboardStickyView /
++        // KeyboardAwareScrollView). Letting the sheet move too double-handles it
++        // (the sheet AND the sticky footer both shift), which makes the modal
++        // expand to fill the top and misaligns the footer above the keyboard.
++        // screens' own sheet footer (unused by the app) keeps upstream behavior.
+         screen.footer?.handleKeyboardInsetsProgress(insets)
+     }
+ 
+@@ -452,7 +458,8 @@ class SheetDelegate(
+             bottomSheet: View,
+             newState: Int,
+         ) {
+-            if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
++            if (newState == BottomSheetBehavior.STATE_COLLAPSED ||
++                newState == BottomSheetBehavior.STATE_HIDDEN) {
+                 val isImeVisible =
+                     WindowInsetsCompat
+                         .toWindowInsetsCompat(bottomSheet.rootWindowInsets)
