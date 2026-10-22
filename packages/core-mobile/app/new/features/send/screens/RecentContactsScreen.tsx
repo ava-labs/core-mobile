@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
+import { Keyboard, Platform } from 'react-native'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import { Contact } from 'store/addressBook'
 import { useContacts } from 'common/hooks/useContacts'
@@ -8,6 +9,12 @@ import { NetworkVMType } from '@avalabs/vm-module-types'
 import { RecentContacts } from '../components/RecentContacts'
 import { useSendContext } from '../context/sendContext'
 import { getAddressByVmName } from '../utils/getAddressByVmName'
+
+// iOS + RN 0.86: UINavigationController refocuses the search field on Back, which
+// jumps the sheet to its keyboard detent. Blur before pushing (react/react-native#55908).
+const blurSearchBeforePush = (): void => {
+  if (Platform.OS === 'ios') Keyboard.dismiss()
+}
 
 export const RecentContactsScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -23,6 +30,7 @@ export const RecentContactsScreen = (): JSX.Element => {
         recipientType: contact.type
       })
       resetAmount()
+      blurSearchBeforePush()
       navigate({
         pathname: '/send/send'
       })
@@ -32,6 +40,7 @@ export const RecentContactsScreen = (): JSX.Element => {
 
   const handleGoToQrCode = useCallback((): void => {
     resetAmount()
+    blurSearchBeforePush()
     navigate('/send/scanQrCode')
   }, [navigate, resetAmount])
 
@@ -42,6 +51,7 @@ export const RecentContactsScreen = (): JSX.Element => {
         recipientType: 'address'
       })
       resetAmount()
+      blurSearchBeforePush()
       navigate({
         pathname: '/send/send',
         params: { to: text, recipientType: 'address' }
