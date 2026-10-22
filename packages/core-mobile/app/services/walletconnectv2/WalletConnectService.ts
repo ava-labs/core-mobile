@@ -23,6 +23,7 @@ import {
 } from './types'
 import {
   getAddressWithCaip2ChainId,
+  isAddressApprovedInNamespace,
   isChainDeclaredInSession,
   updateAccountListInNamespace,
   updateChainListInNamespace
@@ -200,11 +201,13 @@ class WalletConnectService implements WalletConnectServiceInterface {
   updateSession = async ({
     session,
     chainId,
-    account
+    account,
+    addActiveAccount = true
   }: {
     session: SessionTypes.Struct
     chainId: number
     account: Account
+    addActiveAccount?: boolean
   }): Promise<void> => {
     const caip2ChainId = getCaip2ChainId(chainId)
     const blockchainNamespace = caip2ChainId.split(
@@ -246,6 +249,15 @@ class WalletConnectService implements WalletConnectServiceInterface {
       `updating WC session '${session.peer.metadata.name}' with chainId '${caip2ChainId}' and account '${addressWithCaip2ChainId}'`
     )
 
+    // the post-approval refresh must not expose an active account the user
+    // did not approve at connect; only real account switches add it (CP-15152)
+    const shouldAnnounceAccount =
+      addActiveAccount ||
+      isAddressApprovedInNamespace({
+        caip10Account: addressWithCaip2ChainId,
+        accounts: session.namespaces[blockchainNamespace]?.accounts ?? []
+      })
+
     const namespaces: SessionTypes.Namespaces = {}
 
     for (const key of Object.keys(session.namespaces)) {
@@ -255,8 +267,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
       // for the matching namespace, we need to update both chain and account lists
       // for the rest, we just leave as is
-      // the active account is added even if it was not approved at connect (CP-15152)
-      if (key === blockchainNamespace) {
+      if (key === blockchainNamespace && shouldAnnounceAccount) {
         updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
 
         updateAccountListInNamespace({
@@ -275,6 +286,13 @@ class WalletConnectService implements WalletConnectServiceInterface {
       topic,
       namespaces
     })
+
+    if (!shouldAnnounceAccount) {
+      Logger.info(
+        'skipping emitting wallet connect events since the active account was not approved for this session'
+      )
+      return
+    }
 
     // emitting events
     // but only for evm chains since neither wagmi/universal provider can handle non-evm chain events
@@ -310,16 +328,18 @@ class WalletConnectService implements WalletConnectServiceInterface {
   updateSessionWithTimeout = async ({
     session,
     chainId,
-    account
+    account,
+    addActiveAccount
   }: {
     session: SessionTypes.Struct
     chainId: number
     account: Account
+    addActiveAccount?: boolean
   }): Promise<void> => {
     // if dapp is not online, updateSession will be stuck for a long time
     // we are using promiseWithTimeout here to exit early when that happens
     return promiseWithTimeout(
-      this.updateSession({ session, chainId, account }),
+      this.updateSession({ session, chainId, account, addActiveAccount }),
       UPDATE_SESSION_TIMEOUT
     ).catch(e => {
       Logger.warn(

@@ -158,7 +158,9 @@ class WalletConnectProvider implements AgnosticRpcProvider {
             WalletConnectService.updateSessionWithTimeout({
               session,
               chainId,
-              account
+              account,
+              // the user may have approved other accounts than the active one
+              addActiveAccount: false
             })
           }, UPDATE_SESSION_DELAY)
       } catch (e) {

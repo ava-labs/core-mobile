@@ -76,21 +76,25 @@ export interface WalletConnectServiceInterface {
   updateSession({
     session,
     chainId,
-    account
+    account,
+    addActiveAccount
   }: {
     session: SessionTypes.Struct
     chainId: number
     account: Account
+    addActiveAccount?: boolean
   }): Promise<void>
 
   updateSessionWithTimeout({
     session,
     chainId,
-    account
+    account,
+    addActiveAccount
   }: {
     session: SessionTypes.Struct
     chainId: number
     account: Account
+    addActiveAccount?: boolean
   }): Promise<void>
 
   updateSessions({

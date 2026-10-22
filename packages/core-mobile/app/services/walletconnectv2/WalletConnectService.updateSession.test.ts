@@ -159,3 +159,59 @@ describe('WalletConnectService.updateSession chain scope', () => {
     expect(namespaces.eip155.chains).toEqual(['eip155:1', 'eip155:56'])
   })
 })
+
+// The post-approval refresh (addActiveAccount: false) must not expose an active
+// account the user did not pick on the connect screen.
+describe('WalletConnectService.updateSession post-approval refresh', () => {
+  it('pushes the session without adding or announcing an unapproved active account', async () => {
+    const session = makeSession()
+
+    await WalletConnectService.updateSessionWithTimeout({
+      session,
+      chainId: 1,
+      account: makeAccount(UNAPPROVED_ADDRESS),
+      addActiveAccount: false
+    })
+
+    expect(updateSession).toHaveBeenCalledTimes(1)
+    const { namespaces } = updateSession.mock.calls[0][0]
+    expect(namespaces.eip155.accounts).toEqual([`eip155:1:${APPROVED_ADDRESS}`])
+    expect(namespaces.eip155.methods).toEqual(['eth_sendTransaction'])
+    expect(emitSessionEvent).not.toHaveBeenCalled()
+  })
+
+  it('keeps chains unchanged when the unapproved account is on another chain', async () => {
+    await WalletConnectService.updateSession({
+      session: makeSession(),
+      chainId: 137,
+      account: makeAccount(UNAPPROVED_ADDRESS),
+      addActiveAccount: false
+    })
+
+    const { namespaces } = updateSession.mock.calls[0][0]
+    expect(namespaces.eip155.chains).toEqual(['eip155:1'])
+    expect(namespaces.eip155.accounts).toEqual([`eip155:1:${APPROVED_ADDRESS}`])
+    expect(emitSessionEvent).not.toHaveBeenCalled()
+  })
+
+  it('still syncs and emits events when the active account was approved', async () => {
+    await WalletConnectService.updateSession({
+      session: makeSession(),
+      chainId: 137,
+      // checksum casing differs from the approved entry on purpose
+      account: makeAccount(APPROVED_ADDRESS.toLowerCase()),
+      addActiveAccount: false
+    })
+
+    const { namespaces } = updateSession.mock.calls[0][0]
+    expect(namespaces.eip155.chains).toEqual(['eip155:1', 'eip155:137'])
+    const events = emitSessionEvent.mock.calls.map(([arg]) => arg.event)
+    expect(events).toEqual([
+      { name: 'chainChanged', data: 137 },
+      {
+        name: 'accountsChanged',
+        data: [`eip155:137:${APPROVED_ADDRESS.toLowerCase()}`]
+      }
+    ])
+  })
+})

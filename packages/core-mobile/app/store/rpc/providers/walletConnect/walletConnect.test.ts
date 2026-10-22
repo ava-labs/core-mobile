@@ -443,4 +443,54 @@ describe('walletConnectProvider', () => {
       expect(transactionSnackbar.error).not.toHaveBeenCalled()
     })
   })
+
+  // CP-15152: the post-approval refresh must not add the active account when the
+  // user approved different accounts on the connect screen.
+  describe('onSuccess — session proposal', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.clearAllMocks()
+      jest.spyOn(WalletConnectService, 'approveSession').mockResolvedValue({
+        peer: { metadata: { name: 'Test Dapp', url: 'https://test.dapp.com' } },
+        namespaces: {},
+        requiredNamespaces: {},
+        optionalNamespaces: {}
+      } as never)
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('refreshes the session without adding the active account', async () => {
+      const request = {
+        method: RpcMethod.WC_SESSION_REQUEST,
+        data: { id: 1, params: { relays: [{ protocol: 'irn' }] } },
+        provider: RpcProvider.WALLET_CONNECT
+      } as unknown as Parameters<
+        typeof walletConnectProvider.onSuccess
+      >[0]['request']
+
+      await walletConnectProvider.onSuccess({
+        request,
+        result: {},
+        listenerApi: mockListenerApi
+      })
+
+      expect(
+        WalletConnectService.updateSessionWithTimeout
+      ).not.toHaveBeenCalled()
+      jest.runOnlyPendingTimers()
+
+      expect(
+        WalletConnectService.updateSessionWithTimeout
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          chainId: 1,
+          account: mockActiveAccount,
+          addActiveAccount: false
+        })
+      )
+    })
+  })
 })
