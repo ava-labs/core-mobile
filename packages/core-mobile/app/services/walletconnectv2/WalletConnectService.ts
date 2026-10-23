@@ -12,7 +12,6 @@ import {
 } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
-import { showSnackbar } from 'new/common/utils/toast'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
@@ -38,40 +37,6 @@ if (!Config.WALLET_CONNECT_PROJECT_ID) {
   Logger.warn(
     'WALLET_CONNECT_PROJECT_ID is missing in env file. Wallet connect is disabled.'
   )
-}
-
-// WC derives chains from `accounts`; only touch namespaces the dApp proposed.
-// Returns whether the active account is in the session's approved set.
-const syncNamespaceWithActiveAccount = ({
-  session,
-  blockchainNamespace,
-  caip2ChainId,
-  namespace,
-  addressWithCaip2ChainId
-}: {
-  session: SessionTypes.Struct
-  blockchainNamespace: BlockchainNamespace
-  caip2ChainId: string
-  namespace: SessionTypes.Namespace
-  addressWithCaip2ChainId: string
-}): boolean => {
-  if (
-    !isChainDeclaredInSession({ session, blockchainNamespace, caip2ChainId })
-  ) {
-    return isAddressApprovedInNamespace({
-      caip10Account: addressWithCaip2ChainId,
-      accounts: namespace.accounts
-    })
-  }
-
-  const isApproved = updateAccountListInNamespace({
-    account: addressWithCaip2ChainId,
-    accounts: namespace.accounts
-  })
-  if (isApproved) {
-    updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
-  }
-  return isApproved
 }
 
 class WalletConnectService implements WalletConnectServiceInterface {
@@ -233,18 +198,17 @@ class WalletConnectService implements WalletConnectServiceInterface {
     Promise.allSettled(promises).catch(reason => Logger.error(reason))
   }
 
-  /** Resolves false only when the active account is not in the approved set. */
   updateSession = async ({
     session,
     chainId,
     account,
-    notifyUnapprovedAccount = false
+    addActiveAccount = false
   }: {
     session: SessionTypes.Struct
     chainId: number
     account: Account
-    notifyUnapprovedAccount?: boolean
-  }): Promise<boolean> => {
+    addActiveAccount?: boolean
+  }): Promise<void> => {
     const caip2ChainId = getCaip2ChainId(chainId)
     const blockchainNamespace = caip2ChainId.split(
       ':'
@@ -255,7 +219,18 @@ class WalletConnectService implements WalletConnectServiceInterface {
       Logger.info(
         `Skipping WC session update for namespace '${blockchainNamespace}' – not present in session.`
       )
-      return true
+      return
+    }
+
+    // a chain the dApp never declared has nothing to sync, and the
+    // sign-client rejects events for it
+    if (
+      !isChainDeclaredInSession({ session, blockchainNamespace, caip2ChainId })
+    ) {
+      Logger.info(
+        `skipping WC session update: chain '${caip2ChainId}' is not declared in session '${session.peer.metadata.name}'`
+      )
+      return
     }
 
     const topic = session.topic
@@ -270,15 +245,20 @@ class WalletConnectService implements WalletConnectServiceInterface {
       throw new Error('invalid chain data')
     }
 
+    Logger.info(
+      `updating WC session '${session.peer.metadata.name}' with chainId '${caip2ChainId}' and account '${addressWithCaip2ChainId}'`
+    )
+
+    // fail closed: only a real account switch opts in to adding an account
+    // the user did not approve for this session (CP-15152)
+    const shouldAnnounceAccount =
+      addActiveAccount ||
+      isAddressApprovedInNamespace({
+        caip10Account: addressWithCaip2ChainId,
+        accounts: session.namespaces[blockchainNamespace]?.accounts ?? []
+      })
+
     const namespaces: SessionTypes.Namespaces = {}
-
-    const isChainDeclared = isChainDeclaredInSession({
-      session,
-      blockchainNamespace,
-      caip2ChainId
-    })
-
-    let isActiveAccountApproved = false
 
     for (const key of Object.keys(session.namespaces)) {
       const namespace = session.namespaces[key]
@@ -287,54 +267,32 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
       // for the matching namespace, we need to update both chain and account lists
       // for the rest, we just leave as is
-      if (key === blockchainNamespace) {
-        isActiveAccountApproved = syncNamespaceWithActiveAccount({
-          session,
-          blockchainNamespace,
-          caip2ChainId,
-          namespace,
-          addressWithCaip2ChainId
+      if (key === blockchainNamespace && shouldAnnounceAccount) {
+        updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
+
+        updateAccountListInNamespace({
+          account: addressWithCaip2ChainId,
+          accounts: namespace.accounts
         })
       }
 
       namespaces[key] = { ...namespace }
     }
 
-    // a chain the dApp never declared has nothing to sync (regardless of
-    // whether the active account is approved), and the sign-client rejects
-    // events for it. The unapproved-account snackbar is about membership on a
-    // chain the session actually covers, so it is not shown here either.
-    if (!isChainDeclared) {
+    // check if dapp is online first
+    await this.client.engine.signClient.ping({ topic })
+
+    await this.client.updateSession({
+      topic,
+      namespaces
+    })
+
+    if (!shouldAnnounceAccount) {
       Logger.info(
-        `skipping WC session update: chain '${caip2ChainId}' is not declared in session '${session.peer.metadata.name}'`
+        'skipping emitting wallet connect events since the active account was not approved for this session'
       )
-      return true
+      return
     }
-
-    if (!isActiveAccountApproved) {
-      Logger.info(
-        `skipping wallet connect account/chain events for session '${session.peer.metadata.name}': the active account is not in the session's approved account set`
-      )
-      if (notifyUnapprovedAccount) {
-        showSnackbar(
-          'This dApp is connected to a different account. Switch accounts in the dApp.'
-        )
-      }
-      // No peer round-trip needed; push session without awaiting.
-      this.pushSessionUpdate({ topic, namespaces }).catch(e => {
-        Logger.warn(
-          `unable to push WC session update for '${session.peer.metadata.name}'`,
-          e
-        )
-      })
-      return false
-    }
-
-    await this.pushSessionUpdate({ topic, namespaces })
-
-    Logger.info(
-      `updated WC session '${session.peer.metadata.name}' with chainId '${caip2ChainId}' and account '${addressWithCaip2ChainId}'`
-    )
 
     // emitting events
     // but only for evm chains since neither wagmi/universal provider can handle non-evm chain events
@@ -345,7 +303,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
       Logger.info(
         'skipping emitting wallet connect events since it is for a non-EVM and non-Solana chain'
       )
-      return true
+      return
     }
 
     await this.client.emitSessionEvent({
@@ -365,84 +323,54 @@ class WalletConnectService implements WalletConnectServiceInterface {
       },
       chainId: caip2ChainId
     })
-
-    return true
-  }
-
-  private pushSessionUpdate = async ({
-    topic,
-    namespaces
-  }: {
-    topic: string
-    namespaces: SessionTypes.Namespaces
-  }): Promise<void> => {
-    await this.client.engine.signClient.ping({ topic })
-    await this.client.updateSession({ topic, namespaces })
   }
 
   updateSessionWithTimeout = async ({
     session,
     chainId,
     account,
-    notifyUnapprovedAccount
+    addActiveAccount
   }: {
     session: SessionTypes.Struct
     chainId: number
     account: Account
-    notifyUnapprovedAccount?: boolean
-  }): Promise<boolean> => {
+    addActiveAccount?: boolean
+  }): Promise<void> => {
     // if dapp is not online, updateSession will be stuck for a long time
     // we are using promiseWithTimeout here to exit early when that happens
     return promiseWithTimeout(
-      this.updateSession({
-        session,
-        chainId,
-        account,
-        notifyUnapprovedAccount
-      }),
+      this.updateSession({ session, chainId, account, addActiveAccount }),
       UPDATE_SESSION_TIMEOUT
     ).catch(e => {
       Logger.warn(
         `unable to update WC session '${session.peer.metadata.name}'`,
         e
       )
-      // unknown outcome (offline dApp etc.): treat as approved so we never notify
-      return true
     })
   }
 
   updateSessions = async ({
     chainId,
     account,
-    notifyUnapprovedAccount = false
+    addActiveAccount = false
   }: {
     chainId: number
     account: Account
-    notifyUnapprovedAccount?: boolean
+    addActiveAccount?: boolean
   }): Promise<void> => {
-    // Show at most one snackbar for the batch.
-    let snackbarShown = false
-    await Promise.allSettled(
-      this.getSessions().map(session =>
-        this.updateSessionWithTimeout({
-          session,
-          chainId,
-          account,
-          notifyUnapprovedAccount: false
-        }).then(isApproved => {
-          if (
-            notifyUnapprovedAccount &&
-            isApproved === false &&
-            !snackbarShown
-          ) {
-            snackbarShown = true
-            showSnackbar(
-              'This dApp is connected to a different account. Switch accounts in the dApp.'
-            )
-          }
-        })
-      )
-    )
+    const promises: Promise<void>[] = []
+
+    this.getSessions().forEach(session => {
+      const promise = this.updateSessionWithTimeout({
+        session,
+        chainId,
+        account,
+        addActiveAccount
+      })
+      promises.push(promise)
+    })
+
+    await Promise.allSettled(promises)
   }
 
   updateSessionForNonEvmAccount = async ({
@@ -541,16 +469,16 @@ class WalletConnectService implements WalletConnectServiceInterface {
           session,
           blockchainNamespace,
           caip2ChainId
-        }) ||
-        !updateAccountListInNamespace({
-          account: addressWithCaip2ChainId,
-          accounts: namespace.accounts
         })
       ) {
         return
       }
 
       updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
+      updateAccountListInNamespace({
+        account: addressWithCaip2ChainId,
+        accounts: namespace.accounts
+      })
     })
   }
 
