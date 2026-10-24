@@ -1,3 +1,5 @@
+import type { Href } from 'expo-router'
+
 // The convenience-fee rates are no longer compiled in here: the
 // `fast-stake-fee-enabled` / `delegation-fee-enabled` gates are multivariate
 // and their variant string carries the rate in basis points. See
@@ -69,3 +71,6 @@ export const FAST_STAKE_MIN_VALIDATOR_AGE_SECONDS = 14 * SECONDS_PER_DAY
 export const FAST_STAKE_TOP_CANDIDATES = 10
 /** ACP-267: delegators are only rewarded if the validator's uptime from its start to the delegation end is >= 90%. */
 export const REWARD_UPTIME_REQUIREMENT_PERCENT = 90
+
+export const DELEGATE_NODE_SELECTION_HREF =
+  '/addStakeV2/delegate/selectNode' as Href

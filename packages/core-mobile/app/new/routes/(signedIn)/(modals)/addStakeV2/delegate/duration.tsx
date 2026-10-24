@@ -7,7 +7,7 @@ import {
 } from 'features/stake/v2/store'
 
 /**
- * Advanced delegate "How long do you want to stake?" route. Same shared
+ * Advanced delegate "Select a duration" route. Same shared
  * screen as Fast Stake, navigating to the delegate confirm on Next,
  * capping the custom end date at the selected node's end time, and baking
  * the node's actual delegation fee into the reward chart so the estimates

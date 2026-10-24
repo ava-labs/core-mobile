@@ -23,7 +23,8 @@ export type NodeValidators = NodeValidator[]
 export type StakeTargetValidator = Pick<
   NodeValidator,
   'nodeID' | 'endTime' | 'delegationFee'
->
+> &
+  Partial<Pick<NodeValidator, 'uptime'>>
 
 export enum AdvancedSortFilter {
   UpTimeHighToLow = 'Uptime: High to Low',
