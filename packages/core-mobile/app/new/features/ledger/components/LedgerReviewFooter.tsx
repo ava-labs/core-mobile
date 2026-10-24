@@ -10,6 +10,7 @@ import React from 'react'
 import { Operation } from 'services/earn/computeDelegationSteps/types'
 import { LedgerDevice } from 'services/ledger/types'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
+import { LedgerAvalancheAppOutdatedHint } from './LedgerAvalancheAppOutdatedHint'
 
 export enum LedgerReviewPhase {
   IDLE = 'idle',
@@ -90,6 +91,7 @@ export const LedgerReviewFooter = ({
   if (ledgerPhase === LedgerReviewPhase.CONNECTING) {
     return (
       <View sx={{ gap: 16, marginTop: 24 }}>
+        <LedgerAvalancheAppOutdatedHint />
         {deviceForWallet && (
           <View
             sx={{
@@ -186,6 +188,7 @@ export const LedgerReviewFooter = ({
         : `${stepTitle} [${ledgerCurrentStep}/${totalSteps}]`
     return (
       <View sx={{ gap: 16, marginTop: 24 }}>
+        <LedgerAvalancheAppOutdatedHint />
         <AnimatedIconWithText
           icon={
             <Icons.Custom.Ledger

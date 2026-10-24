@@ -4,6 +4,7 @@ import {
   FeatureGates,
   FeatureVars,
   FeatureFlags,
+  FeatureFlagPayloads,
   PostHogDecideResponse
 } from './types'
 
@@ -22,8 +23,18 @@ const variantGates: string[] = [
   FeatureGates.DELEGATION_FEE_ENABLED
 ]
 
+// Gates whose payload is feature config rather than the app-version range
+// every other gate payload is evaluated as.
+const configPayloadGates: string[] = [
+  FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION
+]
+
 function isFeatureGate(key: string): key is FeatureGates {
   return featureGates.includes(key)
+}
+
+function isVersionRangeGate(key: string): key is FeatureGates {
+  return isFeatureGate(key) && !configPayloadGates.includes(key)
 }
 
 type AssertResponseFn = (
@@ -73,7 +84,9 @@ export const sanitizeFeatureFlags = (
 
     const evaluatedFlags = Object.fromEntries(
       Object.entries(value.featureFlagPayloads)
-        .filter(([flagName]) => isFeatureGate(flagName) && rawFlags[flagName]) // Only evaluate flags that are enabled
+        .filter(
+          ([flagName]) => isVersionRangeGate(flagName) && rawFlags[flagName]
+        ) // Only evaluate flags that are enabled
         .map(([_flagName, payload]) => {
           const flagName = _flagName as FeatureGates
 
@@ -105,4 +118,34 @@ export const sanitizeFeatureFlags = (
   }
 
   return rawFlags
+}
+
+/**
+ * Extracts the JSON-decoded payloads of `configPayloadGates`. /decide serves
+ * payloads JSON-encoded; an already-decoded object is accepted as well.
+ * Undecodable payloads are dropped.
+ */
+export const sanitizeFeatureFlagPayloads = (
+  value: unknown
+): FeatureFlagPayloads => {
+  assertResponse(value)
+
+  const payloads: Record<string, unknown> = value.featureFlagPayloads ?? {}
+
+  return configPayloadGates.reduce((acc, key) => {
+    const raw = payloads[key]
+    if (raw === undefined || raw === null) return acc
+
+    if (typeof raw !== 'string') {
+      acc[key as FeatureGates] = raw
+      return acc
+    }
+
+    try {
+      acc[key as FeatureGates] = JSON.parse(raw)
+    } catch {
+      // malformed payload: treated as absent
+    }
+    return acc
+  }, {} as FeatureFlagPayloads)
 }

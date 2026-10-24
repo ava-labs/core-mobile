@@ -1,5 +1,10 @@
 import { DEFAULT_ANNUAL_PERCENTAGE_YIELD_BPS } from 'features/stake/consts'
-import { FeatureFlags, FeatureGates, FeatureVars } from 'services/posthog/types'
+import {
+  FeatureFlagPayloads,
+  FeatureFlags,
+  FeatureGates,
+  FeatureVars
+} from 'services/posthog/types'
 import { uuid } from 'utils/uuid'
 
 export const DefaultFeatureFlagConfig = {
@@ -67,14 +72,16 @@ export const DefaultFeatureFlagConfig = {
   // Hyperliquid networks kill-switch. HyperEVM/HyperCore are stripped from the
   // network list unless this gate AND FeatureGates.EVERYTHING are both enabled
   // (see selectIsHyperliquidSupportBlocked).
-  [FeatureGates.HYPERLIQUID_SUPPORT]: false
+  [FeatureGates.HYPERLIQUID_SUPPORT]: false,
+  [FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION]: false
 }
 
 export const initialState = {
   userID: uuid(),
   distinctID: uuid(),
   isAnalyticsEnabled: false,
-  featureFlags: DefaultFeatureFlagConfig
+  featureFlags: DefaultFeatureFlagConfig,
+  featureFlagPayloads: {}
 } as PosthogState
 
 export type PosthogState = {
@@ -82,6 +89,9 @@ export type PosthogState = {
   distinctID: string
   isAnalyticsEnabled: boolean
   featureFlags: FeatureFlags
+  // Optional: state persisted before this field existed rehydrates without it
+  // until the next feature-flag fetch.
+  featureFlagPayloads?: FeatureFlagPayloads
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

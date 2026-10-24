@@ -57,7 +57,10 @@ export enum FeatureGates {
   // Gates visibility of Hyperliquid networks (HyperEVM/HyperCore) that the
   // backend serves for extension/web. Mobile has no Hyperliquid support yet,
   // so this stays off until we ship it (CP-14595).
-  HYPERLIQUID_SUPPORT = 'hyperliquid-support'
+  HYPERLIQUID_SUPPORT = 'hyperliquid-support',
+  // Payload carries `{ "recommendedVersion": "MAJOR.MINOR.PATCH" }` instead of
+  // an app-version range. Shared with core-extension and core-web.
+  LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION = 'ledger-avalanche-app-recommended-version'
 }
 
 export enum FeatureVars {
@@ -87,6 +90,13 @@ export type PostHogDecideResponse = {
 }
 
 export type FeatureFlags = PostHogDecideResponse['featureFlags']
+
+export type FeatureFlagPayloads = Partial<Record<FeatureGates, unknown>>
+
+export type FetchFeatureFlagsResult = {
+  featureFlags: FeatureFlags
+  featureFlagPayloads: FeatureFlagPayloads
+}
 
 export type PosthogDeviceInfo = {
   $app_build: string
@@ -121,7 +131,5 @@ export interface PostHogServiceInterface {
 
   fetchFeatureFlags(
     distinctId: string
-  ): Promise<
-    Partial<Record<FeatureGates | FeatureVars, string | boolean>> | undefined
-  >
+  ): Promise<FetchFeatureFlagsResult | undefined>
 }
