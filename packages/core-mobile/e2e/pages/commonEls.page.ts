@@ -430,7 +430,15 @@ class CommonElsPage {
 
     await actions.waitFor(element, 30000)
     if (driver.isAndroid) {
-      await driver.back()
+      // Android back pops one screen of the sheet's stack (e.g. Send can sit on
+      // the onboarding screen), so press back until the sheet itself is gone.
+      for (let i = 0; i < 5; i++) {
+        await driver.back()
+        await actions.delay(1000)
+        // isDisplayed only: a closed sheet can linger in the tree, and
+        // isExisting would keep this loop popping screens behind it
+        if (!(await element.isDisplayed())) break
+      }
     } else {
       await actions.dragAndDrop(element, [0, 1500])
     }

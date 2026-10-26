@@ -56,6 +56,14 @@ download an e2e binary from Bitrise and set `E2E_LOCAL_PATH` to it.
 
 ## Environment variables
 
+WDIO does not read `.env` files; export the variables into your shell before running.
+The env files store mnemonics unquoted, so `source` / `set -a` silently leaves them
+unset. Export line by line instead:
+
+```bash
+while IFS= read -r l; do [[ $l =~ ^[A-Z0-9_]+= ]] && export "$l"; done < .env.development.e2e
+```
+
 ### Test wallet (required)
 
 | Variable | Required | Purpose |
@@ -68,7 +76,8 @@ download an e2e binary from Bitrise and set `E2E_LOCAL_PATH` to it.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `TESTRAIL_API_KEY` | Yes | The WDIO hooks create a TestRail run and push a result for every test (`testrail/testrail.config.ts`). |
+| `TESTRAIL_API_KEY` | CI only | The WDIO hooks create a TestRail run and push a result for every test (`testrail/testrail.config.ts`). |
+| `TESTRAIL_DISABLED` | Local runs | `true` skips all TestRail reporting even if `TESTRAIL_API_KEY` is set. Reporting is also skipped when the key is unset. |
 
 ### Seedless specs
 

@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import path from 'node:path'
 
 import {
@@ -25,8 +26,14 @@ const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
 /** Start Appium via WDIO unless Device Farm (host runs Appium) or APPIUM_MANUAL=true (you started Appium yourself). */
 const useWdioAppiumService =
   !isDeviceFarm && process.env.APPIUM_MANUAL !== 'true'
+/** TestRail reporting is opt-in: CI supplies TESTRAIL_API_KEY; local runs set TESTRAIL_DISABLED=true (or have no key). */
+const testRailEnabled =
+  process.env.TESTRAIL_DISABLED !== 'true' && !!process.env.TESTRAIL_API_KEY
+/** Local Appium port; override with APPIUM_PORT to run iOS and Android sessions side by side. */
+const localAppiumPort = parseInt(process.env.APPIUM_PORT ?? '', 10) || 4723
 const appiumServerUrl =
-  process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL || 'http://localhost:4723'
+  process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL ||
+  `http://localhost:${localAppiumPort}`
 const rawAppPath =
   process.env.AWS_DEVICE_FARM_APP_PATH || process.env.APP_PATH || ''
 if (!rawAppPath && isDeviceFarm) {
@@ -142,6 +149,27 @@ function getSpecs(): string[] {
   return ['./specs/**/*.ts']
 }
 
+/** Save a screenshot and page source for a failed test under e2e/artifacts/<platform>/ (gitignored). */
+async function saveFailureArtifacts(title: string): Promise<void> {
+  try {
+    // Relative to packages/core-mobile, like the default app paths above
+    const dir = path.resolve(
+      './e2e/artifacts',
+      driver.isAndroid ? 'android' : 'ios'
+    )
+    fs.mkdirSync(dir, { recursive: true })
+    const base = path.join(
+      dir,
+      `${Date.now()}-${title.replace(/[^\w-]+/g, '_').slice(0, 80)}`
+    )
+    await driver.saveScreenshot(`${base}.png`)
+    fs.writeFileSync(`${base}.xml`, await driver.getPageSource())
+    console.log(`Failure artifacts: ${base}.{png,xml}`)
+  } catch (e) {
+    console.error('could not save failure artifacts', e)
+  }
+}
+
 export const config: WebdriverIO.Config = {
   runner: 'local',
   tsConfigPath: './tsconfig.json',
@@ -165,7 +193,7 @@ export const config: WebdriverIO.Config = {
       }
     : {
         hostname: 'localhost',
-        port: 4723,
+        port: localAppiumPort,
         path: '/',
         protocol: 'http' as const
       }),
@@ -176,7 +204,7 @@ export const config: WebdriverIO.Config = {
         [
           'appium',
           {
-            args: { relaxedSecurity: true },
+            args: { relaxedSecurity: true, port: localAppiumPort },
             appiumStartTimeout: 120000
           }
         ]
@@ -205,13 +233,19 @@ export const config: WebdriverIO.Config = {
       testType === 'performance' || process.env.IS_PERFORMANCE === 'true'
     const isSeedlessTransactions =
       process.env.IS_SEEDLESS_TRANSACTIONS === 'true'
-    runId = await getTestRun(
-      platform,
-      isSmoke,
-      isPerformance,
-      isDeviceFarm,
-      isSeedlessTransactions
-    )
+    if (testRailEnabled) {
+      runId = await getTestRun(
+        platform,
+        isSmoke,
+        isPerformance,
+        isDeviceFarm,
+        isSeedlessTransactions
+      )
+    } else {
+      console.log(
+        'TestRail reporting DISABLED (set TESTRAIL_API_KEY and unset TESTRAIL_DISABLED to enable)'
+      )
+    }
     console.log(
       `------------Starting test run${
         isDeviceFarm ? ' on AWS Device Farm' : ''
@@ -242,9 +276,11 @@ export const config: WebdriverIO.Config = {
 
   // hook beforeTest: make or get testSection before test
   beforeTest: async test => {
-    const sectionTitle = test.parent
-    sectionCache[sectionTitle] = await getSection(sectionTitle)
     console.log('TEST: ', test.title)
+    if (!testRailEnabled) return
+    const sectionTitle = test.parent
+    const sectionId = await getSection(sectionTitle)
+    if (sectionId !== undefined) sectionCache[sectionTitle] = sectionId
   },
 
   after: async function () {
@@ -254,21 +290,34 @@ export const config: WebdriverIO.Config = {
 
   // hook afterTest: make or get testCase and send result after test
   afterTest: async (test, _, { passed, error }) => {
+    // Capped so a dead session can't hang the hook on WDIO's connection retries
+    if (!passed) {
+      await Promise.race([
+        saveFailureArtifacts(test.title),
+        new Promise(resolve => setTimeout(resolve, 15000))
+      ])
+    }
+    if (!testRailEnabled) return
     const sectionTitle = test.parent
     const sectionId = sectionCache[sectionTitle]
     const caseId = await getTestCase(test.title, sectionId)
     const statusId = passed ? 1 : 5
 
-    if (runId) {
-      await addCaseToRun(runId, caseId)
-      const resultId = await sendResult(runId, caseId, statusId, error)
-
-      if (!passed && resultId) {
-        const screenshotBase64 = await driver.takeScreenshot()
-        await uploadScreenshotToResult(resultId, screenshotBase64)
-      }
-    } else {
+    if (!runId) {
       console.error('testRun not found')
+      return
+    }
+    if (caseId === undefined) {
+      console.error('testRail case not resolved; skipping result upload')
+      return
+    }
+
+    await addCaseToRun(runId, caseId)
+    const resultId = await sendResult(runId, caseId, statusId, error)
+
+    if (!passed && resultId) {
+      const screenshotBase64 = await driver.takeScreenshot()
+      await uploadScreenshotToResult(resultId, screenshotBase64)
     }
   }
 }

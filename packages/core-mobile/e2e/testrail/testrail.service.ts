@@ -65,42 +65,59 @@ export async function getTestRun(
 }
 
 // 2. api call to get test section
-export async function getSection(name: string) {
-  // if exists, get it
-  const { data } = await testrail.get(
-    `/get_sections/${projectId}&suite_id=${suiteId}`
-  )
-  const sections = data.sections
-  const existing = Array.isArray(sections)
-    ? sections.find(run => run.name === name)
-    : undefined
-  if (existing) return existing.id
+export async function getSection(name: string): Promise<number | undefined> {
+  try {
+    // if exists, get it
+    const { data } = await testrail.get(
+      `/get_sections/${projectId}&suite_id=${suiteId}`
+    )
+    const sections = data.sections
+    const existing = Array.isArray(sections)
+      ? sections.find(run => run.name === name)
+      : undefined
+    if (existing) return existing.id
 
-  // if not exists, post it
-  const res = await testrail.post(`/add_section/${projectId}`, {
-    suiteId: suiteId,
-    name
-  })
-  return res.data.id
+    // if not exists, post it
+    const res = await testrail.post(`/add_section/${projectId}`, {
+      suiteId: suiteId,
+      name
+    })
+    return res.data.id
+  } catch (e: any) {
+    console.error(
+      'error getting testRail section',
+      e.response?.data || e.message
+    )
+    return undefined
+  }
 }
 
 // 3. create test case
-export async function getTestCase(title: string, sectionId?: number) {
-  // if exists, get it
-  const { data } = await testrail.get(
-    `/get_cases/${projectId}&suite_id=${suiteId}&section_id=${sectionId}`
-  )
-  const cases = data.cases
-  const existing = Array.isArray(cases)
-    ? cases.find(c => c.title === title)
-    : undefined
-  if (existing) return existing.id
+export async function getTestCase(
+  title: string,
+  sectionId?: number
+): Promise<number | undefined> {
+  if (sectionId === undefined) return undefined
+  try {
+    // if exists, get it
+    const { data } = await testrail.get(
+      `/get_cases/${projectId}&suite_id=${suiteId}&section_id=${sectionId}`
+    )
+    const cases = data.cases
+    const existing = Array.isArray(cases)
+      ? cases.find(c => c.title === title)
+      : undefined
+    if (existing) return existing.id
 
-  // if not exists, post it
-  const res = await testrail.post(`/add_case/${sectionId}`, {
-    title
-  })
-  return res.data.id
+    // if not exists, post it
+    const res = await testrail.post(`/add_case/${sectionId}`, {
+      title
+    })
+    return res.data.id
+  } catch (e: any) {
+    console.error('error getting testRail case', e.response?.data || e.message)
+    return undefined
+  }
 }
 
 // 4. post result to testrail
