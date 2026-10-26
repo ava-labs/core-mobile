@@ -240,7 +240,8 @@ export const config: WebdriverIO.Config = {
   // hook beforeTest: make or get testSection before test
   beforeTest: async test => {
     const sectionTitle = test.parent
-    sectionCache[sectionTitle] = await getSection(sectionTitle)
+    const sectionId = await getSection(sectionTitle)
+    if (sectionId !== undefined) sectionCache[sectionTitle] = sectionId
     console.log('TEST: ', test.title)
   },
 
@@ -256,16 +257,21 @@ export const config: WebdriverIO.Config = {
     const caseId = await getTestCase(test.title, sectionId)
     const statusId = passed ? 1 : 5
 
-    if (runId) {
-      await addCaseToRun(runId, caseId)
-      const resultId = await sendResult(runId, caseId, statusId, error)
-
-      if (!passed && resultId) {
-        const screenshotBase64 = await driver.takeScreenshot()
-        await uploadScreenshotToResult(resultId, screenshotBase64)
-      }
-    } else {
+    if (!runId) {
       console.error('testRun not found')
+      return
+    }
+    if (caseId === undefined) {
+      console.error('testRail case not resolved; skipping result upload')
+      return
+    }
+
+    await addCaseToRun(runId, caseId)
+    const resultId = await sendResult(runId, caseId, statusId, error)
+
+    if (!passed && resultId) {
+      const screenshotBase64 = await driver.takeScreenshot()
+      await uploadScreenshotToResult(resultId, screenshotBase64)
     }
   }
 }
