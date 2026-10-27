@@ -279,7 +279,14 @@ class OnboardingPage {
         buttonLabel: 'Allow'
       })
     } catch {
-      await driver.dismissAlert()
+      try {
+        await driver.dismissAlert()
+      } catch (error) {
+        const isAlreadyDismissed =
+          error instanceof Error &&
+          /no such alert/i.test(`${error.name} ${error.message}`)
+        if (!isAlreadyDismissed) throw error
+      }
     }
     console.log('Dismissed App Tracking Transparency prompt')
   }
