@@ -10,8 +10,7 @@ import { RecentContacts } from '../components/RecentContacts'
 import { useSendContext } from '../context/sendContext'
 import { getAddressByVmName } from '../utils/getAddressByVmName'
 
-// iOS + RN 0.86: UINavigationController refocuses the search field on Back, which
-// jumps the sheet to its keyboard detent. Blur before pushing (react/react-native#55908).
+// RN 0.86 iOS refocuses the field on Back (react/react-native#55908)
 const blurSearchBeforePush = (): void => {
   if (Platform.OS === 'ios') Keyboard.dismiss()
 }

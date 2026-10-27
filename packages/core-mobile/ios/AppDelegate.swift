@@ -5,12 +5,6 @@ import ReactAppDependencyProvider
 import RNBranch
 import AppTrackingTransparency
 
-// Scene-based life cycle (required when building with the iOS 27 SDK / Xcode 27).
-// Mirrors what expo-build-properties `ios.enableSceneSupport` generates for SDK 57:
-// `EXExpoAppSceneDelegate` (declared in Info.plist / InfoRelease.plist under
-// UIApplicationSceneManifest) creates the window and starts React Native using the
-// factory exposed through `ExpoReactNativeFactoryProvider`, and re-feeds scene URL,
-// user-activity and life-cycle events to the overrides below.
 @main
 class AppDelegate: ExpoAppDelegate, ExpoReactNativeFactoryProvider {
   var window: UIWindow?
@@ -18,7 +12,7 @@ class AppDelegate: ExpoAppDelegate, ExpoReactNativeFactoryProvider {
   var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
 
-  // The scene delegate defaults to "main"; this app registers its root component as "AvaxWallet".
+  // Expo's scene delegate defaults to "main"
   var reactNativeFactoryModuleName: String { "AvaxWallet" }
 
   public override func application(
@@ -52,14 +46,6 @@ class AppDelegate: ExpoAppDelegate, ExpoReactNativeFactoryProvider {
 
     reactNativeDelegate = delegate
     reactNativeFactory = factory
-
-    // Window creation and `startReactNative` moved to EXExpoAppSceneDelegate
-    // (scene(_:willConnectTo:options:)), which also rebuilds cold-start URL / universal-link
-    // launch options for `Linking.getInitialURL()`.
-    // TODO(iOS 27 scenes): `launchOptions` here no longer carries cold-start URLs or user
-    // activities. RNBranch.initSession(launchOptions:) still runs; the link itself reaches Branch
-    // via the forwarded `application(_:open:options:)` / `application(_:continue:)` overrides.
-    // Verify Branch cold-start attribution on a real device (or adopt BranchScene).
 
     loadRocketSimConnect()
 
