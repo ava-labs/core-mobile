@@ -1,10 +1,14 @@
 import { AppListenerEffectAPI } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import walletService from 'services/wallet/WalletService'
-import { rpcErrors } from '@metamask/rpc-errors'
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { PubKeyType } from 'services/wallet/types'
 import { selectActiveWallet } from 'store/wallet/slice'
+import {
+  getAccountScope,
+  isAccountInSession
+} from 'store/rpc/utils/sessionAccountScope/sessionAccountScope'
 import { HandleResponse, RpcRequestHandler } from '../types'
 
 export type AvalancheGetAccountPubKeyRpcRequest =
@@ -16,7 +20,7 @@ class AvalancheGetAccountPubKeyHandler
   methods = [RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY]
 
   handle = async (
-    _request: AvalancheGetAccountPubKeyRpcRequest,
+    request: AvalancheGetAccountPubKeyRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse<PubKeyType> => {
     const state = listenerApi.getState()
@@ -27,6 +31,20 @@ class AvalancheGetAccountPubKeyHandler
       return {
         success: false,
         error: rpcErrors.resourceNotFound('Active account does not exist')
+      }
+    }
+
+    const scope = getAccountScope(request)
+    if (
+      scope.kind === 'denied' ||
+      (scope.kind === 'session' &&
+        !isAccountInSession(activeAccount, scope.namespaces))
+    ) {
+      return {
+        success: false,
+        error: providerErrors.unauthorized(
+          'The active account is not approved for this session'
+        )
       }
     }
 

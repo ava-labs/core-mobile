@@ -62,6 +62,8 @@ export type RouterDeps = {
 
   sendResponse: (id: number, error: unknown, result: unknown) => void
   emitEvent: (eventName: string, data: unknown) => void
+  emitAccountsChangedForOrigin: (accounts: unknown, origin: string) => void
+  emitEventForOrigin: (eventName: string, data: unknown, origin: string) => void
 
   getNativeOrigin: () => string | undefined
   trackPendingOrigin: (id: number, origin: string) => void

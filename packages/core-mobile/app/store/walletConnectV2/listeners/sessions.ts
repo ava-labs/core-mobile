@@ -87,17 +87,20 @@ export const initWalletConnect = async (
 
 export const updateSessions = async ({
   chainId,
-  account
+  account,
+  addActiveAccount
 }: {
   chainId: number
   account?: Account
+  addActiveAccount?: boolean
 }): Promise<void> => {
   try {
     if (!account) return
 
     await WalletConnectService.updateSessions({
       chainId,
-      account
+      account,
+      addActiveAccount
     })
   } catch (e) {
     Logger.error('Unable to update WC sessions', e)
@@ -222,7 +225,7 @@ export const handleAccountChange = async (
   const { chainId } = selectActiveNetwork(state)
   const account = selectActiveAccount(state)
 
-  updateSessions({ chainId, account })
+  updateSessions({ chainId, account, addActiveAccount: true })
 }
 
 export const handleNonEvmAccountsChange = async (
@@ -243,6 +246,7 @@ export const handleNonEvmAccountsChange = async (
   const promises: Promise<void>[] = []
 
   WalletConnectService.getSessions().forEach(session => {
+    // Self-reported, so only a hint; Core methods re-check Verify per request.
     const isCoreApp = isCoreDomain(session.peer.metadata.url)
 
     if (!isCoreApp) {

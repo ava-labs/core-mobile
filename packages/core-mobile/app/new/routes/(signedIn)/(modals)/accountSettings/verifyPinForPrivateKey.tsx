@@ -9,6 +9,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { useSelector } from 'react-redux'
 import { selectWalletById } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
+import { sensitiveDataStore } from 'utils/sensitiveDataStore'
 
 const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
   const { replace } = useRouter()
@@ -44,10 +45,8 @@ const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
     const walletSecret = walletSecretResult.value
 
     if (wallet.type === WalletType.PRIVATE_KEY) {
-      replace({
-        pathname: '/accountSettings/viewPrivateKey',
-        params: { privateKey: walletSecret }
-      })
+      sensitiveDataStore.setPrivateKey(walletSecret)
+      replace({ pathname: '/accountSettings/viewPrivateKey' })
     } else if (wallet.type === WalletType.MNEMONIC) {
       if (!cChainNetwork) {
         Logger.error('CChain network is not available')
@@ -56,10 +55,8 @@ const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
       // Todo: support private key for x/p network later
       getPrivateKeyFromMnemonic(walletSecret, cChainNetwork)
         .then(privateKey => {
-          replace({
-            pathname: '/accountSettings/viewPrivateKey',
-            params: { privateKey }
-          })
+          sensitiveDataStore.setPrivateKey(privateKey)
+          replace({ pathname: '/accountSettings/viewPrivateKey' })
         })
         .catch(error => {
           Logger.error('Error getting private key from mnemonic', error)

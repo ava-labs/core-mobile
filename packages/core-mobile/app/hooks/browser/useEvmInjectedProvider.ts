@@ -45,6 +45,7 @@ import {
   DomainMetadata,
   RouterDeps
 } from './injectedProvider/types'
+import type { MessageFrameInfo } from './messageFrameInfo'
 
 // If the connect-approval screen never mounts or never resolves (e.g. Metro
 // hot-reloaded the cache, the page crashed mid-navigation, etc.), reject the
@@ -64,11 +65,15 @@ function getOriginFromUrl(url: string): string | undefined {
 
 type UseEvmInjectedProviderResult = {
   providerShimJs: string
-  handleProviderMessage: (payload: string) => void
+  handleProviderMessage: (payload: string, frame: MessageFrameInfo) => void
   handleDomainMetadata: (payload: string) => void
   emitEvent: (eventName: string, data: unknown) => void
   dappMetadata: React.RefObject<DomainMetadata | null>
   handleCommittedUrl: (url: string) => void
+  /** Cancels old-origin signing and blocks late registrations. */
+  handleProvisionalCrossOriginNavigation: (provisionalUrl: string) => void
+  /** Restores liveOrigin to the committed document after a failed nav. */
+  handleProvisionalNavigationAborted: () => void
 }
 /**
  * Hook providing EVM injected provider functionality for the in-app browser.
@@ -129,7 +134,9 @@ export function useEvmInjectedProvider(
     }
     const hexChainId = '0x' + activeNetwork.chainId.toString(16)
     webViewRef.current?.injectJavaScript(
-      `window.__coreProviderEmit('chainChanged', '${hexChainId}'); true;`
+      `window.__coreProviderEmit('chainChanged', ${JSON.stringify(
+        hexChainId
+      )}); true;`
     )
   }, [activeNetwork, tabChainId, webViewRef])
 
@@ -344,7 +351,9 @@ export function useEvmInjectedProvider(
       // render later — recording it here lets that effect dedupe it. (CP-14385)
       if (eventName === 'accountsChanged')
         lastEmittedAccountsRef.current = dataJson
-      const js = `window.__coreProviderEmit('${eventName}', ${dataJson}); true;`
+      const js = `window.__coreProviderEmit(${JSON.stringify(
+        eventName
+      )}, ${dataJson}); true;`
       webViewRef.current?.injectJavaScript(js)
     },
     [webViewRef]
@@ -402,6 +411,30 @@ export function useEvmInjectedProvider(
         `if(window.location.origin===${JSON.stringify(
           origin
         )}){window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${serialized})};true;`
+      )
+    },
+    [webViewRef]
+  )
+
+  const emitAccountsChangedForOrigin = useCallback(
+    (accounts: unknown, origin: string): void => {
+      const serialized = JSON.stringify(accounts)
+      lastEmittedAccountsRef.current = serialized
+      injectAccountsChanged(origin, serialized)
+    },
+    [injectAccountsChanged]
+  )
+
+  // Origin-gated like injectAccountsChanged so a racing event cannot reach the
+  // next origin.
+  const emitEventForOrigin = useCallback(
+    (eventName: string, data: unknown, origin: string): void => {
+      webViewRef.current?.injectJavaScript(
+        `if(window.location.origin===${JSON.stringify(
+          origin
+        )}){window.__coreProviderEmit && window.__coreProviderEmit(${JSON.stringify(
+          eventName
+        )}, ${JSON.stringify(data)})};true;`
       )
     },
     [webViewRef]
@@ -621,6 +654,8 @@ export function useEvmInjectedProvider(
       requestReadOnly,
       sendResponse,
       emitEvent,
+      emitAccountsChangedForOrigin,
+      emitEventForOrigin,
       getNativeOrigin: () => getOriginFromUrl(currentUrlRef.current),
       trackPendingOrigin: (id, origin) => {
         pendingOrigins.current.set(id, origin)
@@ -646,6 +681,7 @@ export function useEvmInjectedProvider(
         activeAccountRef.current = selectActiveAccount(store.getState())
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the router (and its liveOrigin state) must not be recreated when the origin-scoped emitters change; it reads changing values through refs
   }, [
     dispatch,
     store,
@@ -666,7 +702,8 @@ export function useEvmInjectedProvider(
   }, [router])
 
   const handleProviderMessage = useCallback(
-    (payload: string) => router.handleProviderMessage(payload),
+    (payload: string, frame: MessageFrameInfo) =>
+      router.handleProviderMessage(payload, frame),
     [router]
   )
 
@@ -715,12 +752,42 @@ export function useEvmInjectedProvider(
     }
   }, [])
 
+  // Never update currentUrlRef here, or a provisional navigation could spoof
+  // the origin.
+  const handleProvisionalCrossOriginNavigation = useCallback(
+    (provisionalUrl: string) => {
+      const provisionalOrigin = getOriginFromUrl(provisionalUrl)
+      const currentOrigin = getOriginFromUrl(currentUrlRef.current)
+      if (
+        !provisionalOrigin ||
+        !currentOrigin ||
+        provisionalOrigin === currentOrigin
+      )
+        return
+      routerRef.current?.cancelByOrigin(provisionalOrigin)
+      applyConnectNavEffect(
+        connectApprovalRegistry.rejectByTab(tabId, {
+          code: EIP1193_USER_REJECTED_CODE,
+          message: USER_REJECTED_REQUEST_MESSAGE
+        })
+      )
+    },
+    [tabId]
+  )
+
+  const handleProvisionalNavigationAborted = useCallback(() => {
+    const committed = getOriginFromUrl(currentUrlRef.current)
+    if (committed) routerRef.current?.cancelByOrigin(committed)
+  }, [])
+
   return {
     providerShimJs,
     handleProviderMessage,
     handleDomainMetadata,
     emitEvent,
     dappMetadata,
-    handleCommittedUrl
+    handleCommittedUrl,
+    handleProvisionalCrossOriginNavigation,
+    handleProvisionalNavigationAborted
   }
 }
