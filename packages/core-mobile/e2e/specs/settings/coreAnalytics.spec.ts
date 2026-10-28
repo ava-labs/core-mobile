@@ -3,8 +3,11 @@ import commonElsPage from '../../pages/commonEls.page'
 import settingsPage from '../../pages/settings.page'
 
 describe('Settings', () => {
-  it('Core Analytics - Should have the Core Analystics ON by default', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('Core Analytics - Should have the Core Analystics ON by default', async () => {
     await settingsPage.goSettings()
     await settingsPage.tapSecurityAndPrivacy()
     await settingsPage.verifyAnalyticsSwitch()

@@ -909,6 +909,15 @@ class Settings {
     await onboardingPage.tapZero(newPin)
   }
 
+  async changePinTo(currentPin: string, newPin: string) {
+    await this.goSettings()
+    await this.tapSecurityAndPrivacy()
+    await this.tapChangePin()
+    await this.enterCurrentPin(currentPin)
+    await this.setNewPin(newPin)
+    await common.dismissBottomSheet()
+  }
+
   async switchToTestnet() {
     try {
       await actions.isNotVisible(portfolioPage.testnetModeIsOn)
@@ -999,6 +1008,119 @@ class Settings {
     }
     await common.goBack()
     await common.dismissBottomSheet()
+  }
+
+  async ensureMainnet() {
+    if (!(await actions.isElementVisible(portfolioPage.testnetModeIsOn, 3000)))
+      return
+    await this.switchToMainnet()
+    await this.verifyMainnetMode()
+  }
+
+  async ensureCurrency(curr = commonElsLoc.usd) {
+    await this.goSettings()
+    const isSelected = await actions.isElementVisible(
+      selectors.getById(`right_value__${curr}`),
+      3000
+    )
+    if (!isSelected) {
+      await this.tapCurrency()
+      await this.selectCurrency(curr)
+      await this.verifySettingsRow(settings.currency, curr)
+    }
+    await common.dismissBottomSheet()
+  }
+
+  async removeAllContacts() {
+    await this.goSettings()
+    await this.tapContacts()
+    const anyContact = selectors.getBySomeId('contact__')
+    for (
+      let attempts = 0;
+      attempts < 5 && (await actions.isElementVisible(anyContact, 3000));
+      attempts++
+    ) {
+      await actions.tap(anyContact)
+      await this.tapDeleteContact()
+    }
+    await this.verifyEmptyContacts()
+    await common.dismissBottomSheet()
+  }
+
+  async resetNetworks(customNetworkNames: string[] = []) {
+    await this.goNetworks()
+    for (const name of customNetworkNames) {
+      await common.typeSearchBar(name)
+      if (await actions.isElementVisible(this.networkList(name), 3000)) {
+        await this.removeNetwork(name)
+      }
+    }
+    for (const { name, haveToggle } of networks) {
+      if (!haveToggle) continue
+      await common.typeSearchBar(name)
+      if (await actions.isElementVisible(this.networkDisabled(name), 3000)) {
+        await this.tapNetworkSwitch(name, false)
+      }
+    }
+    // Beam L1 is off by default; networks.spec turns it on
+    await common.typeSearchBar(settings.beamL1)
+    if (
+      await actions.isElementVisible(this.networkEnabled(settings.beamL1), 3000)
+    ) {
+      await this.tapNetworkSwitch(settings.beamL1)
+    }
+    await common.dismissBottomSheet()
+  }
+
+  async resetAccounts() {
+    await common.goMyWallets()
+    if (
+      await actions.isElementVisible(
+        this.manageAccountsAccountName('Wallet 1', settings.newAccountName),
+        3000
+      )
+    ) {
+      await this.goToAccountDetail('Wallet 1', settings.newAccountName)
+      await this.tapRenameAccount()
+      await this.setNewAccountName(settings.account)
+      await common.goBack()
+    }
+    if (
+      await actions.isElementVisible(
+        this.manageAccountsAccountName('Wallet 1', settings.account3),
+        3000
+      )
+    ) {
+      await this.goToAccountDetail('Wallet 1', settings.account3)
+      if (await actions.isElementVisible(this.removeAccount, 3000)) {
+        await this.tapRemoveAccount()
+      } else {
+        await common.goBack()
+      }
+    }
+    await this.tapAccount(settings.account)
+  }
+
+  async removeImportedWallets(walletNames: string[]) {
+    await common.goMyWallets()
+    for (const walletName of walletNames) {
+      if (
+        !(await actions.isElementVisible(
+          this.manageAccountsWalletName(walletName),
+          3000
+        ))
+      )
+        continue
+      await this.tapMoreIconByWallet(walletName)
+      if (walletName === settings.imported) {
+        // Private key wallets expose "Remove all accounts" (no confirm alert) instead of "Remove wallet"
+        await actions.click(this.removeAllAccounts)
+      } else {
+        await this.tapRemoveWallet()
+      }
+      await actions.waitForNotVisible(this.manageAccountsWalletName(walletName))
+    }
+    await this.exitMyWallets()
   }
 }
 

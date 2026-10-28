@@ -5,8 +5,11 @@ import onboardingPage from '../../pages/onboarding.page'
 import settings from '../../pages/settings.page'
 
 describe('Settings', () => {
-  it('Recovery Phrase - Should verify the mnemonic phrase', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('Recovery Phrase - Should verify the mnemonic phrase', async () => {
     await settings.goSettings()
     await settings.tapSecurityAndPrivacy()
     await settings.tapShowRecoveryPhrase()

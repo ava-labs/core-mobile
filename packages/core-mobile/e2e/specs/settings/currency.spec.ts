@@ -1,10 +1,18 @@
-import warmup from '../../helpers/warmup'
+import warmup, { restartAndUnlock } from '../../helpers/warmup'
 import settingsPage from '../../pages/settings.page'
 import commonElsPage from '../../pages/commonEls.page'
 
 describe('Settings', () => {
-  it('Currency - Should have USD currency by default', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  after(async () => {
+    await restartAndUnlock()
+    await settingsPage.ensureCurrency()
+  })
+
+  it('Currency - Should have USD currency by default', async () => {
     await settingsPage.goSettings()
     await settingsPage.tapCurrency()
     await settingsPage.verifyCurrencyScreen()

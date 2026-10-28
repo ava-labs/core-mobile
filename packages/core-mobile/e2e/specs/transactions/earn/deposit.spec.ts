@@ -6,8 +6,11 @@ const pools = ['aave', 'benqi'] as const
 
 pools.forEach(pool => {
   describe(`Earn deposit (${pool})`, () => {
-    it(`should deposit AVAX to ${pool}`, async () => {
+    before(async () => {
       await warmup()
+    })
+
+    it(`should deposit AVAX to ${pool}`, async () => {
       await earnPage.deposit(pool, 'AVAX', '0.0001')
     })
 

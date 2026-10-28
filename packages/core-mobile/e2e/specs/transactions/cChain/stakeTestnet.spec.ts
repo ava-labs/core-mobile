@@ -4,8 +4,11 @@ import settingsPage from '../../../pages/settings.page'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
 
 describe('Stake on Testnet', () => {
-  it('should stake your AVAX', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('should stake your AVAX', async () => {
     await settingsPage.switchToTestnet()
     await settingsPage.verifyTestnetMode()
     await bottomTabsPage.tapStakeTab()

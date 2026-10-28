@@ -5,8 +5,11 @@ import commonElsPage from '../../pages/commonEls.page'
 import commonEls from '../../locators/commonEls.loc'
 
 describe('[Performance] Portfolio - Assets Tab', () => {
-  it('Assets performance after onboarding', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('Assets performance after onboarding', async () => {
     const start = await portfolioPage.verifyAssetsList()
     await actions.assertPerformance(start)
   })

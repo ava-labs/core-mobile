@@ -5,8 +5,11 @@ import commonElsPage from '../../../pages/commonEls.page'
 import portfolioPage from '../../../pages/portfolio.page'
 
 describe.skip('Portfolio tab', () => {
-  it('Collectibles - view collectibles by grid and list', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('Collectibles - view collectibles by grid and list', async () => {
     await portfolioPage.tapCollectiblesTab()
     // grid view
     await portfolioPage.verifyCollectibleRow()

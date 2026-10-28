@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import path from 'node:path'
 
 import {
@@ -14,7 +15,23 @@ import {
   unusedPlatformCaps
 } from './helpers/resolve-local-device'
 
+const loadE2EEnvFile = (): void => {
+  // Bitrise sets CI=true and provides E2E vars itself, so only local runs get the default file
+  if (process.env.CI) {
+    return
+  }
+
+  const explicitFile = process.env.E2E_ENV_FILE
+  const file = explicitFile ?? '.env.development.e2e'
+  if (fs.existsSync(file)) {
+    process.loadEnvFile(file)
+  }
+}
+loadE2EEnvFile()
+
 let runId: number | undefined
+const isTestRailEnabled =
+  process.env.TESTRAIL_DISABLED !== 'true' && !!process.env.TESTRAIL_API_KEY
 const sectionCache: Record<string, number> = {}
 
 const platformToRun =
@@ -205,13 +222,15 @@ export const config: WebdriverIO.Config = {
       testType === 'performance' || process.env.IS_PERFORMANCE === 'true'
     const isSeedlessTransactions =
       process.env.IS_SEEDLESS_TRANSACTIONS === 'true'
-    runId = await getTestRun(
-      platform,
-      isSmoke,
-      isPerformance,
-      isDeviceFarm,
-      isSeedlessTransactions
-    )
+    if (isTestRailEnabled) {
+      runId = await getTestRun(
+        platform,
+        isSmoke,
+        isPerformance,
+        isDeviceFarm,
+        isSeedlessTransactions
+      )
+    }
     console.log(
       `------------Starting test run${
         isDeviceFarm ? ' on AWS Device Farm' : ''
@@ -242,8 +261,10 @@ export const config: WebdriverIO.Config = {
 
   // hook beforeTest: make or get testSection before test
   beforeTest: async test => {
-    const sectionTitle = test.parent
-    sectionCache[sectionTitle] = await getSection(sectionTitle)
+    if (isTestRailEnabled) {
+      const sectionTitle = test.parent
+      sectionCache[sectionTitle] = await getSection(sectionTitle)
+    }
     console.log('TEST: ', test.title)
   },
 
@@ -254,6 +275,7 @@ export const config: WebdriverIO.Config = {
 
   // hook afterTest: make or get testCase and send result after test
   afterTest: async (test, _, { passed, error }) => {
+    if (!isTestRailEnabled) return
     const sectionTitle = test.parent
     const sectionId = sectionCache[sectionTitle]
     const caseId = await getTestCase(test.title, sectionId)
