@@ -74,7 +74,8 @@ precedence.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `TESTRAIL_API_KEY` | CI only | The WDIO hooks create a TestRail run and push a result for every test (`testrail/testrail.config.ts`). Leave unset locally to skip TestRail reporting. |
+| `TESTRAIL_API_KEY` | CI only | The WDIO hooks create a TestRail run and push a result for every test (`testrail/testrail.config.ts`). |
+| `TESTRAIL_DISABLED` | No | `true` skips all TestRail reporting even if `TESTRAIL_API_KEY` is set (`.env.development.e2e` from `yarn envs` includes the key, so set this for local runs). Reporting is also skipped when the key is unset. |
 
 ### Seedless specs
 

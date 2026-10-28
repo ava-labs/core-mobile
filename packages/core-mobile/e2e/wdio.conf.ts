@@ -30,7 +30,8 @@ const loadE2EEnvFile = (): void => {
 loadE2EEnvFile()
 
 let runId: number | undefined
-const isTestRailEnabled = !!process.env.TESTRAIL_API_KEY
+const isTestRailEnabled =
+  process.env.TESTRAIL_DISABLED !== 'true' && !!process.env.TESTRAIL_API_KEY
 const sectionCache: Record<string, number> = {}
 
 const platformToRun =
