@@ -45,9 +45,20 @@ export type MeldTransaction = z.infer<typeof MeldTransactionSchema>
 
 export type MeldDefaultParams = {
   categories: ServiceProviderCategories[]
-  serviceProviders?: string[]
   countries?: string[]
-  accountFilter?: boolean
+}
+
+export type SearchFiatCurrenciesParams = MeldDefaultParams & {
+  fiatCurrencies?: string[]
+}
+
+export type SearchCryptoCurrenciesParams = MeldDefaultParams & {
+  cryptoCurrencies?: string[]
+}
+
+export type SearchRoutesParams = MeldDefaultParams & {
+  fiatCurrencies?: string[]
+  cryptoCurrencyCodes?: string[]
 }
 
 export type CreateCryptoQuoteNotFoundError = {

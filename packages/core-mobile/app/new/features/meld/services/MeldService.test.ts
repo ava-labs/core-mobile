@@ -71,26 +71,43 @@ describe('MeldService', () => {
     expect(client.getRoutes).not.toHaveBeenCalled()
   })
 
-  it('getSellLimits puts the crypto first in the route', async () => {
+  it('searchRoutes puts the crypto first in the off-ramp route', async () => {
     client.getRoutes.mockResolvedValue([])
-    const result = await MeldService.getSellLimits({
+    const result = await MeldService.searchRoutes({
       categories: [offramp],
       countries: ['US'],
       fiatCurrencies: [CurrencySymbol.USD],
       cryptoCurrencyCodes: ['AVAXC']
     })
-    expect(client.getRoutes).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sourceCurrencyCode: 'AVAXC',
-        destinationCurrencyCode: 'USD'
-      })
-    )
+    expect(client.getRoutes).toHaveBeenCalledWith({
+      category: 'CRYPTO_OFFRAMP',
+      country: 'US',
+      sourceCurrencyCode: 'AVAXC',
+      destinationCurrencyCode: 'USD'
+    })
     expect(result).toEqual([])
   })
 
-  it('limits and defaults resolve to [] without a country and never hit the client', async () => {
+  it('searchRoutes puts the fiat first in the on-ramp route and returns the routes', async () => {
+    client.getRoutes.mockResolvedValue(npRoutesUsdAvaxc)
+    const result = await MeldService.searchRoutes({
+      categories: [onramp],
+      countries: ['US'],
+      fiatCurrencies: [CurrencySymbol.USD],
+      cryptoCurrencyCodes: ['AVAXC']
+    })
+    expect(client.getRoutes).toHaveBeenCalledWith({
+      category: 'CRYPTO_ONRAMP',
+      country: 'US',
+      sourceCurrencyCode: 'USD',
+      destinationCurrencyCode: 'AVAXC'
+    })
+    expect(result).toBe(npRoutesUsdAvaxc)
+  })
+
+  it('routes and defaults resolve to [] without a country and never hit the client', async () => {
     await expect(
-      MeldService.getPurchaseLimits({
+      MeldService.searchRoutes({
         categories: [onramp],
         fiatCurrencies: [CurrencySymbol.USD],
         cryptoCurrencyCodes: ['AVAXC']
@@ -165,9 +182,9 @@ describe('MeldService', () => {
     ).resolves.toEqual([{ countryCode: 'DE' }])
   })
 
-  it('getPurchaseLimits resolves to [] without a fiat currency and never calls routes', async () => {
+  it('searchRoutes resolves to [] without a fiat currency and never calls routes', async () => {
     await expect(
-      MeldService.getPurchaseLimits({
+      MeldService.searchRoutes({
         categories: [onramp],
         countries: ['US'],
         cryptoCurrencyCodes: ['AVAXC']
@@ -176,9 +193,9 @@ describe('MeldService', () => {
     expect(client.getRoutes).not.toHaveBeenCalled()
   })
 
-  it('getPurchaseLimits resolves to [] without a crypto code and never calls routes', async () => {
+  it('searchRoutes resolves to [] without a crypto code and never calls routes', async () => {
     await expect(
-      MeldService.getPurchaseLimits({
+      MeldService.searchRoutes({
         categories: [onramp],
         countries: ['US'],
         fiatCurrencies: [CurrencySymbol.USD]
