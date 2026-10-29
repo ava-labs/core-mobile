@@ -19,7 +19,33 @@ import { SearchCryptoCurrenciesParams } from '../hooks/useSearchCryptoCurrencies
 import { SearchDefaultsByCountryParams } from '../hooks/useSearchDefaultsByCountry'
 import { SearchPaymentMethodsParams } from '../hooks/useSearchPaymentMethods'
 import { GetTradeLimitsParams } from '../hooks/useGetTradeLimits'
+import { ServiceProviderCategories } from '../consts'
 import { meldApiClient } from './apiClient'
+import {
+  routesToPaymentMethods,
+  routesToTradeLimits
+} from './networkPartnerAdapters'
+import { NpRoute } from './networkPartnerSchemas'
+
+const firstCategory = (
+  categories: ServiceProviderCategories[]
+): ServiceProviderCategories => {
+  const [category] = categories
+  if (!category) throw new Error('Meld category is required')
+  return category
+}
+
+const onlyCodes = <T>(
+  items: T[],
+  getCode: (item: T) => string | null | undefined,
+  codes?: string[]
+): T[] =>
+  codes
+    ? items.filter(item => {
+        const code = getCode(item)
+        return code != null && codes.includes(code)
+      })
+    : items
 
 class MeldService {
   #meldApiClient: ReturnType<typeof meldApiClient>
@@ -29,132 +55,115 @@ class MeldService {
   }
 
   async searchCountries({
-    accountFilter,
     categories,
-    serviceProviders,
     countries
   }: MeldDefaultParams): Promise<Country[]> {
-    return this.#meldApiClient.getCountries({
-      serviceProviders: serviceProviders?.join(','),
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(',')
+    const result = await this.#meldApiClient.getCountriesNp({
+      category: firstCategory(categories)
     })
+    return onlyCodes(result, country => country.countryCode, countries)
   }
 
   async searchFiatCurrencies({
     categories,
-    accountFilter,
-    serviceProviders,
-    fiatCurrencies,
-    countries
+    countries,
+    fiatCurrencies
   }: SearchFiatCurrenciesParams): Promise<FiatCurrency[]> {
-    return this.#meldApiClient.getFiatCurrencies({
-      serviceProviders: serviceProviders?.join(','),
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      fiatCurrencies: fiatCurrencies?.join(',')
+    const result = await this.#meldApiClient.getFiatCurrenciesNp({
+      category: firstCategory(categories),
+      country: countries?.[0]
     })
+    return onlyCodes(result, c => c.currencyCode, fiatCurrencies)
   }
 
   async searchCryptoCurrencies({
     categories,
     countries,
-    serviceProviders,
-    cryptoCurrencies,
-    accountFilter = true
+    cryptoCurrencies
   }: SearchCryptoCurrenciesParams): Promise<CryptoCurrency[]> {
-    return this.#meldApiClient.getCryptoCurrencies({
-      serviceProviders: serviceProviders?.join(','),
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      cryptoCurrencies: cryptoCurrencies?.join(',')
+    const result = await this.#meldApiClient.getCryptoCurrenciesNp({
+      category: firstCategory(categories),
+      country: countries?.[0]
     })
+    return onlyCodes(result, c => c.currencyCode, cryptoCurrencies)
   }
 
   async searchServiceProviders({
-    categories,
-    countries,
-    accountFilter = true,
-    cryptoCurrencies
+    categories
   }: SearchServiceProvidersParams): Promise<ServiceProvider[]> {
-    return this.#meldApiClient.getServiceProviders({
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      cryptoCurrencies: cryptoCurrencies?.join(',')
+    return this.#meldApiClient.getPartners({
+      category: firstCategory(categories)
     })
   }
 
   async searchDefaultsByCountry({
     categories,
-    countries,
-    accountFilter = true
+    countries
   }: SearchDefaultsByCountryParams): Promise<SearchDefaultsByCountry[]> {
-    return this.#meldApiClient.getDefaultsByCountry({
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(',')
+    const country = countries?.[0]
+    if (!country) return []
+    return this.#meldApiClient.getDefaultsByCountryNp({
+      category: firstCategory(categories),
+      country
     })
   }
 
-  async getPurchaseLimits({
-    categories,
-    countries,
-    accountFilter = true,
-    serviceProviders,
-    fiatCurrencies,
-    cryptoCurrencyCodes,
-    includeDetails = false
-  }: GetTradeLimitsParams): Promise<GetTradeLimits[]> {
-    return this.#meldApiClient.getPurchaseLimits({
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      serviceProviders: serviceProviders?.join(','),
-      fiatCurrencies: fiatCurrencies?.join(','),
-      cryptoCurrencies: cryptoCurrencyCodes?.join(','),
-      includeDetails
+  async getPurchaseLimits(
+    params: GetTradeLimitsParams
+  ): Promise<GetTradeLimits[]> {
+    return this.#getLimits(params)
+  }
+
+  async getSellLimits(params: GetTradeLimitsParams): Promise<GetTradeLimits[]> {
+    return this.#getLimits(params)
+  }
+
+  async searchPaymentMethods(
+    params: SearchPaymentMethodsParams
+  ): Promise<SearchPaymentMethods[]> {
+    const country = params.countries?.[0]
+    const fiat = params.fiatCurrencies?.[0]
+    if (!country || !fiat) return []
+    if (!params.cryptoCurrencyCodes?.[0])
+      return this.#meldApiClient.getPaymentMethodsNp({
+        category: firstCategory(params.categories),
+        country,
+        currencyCode: fiat
+      })
+    const routes = await this.#fetchRoutes(params)
+    return routes ? routesToPaymentMethods(routes) : []
+  }
+
+  async #getLimits(params: GetTradeLimitsParams): Promise<GetTradeLimits[]> {
+    const fiat = params.fiatCurrencies?.[0]
+    const routes = await this.#fetchRoutes(params)
+    if (!routes || !fiat) return []
+    return routesToTradeLimits(routes, {
+      currencyCode: fiat,
+      paymentMethod: params.paymentMethod
     })
   }
 
-  async getSellLimits({
+  async #fetchRoutes({
     categories,
     countries,
-    accountFilter = true,
-    serviceProviders,
-    fiatCurrencies,
-    cryptoCurrencyCodes,
-    includeDetails = false
-  }: GetTradeLimitsParams): Promise<GetTradeLimits[]> {
-    return this.#meldApiClient.getSellLimits({
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      serviceProviders: serviceProviders?.join(','),
-      fiatCurrencies: fiatCurrencies?.join(','),
-      cryptoCurrencies: cryptoCurrencyCodes?.join(','),
-      includeDetails
-    })
-  }
-
-  async searchPaymentMethods({
-    categories,
-    countries,
-    accountFilter = true,
-    serviceProviders,
     fiatCurrencies,
     cryptoCurrencyCodes
-  }: SearchPaymentMethodsParams): Promise<SearchPaymentMethods[]> {
-    return this.#meldApiClient.getPaymentMethods({
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      serviceProviders: serviceProviders?.join(','),
-      fiatCurrencies: fiatCurrencies?.join(','),
-      cryptoCurrencies: cryptoCurrencyCodes?.join(',')
+  }: Pick<
+    SearchPaymentMethodsParams,
+    'categories' | 'countries' | 'fiatCurrencies' | 'cryptoCurrencyCodes'
+  >): Promise<NpRoute[] | undefined> {
+    const category = firstCategory(categories)
+    const country = countries?.[0]
+    const fiat = fiatCurrencies?.[0]
+    const crypto = cryptoCurrencyCodes?.[0]
+    if (!country || !fiat || !crypto) return undefined
+    const isOfframp = category === ServiceProviderCategories.CRYPTO_OFFRAMP
+    return this.#meldApiClient.getRoutes({
+      category,
+      country,
+      sourceCurrencyCode: isOfframp ? crypto : fiat,
+      destinationCurrencyCode: isOfframp ? fiat : crypto
     })
   }
 

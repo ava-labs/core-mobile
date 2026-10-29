@@ -11,6 +11,7 @@ export type GetTradeLimitsParams = MeldDefaultParams & {
   fiatCurrencies?: CurrencySymbol[]
   includeDetails?: boolean
   cryptoCurrencyCodes?: string[]
+  paymentMethod?: string
 }
 
 export const useGetTradeLimits = ({

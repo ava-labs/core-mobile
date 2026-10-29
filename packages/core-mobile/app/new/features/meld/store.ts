@@ -1,10 +1,11 @@
 import { createZustandStore } from 'common/utils/createZustandStore'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { create } from 'zustand'
+import { getDeviceCountryCode } from './hooks/useLocale'
 import { CryptoCurrency } from './types'
 
 export const useMeldCountryCode = createZustandStore<string | undefined>(
-  undefined
+  getDeviceCountryCode()
 )
 
 export const useMeldToken = createZustandStore<CryptoCurrency | undefined>(
