@@ -429,3 +429,54 @@ export const ServiceProviderNames: Record<string, string> = {
 }
 
 export const SOLANA_MELD_CHAIN_ID = 101
+
+export const MeldCurrencyType = {
+  CRYPTO: 'CRYPTO',
+  FIAT: 'FIAT'
+} as const
+
+type ValueOf<T> = T[keyof T]
+
+export type MeldCurrencyType = ValueOf<typeof MeldCurrencyType>
+
+export const MELD_CHAIN_NAMES = {
+  ADA: 'Cardano',
+  ALGORAND: 'Algorand',
+  ARBITRUM: 'Arbitrum',
+  ATOM: 'Cosmos',
+  AVAXC: 'Avalanche C-Chain',
+  BASE: 'Base',
+  BCH: 'Bitcoin Cash Network',
+  BSC: 'BNB Smart Chain',
+  BTC: 'Bitcoin',
+  DOGE: 'Dogecoin',
+  DOT: 'Polkadot',
+  ETH: 'Ethereum',
+  HYPERCORE: 'HyperCore',
+  HYPEREVM: 'HyperEVM',
+  INJ: 'Injective Protocol',
+  KAS: 'KAS',
+  KSM: 'Kusama',
+  LINEA: 'Linea',
+  LTC: 'Litecoin',
+  MONAD: 'Monad',
+  NOBLE: 'Noble',
+  OPTIMISM: 'Optimism',
+  OSMO: 'Osmosis',
+  POLYGON: 'Polygon',
+  RIPPLE: 'Ripple',
+  SOLANA: 'Solana',
+  STELLAR: 'Stellar',
+  SUI: 'Sui Network',
+  TEZOS: 'Tezos',
+  TIA: 'Celestia',
+  TON: 'Ton',
+  TRON: 'Tron',
+  XRP: 'XRP Ledger',
+  ZKSYNC: 'zkSync'
+} as const
+
+export type MeldChainCode = keyof typeof MELD_CHAIN_NAMES
+
+export const getMeldChainName = (code: string): string | undefined =>
+  (MELD_CHAIN_NAMES as Record<string, string>)[code]
