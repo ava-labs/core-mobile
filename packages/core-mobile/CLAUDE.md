@@ -146,6 +146,7 @@ See `docs/features.md` for feature-specific env requirements.
 - Colocated with source files
 - Mock setup in `__mocks__/` and `tests/` directories
 - MSW for API mocking
+- **Do not add component or screen tests** (rendering a component/screen with `render(...)`). Unit tests cover logic: hooks, utils, services, store slices/listeners. Only write a render test if explicitly asked.
 
 **E2E Tests** (Appium/WebDriverIO)
 - Located in `e2e/`
@@ -235,6 +236,15 @@ yarn test app/utils/FormatCurrency.test.ts
 - Reactotron is configured for debugging Redux and MMKV
 - Expo dev client includes dev menu (shake device)
 - Sentry captures production errors
+
+## Code Comments
+
+Default to no comments. Keep one only if it records something the code can't show, in a single short line:
+- a workaround for an upstream bug (link the issue)
+- where a magic value comes from
+- a surprising behavior of an external API/SDK
+
+Don't narrate what the code does, describe data flow, explain the change you made ("moved to", "no longer"), or leave multi-line TODO essays. That belongs in the commit message or PR description.
 
 ## Styling Conventions
 
