@@ -185,8 +185,8 @@ High-performance crypto operations implemented in C++ using the Nitro Modules fr
 
 ## Key Dependencies
 
-- **React Native**: 0.85
-- **Expo**: SDK 56
+- **React Native**: 0.86
+- **Expo**: SDK 57
 - **React**: 19.2
 - **Avalanche SDKs**: Various `@avalabs/*` packages at 3.1.0-alpha.x
 - **Nitro Modules**: 0.35 for native module architecture

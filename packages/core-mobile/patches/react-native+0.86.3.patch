@@ -1,7 +1,9 @@
 diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
+index 1b02e8b..1d9fa93 100644
 --- a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
 +++ b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
-@@ -42,5 +42,9 @@
+@@ -41,6 +41,10 @@ - (instancetype)initWithFrame:(CGRect)frame
+     // scrollbar flip because we also flip it with whole `UIScrollView` flip.
      self.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
  
 +    if (@available(iOS 26.0, *)) {
@@ -12,10 +14,10 @@ diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/Scro
      _delegateSplitter = [[RCTGenericDelegateSplitter alloc] initWithDelegateUpdateBlock:^(id delegate) {
        [weakSelf setPrivateDelegate:delegate];
 diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
+index 9ab1db4..0701be4 100644
 --- a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
 +++ b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
-@@ -449,5 +449,12 @@
- 
+@@ -450,6 +450,13 @@ - (void)updateProps:(const Props::Shared &)props oldProps:(const Props::Shared &
    [super updateProps:props oldProps:oldProps];
  }
  
@@ -27,7 +29,9 @@ diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/Scro
 +}
 +
  - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
-@@ -843,5 +843,7 @@
+ {
+   assert(std::dynamic_pointer_cast<const ScrollViewShadowNode::ConcreteState>(state));
+@@ -843,6 +850,8 @@ - (void)didMoveToWindow
    if (!self.window) {
      // The view is being removed, ensure that the scroll end event is dispatched
      [self _handleScrollEndIfNeeded];
@@ -35,3 +39,17 @@ diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/Scro
 +    [self _disableTopEdgeEffectIOS26];
    }
  }
+ 
+diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/View/RCTViewComponentView.mm b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/View/RCTViewComponentView.mm
+index b033b7c..2dce59a 100644
+--- a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/View/RCTViewComponentView.mm
++++ b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/View/RCTViewComponentView.mm
+@@ -1738,7 +1738,7 @@ - (void)transferVisualPropertiesFromView:(UIView *)sourceView toView:(UIView *)d
+ 
+ - (BOOL)canBecomeFirstResponder
+ {
+-  return ReactNativeFeatureFlags::enableImperativeFocus();
++  return YES;
+ }
+ 
+ - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args
