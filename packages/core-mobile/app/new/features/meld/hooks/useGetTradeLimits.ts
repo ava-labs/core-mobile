@@ -1,70 +1,39 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import { UseQueryResult } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { CurrencySymbol } from 'store/settings/currency'
-import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { GetTradeLimits, MeldDefaultParams } from '../types'
-import MeldService from '../services/MeldService'
+import { GetTradeLimits } from '../types'
 import { ServiceProviderCategories } from '../consts'
-import { useMeldCountryCode } from '../store'
-import { useSearchServiceProviders } from './useSearchServiceProviders'
-
-export type GetTradeLimitsParams = MeldDefaultParams & {
-  fiatCurrencies?: CurrencySymbol[]
-  includeDetails?: boolean
-  cryptoCurrencyCodes?: string[]
-  paymentMethod?: string
-}
+import { NpRoute } from '../services/networkPartnerSchemas'
+import { routesToTradeLimits } from '../services/networkPartnerAdapters'
+import { useMeldCountryCode, useMeldPaymentMethod } from '../store'
+import { useMeldRoutes } from './useMeldRoutes'
 
 export const useGetTradeLimits = ({
   category,
   fiatCurrencies,
-  includeDetails,
   cryptoCurrencyCodes
-}: Omit<
-  GetTradeLimitsParams,
-  'categories' | 'serviceProviders' | 'countries'
-> & {
+}: {
   category: ServiceProviderCategories
+  fiatCurrencies?: CurrencySymbol[]
+  cryptoCurrencyCodes?: string[]
 }): UseQueryResult<GetTradeLimits[], Error> => {
-  const { data: serviceProvidersData } = useSearchServiceProviders({
-    categories: [category]
-  })
-  const serviceProviders = serviceProvidersData?.map(
-    serviceProvider => serviceProvider.serviceProvider
+  const [countryCode] = useMeldCountryCode()
+  const [paymentMethod] = useMeldPaymentMethod()
+  const fiatCurrencyCode = fiatCurrencies?.[0]
+  const cryptoCurrencyCode = cryptoCurrencyCodes?.[0]
+  const select = useCallback(
+    (routes: NpRoute[]): GetTradeLimits[] =>
+      fiatCurrencyCode
+        ? routesToTradeLimits(routes, {
+            currencyCode: fiatCurrencyCode,
+            paymentMethod
+          })
+        : [],
+    [fiatCurrencyCode, paymentMethod]
   )
 
-  const meldQueryKey =
-    category === ServiceProviderCategories.CRYPTO_ONRAMP
-      ? ReactQueryKeys.MELD_GET_PURCHASE_LIMITS
-      : ReactQueryKeys.MELD_GET_SELL_LIMITS
-
-  const [countryCode] = useMeldCountryCode()
-
-  return useQuery({
-    enabled: serviceProviders && serviceProviders?.length > 0,
-    queryKey: [
-      meldQueryKey,
-      category,
-      countryCode,
-      fiatCurrencies,
-      includeDetails,
-      cryptoCurrencyCodes,
-      serviceProviders
-    ],
-    queryFn: () => {
-      const params = {
-        serviceProviders,
-        categories: [category],
-        countries: countryCode ? [countryCode] : undefined,
-        fiatCurrencies,
-        includeDetails,
-        cryptoCurrencyCodes
-      }
-      if (category === ServiceProviderCategories.CRYPTO_ONRAMP) {
-        return MeldService.getPurchaseLimits(params)
-      } else {
-        return MeldService.getSellLimits(params)
-      }
-    },
-    staleTime: 1000 * 60 * 30 // 30 minutes
-  })
+  return useMeldRoutes(
+    { category, countryCode, fiatCurrencyCode, cryptoCurrencyCode },
+    select
+  )
 }

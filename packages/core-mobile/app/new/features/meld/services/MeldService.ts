@@ -6,25 +6,18 @@ import {
   CreateSessionWidgetParams,
   CryptoCurrency,
   FiatCurrency,
-  GetTradeLimits,
   MeldDefaultParams,
   MeldTransaction,
+  SearchCryptoCurrenciesParams,
   SearchDefaultsByCountry,
+  SearchFiatCurrenciesParams,
   SearchPaymentMethods,
+  SearchRoutesParams,
   ServiceProvider
 } from '../types'
-import { SearchServiceProvidersParams } from '../hooks/useSearchServiceProviders'
-import { SearchFiatCurrenciesParams } from '../hooks/useSearchFiatCurrencies'
-import { SearchCryptoCurrenciesParams } from '../hooks/useSearchCryptoCurrencies'
-import { SearchDefaultsByCountryParams } from '../hooks/useSearchDefaultsByCountry'
-import { SearchPaymentMethodsParams } from '../hooks/useSearchPaymentMethods'
-import { GetTradeLimitsParams } from '../hooks/useGetTradeLimits'
 import { ServiceProviderCategories } from '../consts'
 import { meldApiClient } from './apiClient'
-import {
-  routesToPaymentMethods,
-  routesToTradeLimits
-} from './networkPartnerAdapters'
+import { routesToPaymentMethods } from './networkPartnerAdapters'
 import { NpRoute } from './networkPartnerSchemas'
 
 const firstCategory = (
@@ -90,7 +83,7 @@ class MeldService {
 
   async searchServiceProviders({
     categories
-  }: SearchServiceProvidersParams): Promise<ServiceProvider[]> {
+  }: MeldDefaultParams): Promise<ServiceProvider[]> {
     return this.#meldApiClient.getPartners({
       category: firstCategory(categories)
     })
@@ -99,7 +92,7 @@ class MeldService {
   async searchDefaultsByCountry({
     categories,
     countries
-  }: SearchDefaultsByCountryParams): Promise<SearchDefaultsByCountry[]> {
+  }: MeldDefaultParams): Promise<SearchDefaultsByCountry[]> {
     const country = countries?.[0]
     if (!country) return []
     return this.#meldApiClient.getDefaultsByCountryNp({
@@ -108,18 +101,8 @@ class MeldService {
     })
   }
 
-  async getPurchaseLimits(
-    params: GetTradeLimitsParams
-  ): Promise<GetTradeLimits[]> {
-    return this.#getLimits(params)
-  }
-
-  async getSellLimits(params: GetTradeLimitsParams): Promise<GetTradeLimits[]> {
-    return this.#getLimits(params)
-  }
-
   async searchPaymentMethods(
-    params: SearchPaymentMethodsParams
+    params: SearchRoutesParams
   ): Promise<SearchPaymentMethods[]> {
     const country = params.countries?.[0]
     const fiat = params.fiatCurrencies?.[0]
@@ -134,14 +117,8 @@ class MeldService {
     return routes ? routesToPaymentMethods(routes) : []
   }
 
-  async #getLimits(params: GetTradeLimitsParams): Promise<GetTradeLimits[]> {
-    const fiat = params.fiatCurrencies?.[0]
-    const routes = await this.#fetchRoutes(params)
-    if (!routes || !fiat) return []
-    return routesToTradeLimits(routes, {
-      currencyCode: fiat,
-      paymentMethod: params.paymentMethod
-    })
+  async searchRoutes(params: SearchRoutesParams): Promise<NpRoute[]> {
+    return (await this.#fetchRoutes(params)) ?? []
   }
 
   async #fetchRoutes({
@@ -149,10 +126,7 @@ class MeldService {
     countries,
     fiatCurrencies,
     cryptoCurrencyCodes
-  }: Pick<
-    SearchPaymentMethodsParams,
-    'categories' | 'countries' | 'fiatCurrencies' | 'cryptoCurrencyCodes'
-  >): Promise<NpRoute[] | undefined> {
+  }: SearchRoutesParams): Promise<NpRoute[] | undefined> {
     const category = firstCategory(categories)
     const country = countries?.[0]
     const fiat = fiatCurrencies?.[0]

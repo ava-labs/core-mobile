@@ -7,10 +7,12 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { router } from 'expo-router'
 import { getLocalTokenId } from 'services/balance/utils/getLocalTokenId'
 import { humanize } from 'utils/string/humanize'
+import { isAndroid, isIOS } from 'utils/Utils'
 import { ACTIONS } from '../../../contexts/DeeplinkContext/types'
 import {
   NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
   PaymentMethodNames,
+  PaymentMethods,
   ServiceProviderCategories,
   SOLANA_MELD_CHAIN_ID
 } from './consts'
@@ -426,3 +428,11 @@ export const buildDisplayTokenUnit = (
   symbol: string
 ): TokenUnit =>
   new TokenUnit(displayAmount * 10 ** maxDecimals, maxDecimals, symbol)
+
+export const isPaymentMethodSupported = (
+  paymentMethod: string | null | undefined
+): boolean => {
+  if (isAndroid) return paymentMethod !== PaymentMethods.APPLE_PAY
+  if (isIOS) return paymentMethod !== PaymentMethods.GOOGLE_PAY
+  return true
+}
