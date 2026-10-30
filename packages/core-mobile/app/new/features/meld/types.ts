@@ -13,12 +13,10 @@ import {
   CreateSessionWidgetBodySchema,
   CreateSessionWidgetSchema,
   GetTradeLimitsSchema,
-  MeldTransactionSchema,
-  RegionSchema
+  MeldTransactionSchema
 } from './services/schemas'
 import { ServiceProviderCategories, ServiceProviders } from './consts'
 
-export type Region = z.infer<typeof RegionSchema>
 export type Country = z.infer<typeof SearchCountrySchema>
 export type FiatCurrency = z.infer<typeof SearchFiatCurrencySchema>
 export type CryptoCurrency = z.infer<typeof SearchCryptoCurrencySchema>

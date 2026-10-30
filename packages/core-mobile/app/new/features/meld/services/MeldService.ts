@@ -16,8 +16,7 @@ import {
   ServiceProvider
 } from '../types'
 import { ServiceProviderCategories } from '../consts'
-import { meldApiClient } from './apiClient'
-import { routesToPaymentMethods } from './networkPartnerAdapters'
+import { meldApiClient, MeldApiClient } from './apiClient'
 import { NpRoute } from './networkPartnerSchemas'
 
 const firstCategory = (
@@ -41,7 +40,7 @@ const onlyCodes = <T>(
     : items
 
 class MeldService {
-  #meldApiClient: ReturnType<typeof meldApiClient>
+  #meldApiClient: MeldApiClient
 
   init(sandbox?: boolean): void {
     this.#meldApiClient = meldApiClient(sandbox)
@@ -51,7 +50,7 @@ class MeldService {
     categories,
     countries
   }: MeldDefaultParams): Promise<Country[]> {
-    const result = await this.#meldApiClient.getCountriesNp({
+    const result = await this.#meldApiClient.getCountries({
       category: firstCategory(categories)
     })
     return onlyCodes(result, country => country.countryCode, countries)
@@ -62,7 +61,7 @@ class MeldService {
     countries,
     fiatCurrencies
   }: SearchFiatCurrenciesParams): Promise<FiatCurrency[]> {
-    const result = await this.#meldApiClient.getFiatCurrenciesNp({
+    const result = await this.#meldApiClient.getFiatCurrencies({
       category: firstCategory(categories),
       country: countries?.[0]
     })
@@ -74,7 +73,7 @@ class MeldService {
     countries,
     cryptoCurrencies
   }: SearchCryptoCurrenciesParams): Promise<CryptoCurrency[]> {
-    const result = await this.#meldApiClient.getCryptoCurrenciesNp({
+    const result = await this.#meldApiClient.getCryptoCurrencies({
       category: firstCategory(categories),
       country: countries?.[0]
     })
@@ -95,43 +94,38 @@ class MeldService {
   }: MeldDefaultParams): Promise<SearchDefaultsByCountry[]> {
     const country = countries?.[0]
     if (!country) return []
-    return this.#meldApiClient.getDefaultsByCountryNp({
+    return this.#meldApiClient.getDefaultsByCountry({
       category: firstCategory(categories),
       country
     })
   }
 
-  async searchPaymentMethods(
-    params: SearchRoutesParams
-  ): Promise<SearchPaymentMethods[]> {
-    const country = params.countries?.[0]
-    const fiat = params.fiatCurrencies?.[0]
+  async searchPaymentMethods({
+    categories,
+    countries,
+    fiatCurrencies
+  }: SearchFiatCurrenciesParams): Promise<SearchPaymentMethods[]> {
+    const country = countries?.[0]
+    const fiat = fiatCurrencies?.[0]
     if (!country || !fiat) return []
-    if (!params.cryptoCurrencyCodes?.[0])
-      return this.#meldApiClient.getPaymentMethodsNp({
-        category: firstCategory(params.categories),
-        country,
-        currencyCode: fiat
-      })
-    const routes = await this.#fetchRoutes(params)
-    return routes ? routesToPaymentMethods(routes) : []
+    return this.#meldApiClient.getPaymentMethods({
+      category: firstCategory(categories),
+      country,
+      currencyCode: fiat
+    })
   }
 
-  async searchRoutes(params: SearchRoutesParams): Promise<NpRoute[]> {
-    return (await this.#fetchRoutes(params)) ?? []
-  }
-
-  async #fetchRoutes({
+  async searchRoutes({
     categories,
     countries,
     fiatCurrencies,
     cryptoCurrencyCodes
-  }: SearchRoutesParams): Promise<NpRoute[] | undefined> {
+  }: SearchRoutesParams): Promise<NpRoute[]> {
     const category = firstCategory(categories)
     const country = countries?.[0]
     const fiat = fiatCurrencies?.[0]
     const crypto = cryptoCurrencyCodes?.[0]
-    if (!country || !fiat || !crypto) return undefined
+    if (!country || !fiat || !crypto) return []
     const isOfframp = category === ServiceProviderCategories.CRYPTO_OFFRAMP
     return this.#meldApiClient.getRoutes({
       category,
@@ -150,7 +144,7 @@ class MeldService {
     destinationCurrencyCode,
     paymentMethodType,
     subdivision
-  }: CreateCryptoQuoteParams): Promise<CreateCryptoQuote | undefined> {
+  }: CreateCryptoQuoteParams): Promise<CreateCryptoQuote> {
     const body = {
       serviceProviders,
       countryCode,
@@ -177,7 +171,7 @@ class MeldService {
       destinationCurrencyCode,
       paymentMethodType
     }
-  }: CreateSessionWidgetParams): Promise<CreateSessionWidget | undefined> {
+  }: CreateSessionWidgetParams): Promise<CreateSessionWidget> {
     const body = {
       sessionType,
       sessionData: {
@@ -204,8 +198,8 @@ class MeldService {
     sessionId
   }: {
     sessionId: string
-  }): Promise<MeldTransaction | undefined> {
-    return await this.#meldApiClient.fetchTransactionBySessionId(sessionId)
+  }): Promise<MeldTransaction> {
+    return this.#meldApiClient.fetchTransactionBySessionId(sessionId)
   }
 }
 

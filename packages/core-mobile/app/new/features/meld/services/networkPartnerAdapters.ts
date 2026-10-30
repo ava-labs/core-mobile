@@ -7,7 +7,7 @@ import {
   SearchPaymentMethods,
   ServiceProvider
 } from '../types'
-import { getMeldChainName } from '../consts'
+import { getMeldChainName } from './meldChainNames'
 import {
   NpCountry,
   NpCurrency,
@@ -17,6 +17,16 @@ import {
   NpRoute,
   NpRoutePaymentMethod
 } from './networkPartnerSchemas'
+
+const asArray = <T>(value: T[] | null | undefined): T[] =>
+  Array.isArray(value) ? value : []
+
+const toLogos = (
+  logo: { dark?: string | null; light?: string | null } | null | undefined
+): { dark?: string | null; light?: string | null } => ({
+  dark: logo?.dark,
+  light: logo?.light
+})
 
 export const toServiceProvider = (np: NpPartner): ServiceProvider => ({
   serviceProvider: np.serviceProvider,
@@ -63,12 +73,10 @@ export const toCountry = (np: NpCountry): Country => ({
   countryCode: np.countryCode,
   name: np.name,
   flagImageUrl: np.flag,
-  regions: (Array.isArray(np.subdivisions) ? np.subdivisions : []).map(
-    code => ({
-      regionCode: code,
-      name: code
-    })
-  )
+  regions: asArray(np.subdivisions).map(code => ({
+    regionCode: code,
+    name: code
+  }))
 })
 
 export const toDefaultsByCountry = (
@@ -83,7 +91,7 @@ export const toPaymentMethod = (np: NpPaymentMethod): SearchPaymentMethods => ({
   paymentMethod: np.method,
   name: np.name,
   paymentType: np.type,
-  logos: { dark: np.logo?.dark, light: np.logo?.light }
+  logos: toLogos(np.logo)
 })
 
 export const routesToPaymentMethods = (
@@ -92,16 +100,14 @@ export const routesToPaymentMethods = (
   const seen = new Set<string>()
   const result: SearchPaymentMethods[] = []
   for (const route of routes) {
-    for (const method of Array.isArray(route.paymentMethods)
-      ? route.paymentMethods
-      : []) {
+    for (const method of asArray(route.paymentMethods)) {
       if (seen.has(method.name)) continue
       seen.add(method.name)
       result.push({
         paymentMethod: method.name,
         name: method.name,
         paymentType: method.paymentType,
-        logos: { dark: method.logo?.dark, light: method.logo?.light }
+        logos: toLogos(method.logo)
       })
     }
   }
@@ -142,10 +148,7 @@ export const routesToTradeLimits = (
   params: { currencyCode: string; paymentMethod?: string }
 ): GetTradeLimits[] => {
   const candidates = routes.map(route => {
-    const methods = Array.isArray(route.paymentMethods)
-      ? route.paymentMethods
-      : []
-    const all = methods.flatMap(m => {
+    const all = asArray(route.paymentMethods).flatMap(m => {
       const limits = validLimits(m, params.currencyCode)
       return limits ? [{ name: m.name, limits }] : []
     })
