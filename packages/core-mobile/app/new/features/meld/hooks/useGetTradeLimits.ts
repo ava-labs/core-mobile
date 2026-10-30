@@ -1,6 +1,5 @@
 import { UseQueryResult } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import { CurrencySymbol } from 'store/settings/currency'
 import { GetTradeLimits } from '../types'
 import { ServiceProviderCategories } from '../consts'
 import { NpRoute } from '../services/networkPartnerSchemas'
@@ -10,17 +9,15 @@ import { useMeldRoutes } from './useMeldRoutes'
 
 export const useGetTradeLimits = ({
   category,
-  fiatCurrencies,
-  cryptoCurrencyCodes
+  fiatCurrencyCode,
+  cryptoCurrencyCode
 }: {
   category: ServiceProviderCategories
-  fiatCurrencies?: CurrencySymbol[]
-  cryptoCurrencyCodes?: string[]
+  fiatCurrencyCode?: string
+  cryptoCurrencyCode?: string
 }): UseQueryResult<GetTradeLimits[], Error> => {
   const [countryCode] = useMeldCountryCode()
   const [paymentMethod] = useMeldPaymentMethod()
-  const fiatCurrencyCode = fiatCurrencies?.[0]
-  const cryptoCurrencyCode = cryptoCurrencyCodes?.[0]
   const select = useCallback(
     (routes: NpRoute[]): GetTradeLimits[] =>
       fiatCurrencyCode

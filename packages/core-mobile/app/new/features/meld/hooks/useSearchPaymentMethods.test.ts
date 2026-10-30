@@ -61,7 +61,7 @@ describe('useSearchPaymentMethods', () => {
     mockState.token = { currencyCode: 'AVAXC' }
     mockSearchRoutes.mockResolvedValue(npRoutesUsdAvaxc)
     const { result, waitFor } = renderHook(
-      () => useSearchPaymentMethods({ categories: [category] }),
+      () => useSearchPaymentMethods({ category }),
       { wrapper }
     )
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
@@ -84,7 +84,7 @@ describe('useSearchPaymentMethods', () => {
       { paymentMethod: 'ACH', logos: {} }
     ])
     const { result, waitFor } = renderHook(
-      () => useSearchPaymentMethods({ categories: [category] }),
+      () => useSearchPaymentMethods({ category }),
       { wrapper }
     )
     await waitFor(() => expect(result.current.isSuccess).toBe(true))

@@ -47,9 +47,7 @@ export const SelectPaymentMethod = ({
     data: paymentMethods,
     isLoading: isLoadingPaymentMethods,
     error: paymentMethodsError
-  } = useSearchPaymentMethods({
-    categories: [category]
-  })
+  } = useSearchPaymentMethods({ category })
 
   const isOnramp = category === ServiceProviderCategories.CRYPTO_ONRAMP
 

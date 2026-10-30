@@ -22,7 +22,6 @@ export const useFiatSourceAmount = ({
   maximumLimit: number | undefined
   isLoadingTradeLimits: boolean
   hasValidSourceAmount: boolean
-  // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const { getWithdrawAmountMinLimit, getWithdrawAmountMaxLimit } =
     useWithdrawAmountLimit()
@@ -32,10 +31,8 @@ export const useFiatSourceAmount = ({
   const { data: tradeLimits, isLoading: isLoadingTradeLimits } =
     useGetTradeLimits({
       category,
-      fiatCurrencies: [selectedCurrency],
-      cryptoCurrencyCodes: token?.currencyCode
-        ? [token?.currencyCode]
-        : undefined
+      fiatCurrencyCode: selectedCurrency,
+      cryptoCurrencyCode: token?.currencyCode
     })
 
   const currentTokenPrice = useMarketTokenBySymbol({

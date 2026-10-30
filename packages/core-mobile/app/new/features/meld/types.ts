@@ -1,31 +1,62 @@
 import { z } from 'zod'
 import { LocalTokenWithBalance } from 'store/balance'
 import {
-  SearchCountrySchema,
-  SearchFiatCurrencySchema,
-  SearchCryptoCurrencySchema,
-  SearchServiceProviderSchema,
-  SearchDefaultsByCountrySchema,
-  SearchPaymentMethodsSchema,
   CreateCryptoQuoteSchema,
   CreateCryptoQuoteBodySchema,
   QuoteSchema,
   CreateSessionWidgetBodySchema,
   CreateSessionWidgetSchema,
-  GetTradeLimitsSchema,
   MeldTransactionSchema
-} from './services/schemas'
+} from './services/transactionSchemas'
 import { ServiceProviderCategories, ServiceProviders } from './consts'
 
-export type Country = z.infer<typeof SearchCountrySchema>
-export type FiatCurrency = z.infer<typeof SearchFiatCurrencySchema>
-export type CryptoCurrency = z.infer<typeof SearchCryptoCurrencySchema>
-export type ServiceProvider = z.infer<typeof SearchServiceProviderSchema>
-export type SearchDefaultsByCountry = z.infer<
-  typeof SearchDefaultsByCountrySchema
->
-export type GetTradeLimits = z.infer<typeof GetTradeLimitsSchema>
-export type SearchPaymentMethods = z.infer<typeof SearchPaymentMethodsSchema>
+export type Country = {
+  countryCode: string
+  name: string | null
+}
+
+export type FiatCurrency = {
+  currencyCode: string
+  name: string | null
+}
+
+export type CryptoCurrency = {
+  currencyCode: string
+  name: string | null
+  chainCode: string | null
+  chainName: string | null
+  chainId: string | null
+  contractAddress: string | null
+}
+
+export type ServiceProvider = {
+  serviceProvider: string
+  name: string | null
+  logos: {
+    darkShort: string | null
+    lightShort: string | null
+  }
+}
+
+export type SearchDefaultsByCountry = {
+  countryCode: string
+  defaultPaymentMethods: string[]
+}
+
+export type GetTradeLimits = {
+  currencyCode: string
+  minimumAmount: number
+  maximumAmount: number
+}
+
+export type SearchPaymentMethods = {
+  paymentMethod: string
+  logos: {
+    dark: string | null
+    light: string | null
+  }
+}
+
 export type CreateCryptoQuote = z.infer<typeof CreateCryptoQuoteSchema>
 export type Quote = z.infer<typeof QuoteSchema>
 

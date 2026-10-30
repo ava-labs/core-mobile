@@ -28,40 +28,28 @@ const mustFind = <T>(
   return item
 }
 
-const providerDetails = (
-  limit: ReturnType<typeof routesToTradeLimits>[number] | undefined
-): NonNullable<
-  ReturnType<typeof routesToTradeLimits>[number]['serviceProviderDetails']
-> => {
-  if (!limit?.serviceProviderDetails) throw new Error('limit details missing')
-  return limit.serviceProviderDetails
-}
-
 describe('toServiceProvider', () => {
-  it('maps logo/url/capabilities onto the legacy shape', () => {
+  it('maps the name and short logos', () => {
     const stripe = toServiceProvider(
       mustFind(npPartners, p => p.serviceProvider === 'STRIPE')
     )
     expect(stripe.serviceProvider).toBe('STRIPE')
+    expect(stripe.name).toBe('Stripe')
     expect(stripe.logos.darkShort).toMatch(/^https:\/\//)
-    expect(stripe.websiteUrl).toBe('https://stripe.com')
-    expect(stripe.categoryStatuses).toEqual({ CRYPTO_ONRAMP: 'LIVE' })
-    expect(stripe.customerSupportUrl).toBeNull()
+    expect(stripe.logos.lightShort).toMatch(/^https:\/\//)
   })
-})
 
-describe('toServiceProvider shape guard', () => {
-  it('returns null categoryStatuses when capabilities is not an array', () => {
-    const sp = toServiceProvider({
+  it('falls back to null when logos are missing', () => {
+    expect(toServiceProvider({ serviceProvider: 'X' })).toEqual({
       serviceProvider: 'X',
-      capabilities: {}
-    } as unknown as Parameters<typeof toServiceProvider>[0])
-    expect(sp.categoryStatuses).toBeNull()
+      name: null,
+      logos: { darkShort: null, lightShort: null }
+    })
   })
 })
 
 describe('toCryptoCurrency', () => {
-  it('restores chainName and renames contract/symbol', () => {
+  it('restores chainName and renames contract', () => {
     const avaxc = toCryptoCurrency(
       mustFind(npCryptoCurrencies, c => c.currencyCode === 'AVAXC')
     )
@@ -71,7 +59,6 @@ describe('toCryptoCurrency', () => {
       chainId: '43114',
       contractAddress: '0x0000000000000000000000000000000000000000'
     })
-    expect(avaxc.symbolImageUrl).toMatch(/^https:\/\//)
   })
 
   it('keeps non-numeric chain ids and falls back to chainCode for unknown chains', () => {
@@ -89,25 +76,24 @@ describe('toCryptoCurrency', () => {
 describe('toCountry / toFiatCurrency / toDefaultsByCountry / toPaymentMethod', () => {
   it('maps the renamed fields', () => {
     const us = toCountry(mustFind(npCountries, c => c.countryCode === 'US'))
-    expect(us.flagImageUrl).toMatch(/flag\.svg$/)
-    expect(us.regions).toEqual([])
+    expect(us).toEqual({ countryCode: 'US', name: 'United States' })
     expect(
-      toFiatCurrency(mustFind(npFiatCurrencies, () => true)).currencyCode
-    ).toBeDefined()
-    expect(toDefaultsByCountry(npDefaultsUs)).toEqual({
+      toFiatCurrency(mustFind(npFiatCurrencies, c => c.currencyCode === 'USD'))
+    ).toEqual({ currencyCode: 'USD', name: 'US Dollar' })
+    expect(toDefaultsByCountry(npDefaultsUs, 'US')).toEqual({
       countryCode: 'US',
-      defaultCurrencyCode: 'USD',
       defaultPaymentMethods: [
         'CREDIT_DEBIT_CARD',
         'APPLE_PAY',
         'ROBINHOOD_BUYING_POWER'
       ]
     })
-    expect(
-      toPaymentMethod(mustFind(npPaymentMethodsUs, () => true))
-    ).toMatchObject({
+    expect(toPaymentMethod(mustFind(npPaymentMethodsUs, () => true))).toEqual({
       paymentMethod: 'ACH',
-      paymentType: 'BANK_TRANSFER'
+      logos: {
+        dark: 'https://cdn.meld.io/images-paymentmethod/ACH/logo_dark.png',
+        light: 'https://cdn.meld.io/images-paymentmethod/ACH/logo_light.png'
+      }
     })
   })
 })
@@ -126,23 +112,23 @@ describe('routesToTradeLimits', () => {
   it('returns the envelope across all partners and methods', () => {
     const [limit] = routesToTradeLimits(npRoutesUsdBtc, { currencyCode: 'USD' })
     const all = npRoutesUsdBtc.flatMap(r => r.paymentMethods.map(m => m.limits))
-    expect(limit).toMatchObject({
+    expect(limit).toEqual({
       currencyCode: 'USD',
       minimumAmount: Math.min(...all.map(l => l.min)),
       maximumAmount: Math.max(...all.map(l => l.max))
     })
-    expect(Object.keys(providerDetails(limit))).toEqual(
-      expect.arrayContaining(['MERCURYO', 'STRIPE', 'SWAPPED'])
-    )
   })
 
-  it('narrows to the chosen payment method and the partners that list it', () => {
+  it('narrows to the chosen payment method', () => {
     const [limit] = routesToTradeLimits(npRoutesUsdBtc, {
       currencyCode: 'USD',
       paymentMethod: 'ACH'
     })
-    expect(limit).toMatchObject({ minimumAmount: 10.83, maximumAmount: 16133 })
-    expect(Object.keys(providerDetails(limit))).toEqual(['STRIPE'])
+    expect(limit).toEqual({
+      currencyCode: 'USD',
+      minimumAmount: 10.83,
+      maximumAmount: 16133
+    })
   })
 
   it('falls back to all methods when the chosen one is not listed', () => {
@@ -153,11 +139,10 @@ describe('routesToTradeLimits', () => {
     expect([limit]).toEqual(
       routesToTradeLimits(npRoutesUsdBtc, { currencyCode: 'USD' })
     )
-    expect(Object.keys(providerDetails(limit)).sort()).toEqual([
-      'MERCURYO',
-      'STRIPE',
-      'SWAPPED'
-    ])
+    expect(limit).toMatchObject({
+      minimumAmount: 7.78,
+      maximumAmount: 111185.7
+    })
   })
 
   describe('limit sanity', () => {

@@ -327,15 +327,6 @@ export const PaymentMethodTimeLimits: Record<string, string> = {
   [PaymentMethods.PAYOUT_TO_CARD]: '3-5 days'
 }
 
-export enum PaymentTypes {
-  CARD = 'CARD',
-  BANK_TRANSFER = 'BANK_TRANSFER',
-  MOBILE_WALLET = 'MOBILE_WALLET',
-  LOCAL = 'LOCAL',
-  EXCHANGE = 'EXCHANGE',
-  CASH = 'CASH'
-}
-
 export enum ServiceProviders {
   AKOYA = 'AKOYA',
   ALCHEMYPAY = 'ALCHEMYPAY',

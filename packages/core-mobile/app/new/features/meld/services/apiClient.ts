@@ -25,7 +25,7 @@ import {
   CreateCryptoQuoteSchema,
   CreateSessionWidgetSchema,
   MeldTransactionSchema
-} from './schemas'
+} from './transactionSchemas'
 import {
   NpCountriesResponseSchema,
   NpCurrenciesResponseSchema,
@@ -168,7 +168,7 @@ export const meldApiClient = (sandbox = false) => {
           `${MeldNetworkPartnerPath.DEFAULTS}/${joinPath(country, category)}`,
           NpDefaultsSchema
         )
-        return [toDefaultsByCountry(defaults)]
+        return [toDefaultsByCountry(defaults, country)]
       } catch (error) {
         if ((error as HttpError).response?.status === 404) {
           Logger.warn(
