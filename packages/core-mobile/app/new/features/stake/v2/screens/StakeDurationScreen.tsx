@@ -62,7 +62,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 const DELEGATION_FEE_FOR_ESTIMATION = 2
 
 /**
- * V2 "How long do you want to stake?" screen.
+ * V2 "Select a duration" screen.
  *
  * Reuses the legacy duration logic (reward chart, duration presets,
  * custom end date) and is designed to be shared across staking flows
@@ -495,8 +495,8 @@ const StakeDurationScreen = ({
   return (
     <>
       <ScrollScreen
-        title={`How long do you\nwant to stake?`}
-        navigationTitle="How long do you want to stake?"
+        title="Select a duration"
+        navigationTitle="Select a duration"
         isModal
         renderFooter={renderFooter}
         contentContainerStyle={{ padding: 16 }}>

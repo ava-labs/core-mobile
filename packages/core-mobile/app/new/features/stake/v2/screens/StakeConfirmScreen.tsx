@@ -58,6 +58,16 @@ import { StakeReviewSource } from '../types'
 import { formatFeePercent } from '../utils/formatFeePercent'
 import { isInsufficientFundsError } from '../utils/isInsufficientFundsError'
 import { parseStakeEndTimeParam } from '../utils/parseStakeEndTimeParam'
+import { formatUptime } from '../utils/formatUptime'
+import {
+  isUptimeBelowRequirement,
+  parseUptime
+} from '../utils/uptimeRequirement'
+import {
+  proceedOrWarnLowUptime,
+  resetLowUptimeAlertState
+} from '../utils/showLowUptimeAlert'
+import { DELEGATE_NODE_SELECTION_HREF } from '../constants'
 
 // Auto-dismiss delay after the stake succeeds.
 const SUCCESS_DISMISS_DELAY_MS = 2000
@@ -153,14 +163,50 @@ const isRestakeEntry = (
   restakeNodeId: string | undefined
 ): boolean => Boolean(preferredNodeId || restakeNodeId)
 
+// Advanced only: Figma's Fast Stake review has no Uptime row (its alert still fires).
+const buildUptimeRows = (
+  uptime: string | undefined,
+  isAdvanced: boolean
+): GroupListItem[] => {
+  if (!isAdvanced) return []
+  const value = parseUptime(uptime)
+  if (value === undefined) return []
+  return [
+    {
+      title: 'Uptime',
+      value: (
+        <Text
+          variant="body1"
+          testID="stake_review_uptime_value"
+          sx={{
+            marginVertical: 15,
+            ...(isUptimeBelowRequirement(value) ? { color: '$textDanger' } : {})
+          }}>
+          {`${formatUptime(value)}%`}
+        </Text>
+      )
+    }
+  ]
+}
+
+// Not an `||` chain: keeps the component under the cognitive-complexity lint limit.
+const isAnyTrue = (...conditions: boolean[]): boolean =>
+  conditions.some(Boolean)
+
+const delegateIfStillSubmittable = (
+  isSubmitDisabledRef: React.MutableRefObject<boolean>,
+  handleDelegateRef: React.MutableRefObject<() => void>
+): void => {
+  if (isSubmitDisabledRef.current) return
+  handleDelegateRef.current()
+}
+
 /**
- * V2 "Almost done, review your stake..." screen.
- *
  * Designed to be shared across staking flows (Fast Stake today; the
  * advanced delegate flow once it's built out). Data + fee policy come
  * from the `source` prop (validator resolution, convenience fee). Route
- * metadata that only affects analytics labeling (`isAdvanced`) is passed
- * as a sibling prop so it stays out of the source contract.
+ * metadata (`isAdvanced`) is passed as a sibling prop so it stays out of the
+ * source contract.
  *
  * The screen itself only deals with the parts that are universally
  * shared: reward computation, the review layout, the submit state
@@ -409,12 +455,13 @@ const StakeConfirmScreen = ({
           </Text>
         )
       },
+      ...buildUptimeRows(validator?.uptime, isAdvanced),
       {
         title: 'Estimated reward',
         value: <StakeTokenUnitValue value={displayedReward} isReward />
       }
     ],
-    [stakeAmount, apyText, displayedReward]
+    [stakeAmount, apyText, validator?.uptime, isAdvanced, displayedReward]
   )
 
   const unlockSection: GroupListItem[] = useMemo(() => {
@@ -736,6 +783,29 @@ const StakeConfirmScreen = ({
     ]
   )
 
+  // Refs, not closures: the alert can outlive start-time ticks and refetches,
+  // so Continue must see the latest handler and CTA state.
+  const handleDelegateRef = useRef<() => void>(() => handleDelegate())
+  const isSubmitDisabledRef = useRef(true)
+
+  const handleConfirmSlide = useCallback((): void => {
+    proceedOrWarnLowUptime({
+      uptime: validator?.uptime,
+      onProceed: () =>
+        delegateIfStillSubmittable(isSubmitDisabledRef, handleDelegateRef),
+      onSelectNewNode: () => dismissTo(DELEGATE_NODE_SELECTION_HREF)
+    })
+  }, [validator?.uptime, dismissTo])
+
+  // Don't block later warnings or let an alert that outlived the screen submit.
+  useEffect(
+    () => () => {
+      isSubmitDisabledRef.current = true
+      resetLowUptimeAlertState()
+    },
+    []
+  )
+
   // 'processing' once the delegation is in flight, 'success' once it
   // resolves; 'idle' is the reviewable state with the slide CTA.
   const phase: 'idle' | 'processing' | 'success' = isSuccess
@@ -884,6 +954,35 @@ const StakeConfirmScreen = ({
     additionalOutputs: feeAdditionalOutputs
   })
 
+  const isSubmitDisabled = isAnyTrue(
+    !validator,
+    // Also hold the CTA while a validator (re)fetch is in flight — the
+    // source can serve a cached validator immediately, and the
+    // eligibility gates (restake capacity / remaining time, fast-stake
+    // requalification) only re-run once fresh data lands. Restake
+    // entries invalidate the nodes cache on mount (see
+    // `useAdvancedReviewSource`), so for them a fetch is always in
+    // flight here and this hold covers it; outside a fetch this is NOT
+    // a staleness guarantee — the chain remains the final backstop.
+    isFetchingValidator,
+    !isFeeContextReady,
+    isIssueDelegationPending,
+    isCheckingFunding,
+    hasInsufficientFunds,
+    // While a fee applies, keep the CTA disabled until the supply query
+    // settles. The reward (and thus the fee output) is served from cache
+    // so `isFeeContextReady` is already true during a background refetch,
+    // but the funding pre-flight is intentionally held until the refetch
+    // finishes — without this the button would briefly enable before the
+    // funding check has even started.
+    isWaitingForFeeReward
+  )
+
+  useEffect(() => {
+    handleDelegateRef.current = () => handleDelegate()
+    isSubmitDisabledRef.current = isSubmitDisabled
+  }, [handleDelegate, isSubmitDisabled])
+
   const renderFooter = useCallback(() => {
     const ledgerFooter = renderLedgerFooter(steps.length)
     if (ledgerFooter) return ledgerFooter
@@ -896,30 +995,8 @@ const StakeConfirmScreen = ({
         showEstimateError={feePolicy !== null && isRewardEstimateError}
         onRetryEstimate={retryRewardEstimate}
         isSubmitting={isIssueDelegationPending}
-        isSubmitDisabled={
-          !validator ||
-          // Also hold the CTA while a validator (re)fetch is in flight — the
-          // source can serve a cached validator immediately, and the
-          // eligibility gates (restake capacity / remaining time, fast-stake
-          // requalification) only re-run once fresh data lands. Restake
-          // entries invalidate the nodes cache on mount (see
-          // `useAdvancedReviewSource`), so for them a fetch is always in
-          // flight here and this hold covers it; outside a fetch this is NOT
-          // a staleness guarantee — the chain remains the final backstop.
-          isFetchingValidator ||
-          !isFeeContextReady ||
-          isIssueDelegationPending ||
-          isCheckingFunding ||
-          hasInsufficientFunds ||
-          // While a fee applies, keep the CTA disabled until the supply query
-          // settles. The reward (and thus the fee output) is served from cache
-          // so `isFeeContextReady` is already true during a background refetch,
-          // but the funding pre-flight is intentionally held until the refetch
-          // finishes — without this the button would briefly enable before the
-          // funding check has even started.
-          isWaitingForFeeReward
-        }
-        onConfirm={() => handleDelegate()}
+        isSubmitDisabled={isSubmitDisabled}
+        onConfirm={handleConfirmSlide}
       />
     )
   }, [
@@ -930,12 +1007,8 @@ const StakeConfirmScreen = ({
     isRewardEstimateError,
     retryRewardEstimate,
     isIssueDelegationPending,
-    validator,
-    isFetchingValidator,
-    isFeeContextReady,
-    isCheckingFunding,
-    isWaitingForFeeReward,
-    handleDelegate
+    isSubmitDisabled,
+    handleConfirmSlide
   ])
 
   if (phase !== 'idle') {
@@ -945,7 +1018,7 @@ const StakeConfirmScreen = ({
   return (
     <ScrollScreen
       isModal
-      title={`Almost done,\nreview your stake...`}
+      title="Review your stake"
       navigationTitle="Review your stake"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
