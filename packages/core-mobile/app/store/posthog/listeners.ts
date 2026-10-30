@@ -7,6 +7,7 @@ import {
   selectIsAnalyticsEnabled,
   selectIsLogErrorsWithSentryBlocked,
   selectUserID,
+  setFeatureFlagPayloads,
   setFeatureFlags,
   toggleAnalytics
 } from 'store/posthog/slice'
@@ -25,8 +26,10 @@ const fetchFeatureFlagsPeriodically = async (
   const distinctId = selectDistinctID(listenerApi.getState())
 
   async function fetchFeatureFlags(): Promise<void> {
-    const featureFlags = await PostHogService.fetchFeatureFlags(distinctId)
-    featureFlags && dispatch(setFeatureFlags(featureFlags))
+    const result = await PostHogService.fetchFeatureFlags(distinctId)
+    if (!result) return
+    dispatch(setFeatureFlags(result.featureFlags))
+    dispatch(setFeatureFlagPayloads(result.featureFlagPayloads))
   }
 
   // eslint-disable-next-line no-constant-condition

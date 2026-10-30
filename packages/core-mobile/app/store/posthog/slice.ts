@@ -1,6 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
-import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
+import {
+  FeatureGates,
+  FeatureFlagPayloads,
+  FeatureFlags,
+  FeatureVars
+} from 'services/posthog/types'
+import { parseNumericVersion } from 'features/ledger/utils/appVersion'
 import { WalletType } from 'services/wallet/types'
 import { uuid } from 'utils/uuid'
 import { selectActiveWallet } from 'store/wallet/slice'
@@ -22,6 +28,12 @@ export const posthogSlice = createSlice({
     },
     setFeatureFlags: (state, action: PayloadAction<FeatureFlags>) => {
       state.featureFlags = action.payload
+    },
+    setFeatureFlagPayloads: (
+      state,
+      action: PayloadAction<FeatureFlagPayloads>
+    ) => {
+      state.featureFlagPayloads = action.payload
     }
   }
 })
@@ -718,8 +730,40 @@ export const selectIsDelegationFeeBlocked = (state: RootState): boolean => {
   )
 }
 
+/**
+ * Recommended Avalanche Ledger app version from the boolean
+ * `ledger-avalanche-app-recommended-version` gate's payload
+ * (`{ "recommendedVersion": "1.2.3" }`). Undefined unless the gate is on and
+ * the payload holds a strict numeric MAJOR.MINOR.PATCH.
+ */
+export const selectLedgerAvalancheAppRecommendedVersion = (
+  state: RootState
+): string | undefined => {
+  const { featureFlags, featureFlagPayloads } = state.posthog
+  if (
+    featureFlags[FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION] !==
+      true ||
+    featureFlags[FeatureGates.EVERYTHING] !== true
+  ) {
+    return undefined
+  }
+
+  const payload =
+    featureFlagPayloads?.[FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION]
+  if (typeof payload !== 'object' || payload === null) return undefined
+
+  const { recommendedVersion } = payload as { recommendedVersion?: unknown }
+  return parseNumericVersion(recommendedVersion)
+    ? (recommendedVersion as string)
+    : undefined
+}
+
 // actions
-export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
-  posthogSlice.actions
+export const {
+  regenerateUserId,
+  toggleAnalytics,
+  setFeatureFlags,
+  setFeatureFlagPayloads
+} = posthogSlice.actions
 
 export const posthogReducer = posthogSlice.reducer

@@ -71,6 +71,9 @@ class LedgerService {
   #sessionId: DeviceSessionId | null = null
   private _currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
   private currentAppVersion = ''
+  // Unlike currentAppVersion, survives switching to another app; cleared with
+  // the session.
+  private avalancheAppVersion = ''
 
   private get currentAppType(): LedgerAppType {
     return this._currentAppType
@@ -121,6 +124,14 @@ class LedgerService {
         .build()
     }
     return this.#dmk
+  }
+
+  private recordAppInfo(appType: LedgerAppType, version: string): void {
+    this.currentAppVersion = version
+    if (appType === LedgerAppType.AVALANCHE && version) {
+      this.avalancheAppVersion = version
+    }
+    this.recordLedgerAppSentryTags(appType, version)
   }
 
   // Session-global Sentry tags so any later Ledger error (e.g. a
@@ -226,15 +237,16 @@ class LedgerService {
 
       // Test immediate app info call and update currentAppType
       try {
-        const testAppInfo = await this.getCurrentAppInfo()
-        // Update currentAppType immediately so waitForApp doesn't have to wait
-        const detectedAppType = this.mapAppNameToType(
-          testAppInfo.applicationName
-        )
-        Logger.info(`Immediately detected app type: ${detectedAppType}`)
-        this.currentAppType = detectedAppType
-        this.currentAppVersion = testAppInfo.version
-        this.recordLedgerAppSentryTags(detectedAppType, testAppInfo.version)
+        const testAppInfo = await this.getCurrentSessionAppInfo()
+        if (testAppInfo) {
+          // Update currentAppType immediately so waitForApp doesn't have to wait
+          const detectedAppType = this.mapAppNameToType(
+            testAppInfo.applicationName
+          )
+          Logger.info(`Immediately detected app type: ${detectedAppType}`)
+          this.currentAppType = detectedAppType
+          this.recordAppInfo(detectedAppType, testAppInfo.version)
+        }
       } catch {
         // Best-effort: refreshAppInfo's poll picks the app type up shortly.
         Logger.info('Immediate app-info probe failed, relying on polling')
@@ -385,15 +397,17 @@ class LedgerService {
     this.appPollInFlight = true
 
     try {
-      const { applicationName, version } = await this.getCurrentAppInfo()
+      const appInfo = await this.getCurrentSessionAppInfo()
+      if (!appInfo) return
+
+      const { applicationName, version } = appInfo
       const newAppType = this.mapAppNameToType(applicationName)
 
       if (newAppType !== this.currentAppType) {
         Logger.info(`App changed from ${this.currentAppType} to ${newAppType}`)
         this.currentAppType = newAppType
       }
-      this.currentAppVersion = version
-      this.recordLedgerAppSentryTags(newAppType, version)
+      this.recordAppInfo(newAppType, version)
     } catch {
       // Expected while the device is switching apps; keep polling.
     } finally {
@@ -568,6 +582,15 @@ class LedgerService {
     })
   }
 
+  // A read can outlive its session (disconnect or reconnect while the APDU is in
+  // flight). Undefined then, so the old device's app never leaks into the
+  // replacement session's state.
+  private async getCurrentSessionAppInfo(): Promise<AppInfo | undefined> {
+    const sessionId = this.#sessionId
+    const appInfo = await this.getCurrentAppInfo()
+    return sessionId === this.#sessionId ? appInfo : undefined
+  }
+
   // Map app name to our enum
   private mapAppNameToType(appName: string): LedgerAppType {
     const lowerAppName = appName.toLowerCase()
@@ -620,9 +643,16 @@ class LedgerService {
     return this.currentAppVersion
   }
 
+  // Empty until the Avalanche app has been seen running in this session.
+  getAvalancheAppVersion(): string {
+    return this.avalancheAppVersion
+  }
+
   async checkApp(appType: LedgerAppType): Promise<boolean> {
     try {
-      const appInfo = await this.getCurrentAppInfo()
+      const appInfo = await this.getCurrentSessionAppInfo()
+      if (!appInfo) return false
+
       const detectedAppType = this.mapAppNameToType(appInfo.applicationName)
 
       if (detectedAppType !== this.currentAppType) {
@@ -631,8 +661,7 @@ class LedgerService {
         )
         this.currentAppType = detectedAppType
       }
-      this.currentAppVersion = appInfo.version
-      this.recordLedgerAppSentryTags(detectedAppType, appInfo.version)
+      this.recordAppInfo(detectedAppType, appInfo.version)
 
       if (this.isAppCompatible(this.currentAppType, appType)) {
         Logger.info(
@@ -989,6 +1018,7 @@ class LedgerService {
 
   private async teardownSession(): Promise<void> {
     this.stopAppPolling()
+    this.avalancheAppVersion = ''
     this.sessionStateSubscription?.unsubscribe()
     this.sessionStateSubscription = null
 
