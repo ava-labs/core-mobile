@@ -6,155 +6,132 @@ import {
   CreateSessionWidgetParams,
   CryptoCurrency,
   FiatCurrency,
-  GetTradeLimits,
   MeldDefaultParams,
   MeldTransaction,
+  SearchCryptoCurrenciesParams,
   SearchDefaultsByCountry,
+  SearchFiatCurrenciesParams,
   SearchPaymentMethods,
+  SearchRoutesParams,
   ServiceProvider
 } from '../types'
-import { SearchServiceProvidersParams } from '../hooks/useSearchServiceProviders'
-import { SearchFiatCurrenciesParams } from '../hooks/useSearchFiatCurrencies'
-import { SearchCryptoCurrenciesParams } from '../hooks/useSearchCryptoCurrencies'
-import { SearchDefaultsByCountryParams } from '../hooks/useSearchDefaultsByCountry'
-import { SearchPaymentMethodsParams } from '../hooks/useSearchPaymentMethods'
-import { GetTradeLimitsParams } from '../hooks/useGetTradeLimits'
-import { meldApiClient } from './apiClient'
+import { ServiceProviderCategories } from '../consts'
+import { meldApiClient, MeldApiClient } from './apiClient'
+import { NpRoute } from './networkPartnerSchemas'
+
+const firstCategory = (
+  categories: ServiceProviderCategories[]
+): ServiceProviderCategories => {
+  const [category] = categories
+  if (!category) throw new Error('Meld category is required')
+  return category
+}
+
+const onlyCodes = <T>(
+  items: T[],
+  getCode: (item: T) => string | null | undefined,
+  codes?: string[]
+): T[] =>
+  codes
+    ? items.filter(item => {
+        const code = getCode(item)
+        return code != null && codes.includes(code)
+      })
+    : items
 
 class MeldService {
-  #meldApiClient: ReturnType<typeof meldApiClient>
+  #meldApiClient: MeldApiClient
 
   init(sandbox?: boolean): void {
     this.#meldApiClient = meldApiClient(sandbox)
   }
 
   async searchCountries({
-    accountFilter,
     categories,
-    serviceProviders,
     countries
   }: MeldDefaultParams): Promise<Country[]> {
-    return this.#meldApiClient.getCountries({
-      serviceProviders: serviceProviders?.join(','),
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(',')
+    const result = await this.#meldApiClient.getCountries({
+      category: firstCategory(categories)
     })
+    return onlyCodes(result, country => country.countryCode, countries)
   }
 
   async searchFiatCurrencies({
     categories,
-    accountFilter,
-    serviceProviders,
-    fiatCurrencies,
-    countries
+    countries,
+    fiatCurrencies
   }: SearchFiatCurrenciesParams): Promise<FiatCurrency[]> {
-    return this.#meldApiClient.getFiatCurrencies({
-      serviceProviders: serviceProviders?.join(','),
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      fiatCurrencies: fiatCurrencies?.join(',')
+    const result = await this.#meldApiClient.getFiatCurrencies({
+      category: firstCategory(categories),
+      country: countries?.[0]
     })
+    return onlyCodes(result, c => c.currencyCode, fiatCurrencies)
   }
 
   async searchCryptoCurrencies({
     categories,
     countries,
-    serviceProviders,
-    cryptoCurrencies,
-    accountFilter = true
+    cryptoCurrencies
   }: SearchCryptoCurrenciesParams): Promise<CryptoCurrency[]> {
-    return this.#meldApiClient.getCryptoCurrencies({
-      serviceProviders: serviceProviders?.join(','),
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      cryptoCurrencies: cryptoCurrencies?.join(',')
+    const result = await this.#meldApiClient.getCryptoCurrencies({
+      category: firstCategory(categories),
+      country: countries?.[0]
     })
+    return onlyCodes(result, c => c.currencyCode, cryptoCurrencies)
   }
 
   async searchServiceProviders({
-    categories,
-    countries,
-    accountFilter = true,
-    cryptoCurrencies
-  }: SearchServiceProvidersParams): Promise<ServiceProvider[]> {
-    return this.#meldApiClient.getServiceProviders({
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      cryptoCurrencies: cryptoCurrencies?.join(',')
+    categories
+  }: MeldDefaultParams): Promise<ServiceProvider[]> {
+    return this.#meldApiClient.getPartners({
+      category: firstCategory(categories)
     })
   }
 
   async searchDefaultsByCountry({
     categories,
-    countries,
-    accountFilter = true
-  }: SearchDefaultsByCountryParams): Promise<SearchDefaultsByCountry[]> {
+    countries
+  }: MeldDefaultParams): Promise<SearchDefaultsByCountry[]> {
+    const country = countries?.[0]
+    if (!country) return []
     return this.#meldApiClient.getDefaultsByCountry({
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(',')
-    })
-  }
-
-  async getPurchaseLimits({
-    categories,
-    countries,
-    accountFilter = true,
-    serviceProviders,
-    fiatCurrencies,
-    cryptoCurrencyCodes,
-    includeDetails = false
-  }: GetTradeLimitsParams): Promise<GetTradeLimits[]> {
-    return this.#meldApiClient.getPurchaseLimits({
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      serviceProviders: serviceProviders?.join(','),
-      fiatCurrencies: fiatCurrencies?.join(','),
-      cryptoCurrencies: cryptoCurrencyCodes?.join(','),
-      includeDetails
-    })
-  }
-
-  async getSellLimits({
-    categories,
-    countries,
-    accountFilter = true,
-    serviceProviders,
-    fiatCurrencies,
-    cryptoCurrencyCodes,
-    includeDetails = false
-  }: GetTradeLimitsParams): Promise<GetTradeLimits[]> {
-    return this.#meldApiClient.getSellLimits({
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      serviceProviders: serviceProviders?.join(','),
-      fiatCurrencies: fiatCurrencies?.join(','),
-      cryptoCurrencies: cryptoCurrencyCodes?.join(','),
-      includeDetails
+      category: firstCategory(categories),
+      country
     })
   }
 
   async searchPaymentMethods({
     categories,
     countries,
-    accountFilter = true,
-    serviceProviders,
+    fiatCurrencies
+  }: SearchFiatCurrenciesParams): Promise<SearchPaymentMethods[]> {
+    const country = countries?.[0]
+    const fiat = fiatCurrencies?.[0]
+    if (!country || !fiat) return []
+    return this.#meldApiClient.getPaymentMethods({
+      category: firstCategory(categories),
+      country,
+      currencyCode: fiat
+    })
+  }
+
+  async searchRoutes({
+    categories,
+    countries,
     fiatCurrencies,
     cryptoCurrencyCodes
-  }: SearchPaymentMethodsParams): Promise<SearchPaymentMethods[]> {
-    return this.#meldApiClient.getPaymentMethods({
-      categories: categories.join(','),
-      accountFilter,
-      countries: countries?.join(','),
-      serviceProviders: serviceProviders?.join(','),
-      fiatCurrencies: fiatCurrencies?.join(','),
-      cryptoCurrencies: cryptoCurrencyCodes?.join(',')
+  }: SearchRoutesParams): Promise<NpRoute[]> {
+    const category = firstCategory(categories)
+    const country = countries?.[0]
+    const fiat = fiatCurrencies?.[0]
+    const crypto = cryptoCurrencyCodes?.[0]
+    if (!country || !fiat || !crypto) return []
+    const isOfframp = category === ServiceProviderCategories.CRYPTO_OFFRAMP
+    return this.#meldApiClient.getRoutes({
+      category,
+      country,
+      sourceCurrencyCode: isOfframp ? crypto : fiat,
+      destinationCurrencyCode: isOfframp ? fiat : crypto
     })
   }
 
@@ -167,7 +144,7 @@ class MeldService {
     destinationCurrencyCode,
     paymentMethodType,
     subdivision
-  }: CreateCryptoQuoteParams): Promise<CreateCryptoQuote | undefined> {
+  }: CreateCryptoQuoteParams): Promise<CreateCryptoQuote> {
     const body = {
       serviceProviders,
       countryCode,
@@ -194,7 +171,7 @@ class MeldService {
       destinationCurrencyCode,
       paymentMethodType
     }
-  }: CreateSessionWidgetParams): Promise<CreateSessionWidget | undefined> {
+  }: CreateSessionWidgetParams): Promise<CreateSessionWidget> {
     const body = {
       sessionType,
       sessionData: {
@@ -221,8 +198,8 @@ class MeldService {
     sessionId
   }: {
     sessionId: string
-  }): Promise<MeldTransaction | undefined> {
-    return await this.#meldApiClient.fetchTransactionBySessionId(sessionId)
+  }): Promise<MeldTransaction> {
+    return this.#meldApiClient.fetchTransactionBySessionId(sessionId)
   }
 }
 

@@ -1,60 +1,64 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
-import { isAndroid, isIOS } from 'utils/Utils'
-import { PaymentMethods } from '../consts'
 import MeldService from '../services/MeldService'
-import { MeldDefaultParams, SearchPaymentMethods } from '../types'
+import { routesToPaymentMethods } from '../services/networkPartnerAdapters'
+import { NpRoute } from '../services/networkPartnerSchemas'
+import { ServiceProviderCategories } from '../consts'
+import { SearchPaymentMethods } from '../types'
+import { isPaymentMethodSupported } from '../utils'
 import { useMeldCountryCode, useMeldToken } from '../store'
+import { useMeldRoutes } from './useMeldRoutes'
 
-export type SearchPaymentMethodsParams = MeldDefaultParams & {
-  fiatCurrencies?: string[]
-  cryptoCurrencyCodes?: string[]
-}
+const filterSupported = (
+  methods: SearchPaymentMethods[]
+): SearchPaymentMethods[] =>
+  methods.filter(method => isPaymentMethodSupported(method.paymentMethod))
 
 export const useSearchPaymentMethods = ({
-  categories,
-  accountFilter = true,
-  serviceProviders
-}: Omit<SearchPaymentMethodsParams, 'countries'>): UseQueryResult<
-  SearchPaymentMethods[],
-  Error
-> => {
+  category
+}: {
+  category: ServiceProviderCategories
+}): UseQueryResult<SearchPaymentMethods[], Error> => {
   const [meldToken] = useMeldToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-
   const [countryCode] = useMeldCountryCode()
-  const cryptoCurrencyCode = meldToken?.currencyCode
+  const cryptoCurrencyCode = meldToken?.currencyCode ?? undefined
 
-  return useQuery<SearchPaymentMethods[]>({
+  const selectRoutes = useCallback(
+    (routes: NpRoute[]) => filterSupported(routesToPaymentMethods(routes)),
+    []
+  )
+
+  const routesQuery = useMeldRoutes(
+    {
+      category,
+      countryCode,
+      fiatCurrencyCode: selectedCurrency,
+      cryptoCurrencyCode
+    },
+    selectRoutes
+  )
+
+  const methodsQuery = useQuery({
+    enabled: !cryptoCurrencyCode && !!countryCode && !!selectedCurrency,
     queryKey: [
       ReactQueryKeys.MELD_SEARCH_PAYMENT_METHODS,
-      categories,
+      category,
       countryCode,
-      serviceProviders,
-      accountFilter,
-      selectedCurrency,
-      cryptoCurrencyCode
+      selectedCurrency
     ],
     queryFn: () =>
       MeldService.searchPaymentMethods({
-        fiatCurrencies: [selectedCurrency],
-        cryptoCurrencyCodes: cryptoCurrencyCode
-          ? [cryptoCurrencyCode]
-          : undefined,
-        serviceProviders,
+        categories: [category],
         countries: countryCode ? [countryCode] : undefined,
-        categories,
-        accountFilter
+        fiatCurrencies: [selectedCurrency]
       }),
-    select: data => {
-      return data.filter(pm => {
-        if (isAndroid) return pm.paymentMethod !== PaymentMethods.APPLE_PAY
-        if (isIOS) return pm.paymentMethod !== PaymentMethods.GOOGLE_PAY
-        return true
-      })
-    },
-    staleTime: 1000 * 60 * 30 // 30 minutes
+    select: filterSupported,
+    staleTime: 1000 * 60 * 5 // 5 minutes
   })
+
+  return cryptoCurrencyCode ? routesQuery : methodsQuery
 }
