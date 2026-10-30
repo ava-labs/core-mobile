@@ -1,37 +1,5 @@
 export const npPartners = [
   {
-    serviceProvider: 'MERCURYO',
-    name: 'Mercuryo',
-    status: 'LIVE',
-    categories: ['CRYPTO_ONRAMP'],
-    capabilities: [
-      {
-        category: 'CRYPTO_ONRAMP',
-        domains: ['PAYMENT'],
-        status: 'LIVE'
-      }
-    ],
-    url: 'https://mercuryo.io',
-    lastLoadedAt: '2026-10-27T10:15:35.540492Z',
-    logo: {
-      dark: 'https://cdn.meld.io/images-serviceprovider/MERCURYO/logo_dark.png',
-      light:
-        'https://cdn.meld.io/images-serviceprovider/MERCURYO/logo_light.png',
-      darkShort:
-        'https://cdn.meld.io/images-serviceprovider/MERCURYO/short_logo_dark.png',
-      lightShort:
-        'https://cdn.meld.io/images-serviceprovider/MERCURYO/short_logo_light.png'
-    },
-    headless: {
-      supported: true,
-      uiCustomization: false
-    },
-    checkout: true,
-    kycMode: 'SYNC',
-    kycShareMethods: ['TOKEN'],
-    isExchange: false
-  },
-  {
     serviceProvider: 'STRIPE',
     name: 'Stripe',
     status: 'LIVE',
@@ -63,19 +31,25 @@ export const npPartners = [
     isExchange: false
   },
   {
+    serviceProvider: 'MERCURYO',
+    name: 'Mercuryo',
+    status: 'LIVE',
+    categories: ['CRYPTO_ONRAMP'],
+    logo: {
+      dark: 'https://cdn.meld.io/images-serviceprovider/MERCURYO/logo_dark.png',
+      light:
+        'https://cdn.meld.io/images-serviceprovider/MERCURYO/logo_light.png',
+      darkShort:
+        'https://cdn.meld.io/images-serviceprovider/MERCURYO/short_logo_dark.png',
+      lightShort:
+        'https://cdn.meld.io/images-serviceprovider/MERCURYO/short_logo_light.png'
+    }
+  },
+  {
     serviceProvider: 'SWAPPED',
     name: 'Swapped',
     status: 'LIVE',
     categories: ['CRYPTO_ONRAMP'],
-    capabilities: [
-      {
-        category: 'CRYPTO_ONRAMP',
-        domains: ['PAYMENT'],
-        status: 'LIVE'
-      }
-    ],
-    url: 'https://swapped.com',
-    lastLoadedAt: '2026-10-14T14:11:00.623692Z',
     logo: {
       dark: 'https://cdn.meld.io/images-serviceprovider/SWAPPED/logo_dark.png',
       light:
@@ -84,15 +58,7 @@ export const npPartners = [
         'https://cdn.meld.io/images-serviceprovider/SWAPPED/short_logo_dark.png',
       lightShort:
         'https://cdn.meld.io/images-serviceprovider/SWAPPED/short_logo_light.png'
-    },
-    headless: {
-      supported: false,
-      uiCustomization: false
-    },
-    checkout: true,
-    kycMode: 'NONE',
-    kycShareMethods: [],
-    isExchange: false
+    }
   }
 ]
 
@@ -110,7 +76,6 @@ export const npCryptoCurrencies = [
   {
     currencyCode: 'BTC',
     name: 'Bitcoin',
-    decimalPlaces: 18,
     type: 'CRYPTO',
     chainCode: 'BTC',
     chainId: 'bip122:000000000019d6689c085ae165831e93',
@@ -119,7 +84,6 @@ export const npCryptoCurrencies = [
   {
     currencyCode: 'SOL',
     name: 'Solana',
-    decimalPlaces: 18,
     type: 'CRYPTO',
     chainCode: 'SOLANA',
     chainId: '101',
@@ -129,7 +93,6 @@ export const npCryptoCurrencies = [
   {
     currencyCode: 'USDC_AVAXC',
     name: 'USD Coin',
-    decimalPlaces: 18,
     type: 'CRYPTO',
     chainCode: 'AVAXC',
     chainId: '43114',
@@ -140,45 +103,31 @@ export const npCryptoCurrencies = [
 
 export const npFiatCurrencies = [
   {
-    currencyCode: 'AED',
-    name: 'UAE Dirham',
-    decimalPlaces: 3,
-    type: 'FIAT',
-    symbol: 'https://cdn.meld.io/images-currency/fiat/AED/symbol.png'
-  },
-  {
-    currencyCode: 'ALL',
-    name: 'Lek',
-    decimalPlaces: 3,
-    type: 'FIAT',
-    symbol: 'https://cdn.meld.io/images-currency/fiat/ALL/symbol.png'
-  },
-  {
     currencyCode: 'USD',
     name: 'US Dollar',
     decimalPlaces: 3,
     type: 'FIAT',
     symbol: 'https://cdn.meld.io/images-currency/fiat/USD/symbol.png'
+  },
+  {
+    currencyCode: 'AED',
+    name: 'UAE Dirham',
+    type: 'FIAT',
+    symbol: 'https://cdn.meld.io/images-currency/fiat/AED/symbol.png'
   }
 ]
 
 export const npCountries = [
   {
-    countryCode: 'AD',
-    name: 'Andorra',
-    flag: 'https://cdn.meld.io/images-country/AD/flag.svg',
+    countryCode: 'US',
+    name: 'United States',
+    flag: 'https://cdn.meld.io/images-country/US/flag.svg',
     subdivisions: []
   },
   {
     countryCode: 'DE',
     name: 'Germany',
     flag: 'https://cdn.meld.io/images-country/DE/flag.svg',
-    subdivisions: []
-  },
-  {
-    countryCode: 'US',
-    name: 'United States',
-    flag: 'https://cdn.meld.io/images-country/US/flag.svg',
     subdivisions: []
   }
 ]
@@ -207,32 +156,13 @@ export const npPaymentMethodsUs = [
   },
   {
     countryCode: 'US',
-    providerMethod: 'apple',
     method: 'APPLE_PAY',
-    category: 'CRYPTO_ONRAMP',
     name: 'Apple Pay',
     type: 'MOBILE_WALLET',
     logo: {
       dark: 'https://cdn.meld.io/images-paymentmethod/APPLE_PAY/logo_dark.png',
       light: 'https://cdn.meld.io/images-paymentmethod/APPLE_PAY/logo_light.png'
-    },
-    headlessSupported: true,
-    checkoutSupported: true
-  },
-  {
-    countryCode: 'US',
-    providerMethod: 'card',
-    method: 'CREDIT_DEBIT_CARD',
-    category: 'CRYPTO_ONRAMP',
-    name: 'Credit & Debit Card',
-    type: 'CARD',
-    logo: {
-      dark: 'https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png',
-      light:
-        'https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_light.png'
-    },
-    headlessSupported: true,
-    checkoutSupported: true
+    }
   }
 ]
 
@@ -250,7 +180,7 @@ export const npRoutesUsdAvaxc = [
         limits: {
           currencyCode: 'USD',
           min: 10.83,
-          max: 16133.0
+          max: 16133
         },
         logo: {
           dark: 'https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png',
@@ -275,7 +205,7 @@ export const npRoutesUsdAvaxc = [
         limits: {
           currencyCode: 'USD',
           min: 10.83,
-          max: 16133.0
+          max: 16133
         },
         logo: {
           dark: 'https://cdn.meld.io/images-paymentmethod/ACH/logo_dark.png',
@@ -292,7 +222,7 @@ export const npRoutesUsdAvaxc = [
         limits: {
           currencyCode: 'USD',
           min: 10.83,
-          max: 16133.0
+          max: 16133
         },
         logo: {
           dark: 'https://cdn.meld.io/images-paymentmethod/APPLE_PAY/logo_dark.png',
@@ -394,7 +324,7 @@ export const npRoutesUsdBtc = [
         countryCode: 'US',
         limitType: 'TRANSACTION',
         currencyCode: 'USD',
-        level1: 1499.0
+        level1: 1499
       }
     ]
   },
@@ -411,7 +341,7 @@ export const npRoutesUsdBtc = [
         limits: {
           currencyCode: 'USD',
           min: 10.83,
-          max: 16133.0
+          max: 16133
         },
         logo: {
           dark: 'https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png',
@@ -436,7 +366,7 @@ export const npRoutesUsdBtc = [
         limits: {
           currencyCode: 'USD',
           min: 10.83,
-          max: 16133.0
+          max: 16133
         },
         logo: {
           dark: 'https://cdn.meld.io/images-paymentmethod/ACH/logo_dark.png',
@@ -453,7 +383,7 @@ export const npRoutesUsdBtc = [
         limits: {
           currencyCode: 'USD',
           min: 10.83,
-          max: 16133.0
+          max: 16133
         },
         logo: {
           dark: 'https://cdn.meld.io/images-paymentmethod/APPLE_PAY/logo_dark.png',

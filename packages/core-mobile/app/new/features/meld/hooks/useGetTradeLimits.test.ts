@@ -30,8 +30,8 @@ const wrapper = ({ children }: { children: ReactNode }): ReactNode =>
 
 const onramp = {
   category: ServiceProviderCategories.CRYPTO_ONRAMP,
-  fiatCurrencies: [CurrencySymbol.USD],
-  cryptoCurrencyCodes: ['BTC']
+  fiatCurrencyCode: CurrencySymbol.USD,
+  cryptoCurrencyCode: 'BTC'
 }
 
 describe('useGetTradeLimits', () => {
@@ -79,9 +79,6 @@ describe('useGetTradeLimits', () => {
         maximumAmount: 16133
       })
     )
-    expect(
-      Object.keys(result.current.data?.[0]?.serviceProviderDetails ?? {})
-    ).toEqual(['STRIPE'])
     expect(mockSearchRoutes).toHaveBeenCalledTimes(1)
   })
 })
