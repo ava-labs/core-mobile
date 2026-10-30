@@ -11,11 +11,11 @@ const offramp = ServiceProviderCategories.CRYPTO_OFFRAMP
 
 const client = {
   getPartners: jest.fn(),
-  getCryptoCurrenciesNp: jest.fn(),
-  getFiatCurrenciesNp: jest.fn(),
-  getCountriesNp: jest.fn(),
-  getDefaultsByCountryNp: jest.fn(),
-  getPaymentMethodsNp: jest.fn(),
+  getCryptoCurrencies: jest.fn(),
+  getFiatCurrencies: jest.fn(),
+  getCountries: jest.fn(),
+  getDefaultsByCountry: jest.fn(),
+  getPaymentMethods: jest.fn(),
   getRoutes: jest.fn()
 }
 
@@ -38,37 +38,34 @@ describe('MeldService', () => {
     expect(result).toBe(partners)
   })
 
-  it('searchPaymentMethods uses routes when a token is selected', async () => {
-    client.getRoutes.mockResolvedValue(npRoutesUsdAvaxc)
-    const result = await MeldService.searchPaymentMethods({
-      categories: [onramp],
-      countries: ['US'],
-      fiatCurrencies: [CurrencySymbol.USD],
-      cryptoCurrencyCodes: ['AVAXC']
-    })
-    expect(client.getRoutes).toHaveBeenCalledWith({
-      category: 'CRYPTO_ONRAMP',
-      country: 'US',
-      sourceCurrencyCode: 'USD',
-      destinationCurrencyCode: 'AVAXC'
-    })
-    expect(client.getPaymentMethodsNp).not.toHaveBeenCalled()
-    expect(result.map(m => m.paymentMethod)).toContain('CREDIT_DEBIT_CARD')
-  })
-
-  it('searchPaymentMethods falls back to the payment-methods endpoint without a token', async () => {
-    client.getPaymentMethodsNp.mockResolvedValue([])
+  it('searchPaymentMethods reads the payment-methods endpoint', async () => {
+    client.getPaymentMethods.mockResolvedValue([])
     await MeldService.searchPaymentMethods({
       categories: [onramp],
       countries: ['US'],
       fiatCurrencies: [CurrencySymbol.USD]
     })
-    expect(client.getPaymentMethodsNp).toHaveBeenCalledWith({
+    expect(client.getPaymentMethods).toHaveBeenCalledWith({
       category: 'CRYPTO_ONRAMP',
       country: 'US',
       currencyCode: 'USD'
     })
-    expect(client.getRoutes).not.toHaveBeenCalled()
+  })
+
+  it('searchPaymentMethods resolves to [] without a country or fiat currency', async () => {
+    await expect(
+      MeldService.searchPaymentMethods({
+        categories: [onramp],
+        fiatCurrencies: [CurrencySymbol.USD]
+      })
+    ).resolves.toEqual([])
+    await expect(
+      MeldService.searchPaymentMethods({
+        categories: [onramp],
+        countries: ['US']
+      })
+    ).resolves.toEqual([])
+    expect(client.getPaymentMethods).not.toHaveBeenCalled()
   })
 
   it('searchRoutes puts the crypto first in the off-ramp route', async () => {
@@ -117,11 +114,11 @@ describe('MeldService', () => {
       MeldService.searchDefaultsByCountry({ categories: [onramp] })
     ).resolves.toEqual([])
     expect(client.getRoutes).not.toHaveBeenCalled()
-    expect(client.getDefaultsByCountryNp).not.toHaveBeenCalled()
+    expect(client.getDefaultsByCountry).not.toHaveBeenCalled()
   })
 
   it('searchCryptoCurrencies filters client-side by requested codes', async () => {
-    client.getCryptoCurrenciesNp.mockResolvedValue([
+    client.getCryptoCurrencies.mockResolvedValue([
       { currencyCode: 'AVAXC' },
       { currencyCode: 'BTC' }
     ])
@@ -135,14 +132,14 @@ describe('MeldService', () => {
 
   it('searchCryptoCurrencies returns every item when no codes are requested', async () => {
     const items = [{ currencyCode: 'AVAXC' }, { currencyCode: 'BTC' }]
-    client.getCryptoCurrenciesNp.mockResolvedValue(items)
+    client.getCryptoCurrencies.mockResolvedValue(items)
     await expect(
       MeldService.searchCryptoCurrencies({ categories: [onramp] })
     ).resolves.toEqual(items)
   })
 
   it('searchCryptoCurrencies drops items with a null code when filtering', async () => {
-    client.getCryptoCurrenciesNp.mockResolvedValue([
+    client.getCryptoCurrencies.mockResolvedValue([
       { currencyCode: null },
       { currencyCode: 'BTC' }
     ])
@@ -158,7 +155,7 @@ describe('MeldService', () => {
   })
 
   it('searchFiatCurrencies and searchCountries filter by the requested codes', async () => {
-    client.getFiatCurrenciesNp.mockResolvedValue([
+    client.getFiatCurrencies.mockResolvedValue([
       { currencyCode: 'USD' },
       { currencyCode: 'EUR' }
     ])
@@ -168,12 +165,12 @@ describe('MeldService', () => {
         fiatCurrencies: ['EUR']
       })
     ).resolves.toEqual([{ currencyCode: 'EUR' }])
-    expect(client.getFiatCurrenciesNp).toHaveBeenCalledWith({
+    expect(client.getFiatCurrencies).toHaveBeenCalledWith({
       category: 'CRYPTO_ONRAMP',
       country: undefined
     })
 
-    client.getCountriesNp.mockResolvedValue([
+    client.getCountries.mockResolvedValue([
       { countryCode: 'US' },
       { countryCode: 'DE' }
     ])
@@ -202,6 +199,6 @@ describe('MeldService', () => {
       })
     ).resolves.toEqual([])
     expect(client.getRoutes).not.toHaveBeenCalled()
-    expect(client.getPaymentMethodsNp).not.toHaveBeenCalled()
+    expect(client.getPaymentMethods).not.toHaveBeenCalled()
   })
 })
