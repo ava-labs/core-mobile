@@ -33,13 +33,6 @@ const toContractAddress = (np: NpCurrency): string | null =>
 const asArray = <T>(value: T[] | null | undefined): T[] =>
   Array.isArray(value) ? value : []
 
-const toLogos = (
-  logo: { dark?: string | null; light?: string | null } | null | undefined
-): SearchPaymentMethods['logos'] => ({
-  dark: logo?.dark ?? null,
-  light: logo?.light ?? null
-})
-
 export const toServiceProvider = (np: NpPartner): ServiceProvider => ({
   serviceProvider: np.serviceProvider,
   name: np.name ?? null,
@@ -81,8 +74,11 @@ export const toDefaultsByCountry = (
 
 const toSearchPaymentMethod = (
   paymentMethod: string,
-  logo: Parameters<typeof toLogos>[0]
-): SearchPaymentMethods => ({ paymentMethod, logos: toLogos(logo) })
+  logo: NpPaymentMethod['logo']
+): SearchPaymentMethods => ({
+  paymentMethod,
+  logos: { dark: logo?.dark ?? null, light: logo?.light ?? null }
+})
 
 export const toPaymentMethod = (np: NpPaymentMethod): SearchPaymentMethods =>
   toSearchPaymentMethod(np.method, np.logo)

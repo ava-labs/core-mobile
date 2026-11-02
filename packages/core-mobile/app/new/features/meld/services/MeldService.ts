@@ -12,6 +12,7 @@ import {
   SearchDefaultsByCountry,
   SearchFiatCurrenciesParams,
   SearchPaymentMethods,
+  SearchPaymentMethodsParams,
   SearchRoutesParams,
   ServiceProvider
 } from '../types'
@@ -104,7 +105,7 @@ class MeldService {
     categories,
     countries,
     fiatCurrencies
-  }: SearchFiatCurrenciesParams): Promise<SearchPaymentMethods[]> {
+  }: SearchPaymentMethodsParams): Promise<SearchPaymentMethods[]> {
     const country = countries?.[0]
     const fiat = fiatCurrencies?.[0]
     if (!country || !fiat) return []

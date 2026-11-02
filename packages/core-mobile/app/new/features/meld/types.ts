@@ -81,6 +81,8 @@ export type SearchFiatCurrenciesParams = MeldDefaultParams & {
   fiatCurrencies?: string[]
 }
 
+export type SearchPaymentMethodsParams = SearchFiatCurrenciesParams
+
 export type SearchCryptoCurrenciesParams = MeldDefaultParams & {
   cryptoCurrencies?: string[]
 }
