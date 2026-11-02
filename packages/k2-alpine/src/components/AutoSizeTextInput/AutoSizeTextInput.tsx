@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -118,6 +119,7 @@ export const AutoSizeTextInput = forwardRef<
     // withTiming), so mirroring it into React state and applying it as a plain
     // style is visually identical while keeping the input a plain TextInput.
     const [inputFontSize, setInputFontSize] = useState(initialFontSize)
+    const [measuredTextWidth, setMeasuredTextWidth] = useState(0)
 
     useImperativeHandle(ref, () => ({
       focus: () => inputRef.current?.focus(),
@@ -242,6 +244,7 @@ export const AutoSizeTextInput = forwardRef<
         // e.g. after a font size adjustment), so handleLayout can use it accurately
         if (textWidth > 0) {
           lastTextWidthRef.current = textWidth
+          setMeasuredTextWidth(textWidth)
         }
 
         // Only recalculate font size when the text content actually changed
@@ -280,6 +283,23 @@ export const AutoSizeTextInput = forwardRef<
         calculateAndUpdateFontSize(lastTextWidthRef.current)
       }
     }, [containerWidth, calculateAndUpdateFontSize])
+
+    const flatStyle = useMemo(() => StyleSheet.flatten(style), [style])
+
+    // RN TextInput intrinsic width lags one update behind value changes, so size it from the hidden text.
+    const inputWidthStyle = useMemo(() => {
+      if (measuredTextWidth <= 0 || flatStyle?.width !== undefined) {
+        return undefined
+      }
+      const renderedFontSize =
+        flatStyle?.fontSize ?? inputFontSize * FIT_SCALE_FACTOR
+      return {
+        width:
+          Math.ceil((measuredTextWidth * renderedFontSize) / initialFontSize) +
+          CARET_WIDTH,
+        flexShrink: 1
+      }
+    }, [measuredTextWidth, flatStyle, inputFontSize, initialFontSize])
 
     const focusTextInput = useCallback(() => {
       inputRef.current?.focus()
@@ -364,6 +384,7 @@ export const AutoSizeTextInput = forwardRef<
                 lineHeight: inputFontSize * FIT_SCALE_FACTOR * 1.1,
                 color: inputColor
               },
+              inputWidthStyle,
               style
             ]}
             maxLength={maxLength}
@@ -404,7 +425,7 @@ export const AutoSizeTextInput = forwardRef<
                 lineHeight: initialFontSize * 1.1
               }
             ]}>
-            {value || ' '}
+            {value || props.placeholder || ' '}
           </Animated.Text>
         </View>
       </View>
@@ -413,6 +434,8 @@ export const AutoSizeTextInput = forwardRef<
 )
 
 const GAP_WIDTH = 4
+
+const CARET_WIDTH = 3
 
 // Scale factor to keep input text slightly smaller than full available width
 // On Android, we don't need to scale down the text
