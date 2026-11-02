@@ -4,6 +4,7 @@ import { ServiceProviderCategories } from '../consts'
 import { CreateCryptoQuoteParams } from '../types'
 import { npRoutesUsdAvaxc } from './__fixtures__/networkPartner'
 import { meldApiClient } from './apiClient'
+import { MELD_API_VERSION, MELD_VERSION_HEADER } from './networkPartnerPaths'
 
 jest.mock('utils/api/common/fetchWithValidation', () => ({
   ...jest.requireActual('utils/api/common/fetchWithValidation'),
@@ -12,13 +13,15 @@ jest.mock('utils/api/common/fetchWithValidation', () => ({
 
 const mockFetchJson = fetchJson as jest.Mock
 
+const versionHeaders = { [MELD_VERSION_HEADER]: MELD_API_VERSION }
+
 const httpError = (status: number): Error & { response: { status: number } } =>
   Object.assign(new Error(`HTTP ${status}`), { response: { status } })
 
 const expectGet = (suffix: string): void => {
   const [url, options, schema] = mockFetchJson.mock.calls[0]
   expect(url.slice(-suffix.length)).toBe(suffix)
-  expect(options).toEqual({ method: 'GET' })
+  expect(options).toEqual({ method: 'GET', headers: versionHeaders })
   expect(schema).toBeTruthy()
 }
 
@@ -173,10 +176,33 @@ describe('meldApiClient network-partner', () => {
     )
     expect(options).toEqual({
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...versionHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     })
     expect(schema).toBeTruthy()
+  })
+
+  it('sends Meld-Version 2026-02-03 on GET and POST requests', async () => {
+    mockFetchJson.mockResolvedValue([])
+    await meldApiClient().getPartners({
+      category: ServiceProviderCategories.CRYPTO_ONRAMP
+    })
+    mockFetchJson.mockResolvedValue({})
+    await meldApiClient().createCryptoQuotes({} as CreateCryptoQuoteParams)
+    const [, getOptions] = mockFetchJson.mock.calls[0]
+    const [, postOptions] = mockFetchJson.mock.calls[1]
+    expect(getOptions.headers).toMatchObject({ 'Meld-Version': '2026-02-03' })
+    expect(postOptions.headers).toMatchObject({ 'Meld-Version': '2026-02-03' })
+  })
+
+  it('sends the version header on the transaction lookup', async () => {
+    mockFetchJson.mockResolvedValue({})
+    await meldApiClient().fetchTransactionBySessionId('abc')
+    const [url, options] = mockFetchJson.mock.calls[0]
+    expect(url.endsWith('/proxy/meld/payments/transactions/sessions/abc')).toBe(
+      true
+    )
+    expect(options.headers).toMatchObject({ 'Meld-Version': '2026-02-03' })
   })
 
   it('rejects an unwrapped currencies body', async () => {

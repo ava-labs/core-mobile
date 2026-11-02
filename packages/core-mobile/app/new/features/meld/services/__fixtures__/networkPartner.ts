@@ -98,6 +98,25 @@ export const npCryptoCurrencies = [
     chainId: '43114',
     contract: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
     symbol: 'https://cdn.meld.io/images-currency/crypto/USDC_AVAXC/symbol.png'
+  },
+  {
+    currencyCode: 'MATIC_POLYGON',
+    name: 'MATIC',
+    decimalPlaces: 18,
+    type: 'CRYPTO',
+    chainCode: 'POLYGON',
+    chainId: '137',
+    symbol:
+      'https://cdn.meld.io/images-currency/crypto/MATIC_POLYGON/symbol.png'
+  },
+  {
+    currencyCode: 'USDC_MONAD',
+    name: 'USD Coin',
+    decimalPlaces: 18,
+    type: 'CRYPTO',
+    chainCode: 'MONAD',
+    chainId: '143',
+    symbol: 'https://cdn.meld.io/images-currency/crypto/USDC_MONAD/symbol.png'
   }
 ]
 

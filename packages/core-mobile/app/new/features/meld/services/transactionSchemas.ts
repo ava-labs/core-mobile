@@ -27,9 +27,6 @@ export const QuoteSchema = object({
   exchangeRate: number().optional().nullable(),
   paymentMethodType: string().optional().nullable(),
   serviceProvider: string().optional().nullable(),
-  customerScore: number().optional().nullable(),
-  institutionName: string().optional().nullable(),
-  lowKyc: boolean().optional().nullable(),
   partnerFee: number().optional().nullable()
 }).passthrough()
 

@@ -16,3 +16,6 @@ export const MeldNetworkPartnerParam = {
   CURRENCY_CODE: 'currencyCode',
   SUBDIVISION: 'subdivision'
 } as const
+
+export const MELD_VERSION_HEADER = 'Meld-Version'
+export const MELD_API_VERSION = '2026-02-03' as const

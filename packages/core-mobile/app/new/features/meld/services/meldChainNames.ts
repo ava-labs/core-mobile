@@ -36,4 +36,6 @@ export const MELD_CHAIN_NAMES = {
 } as const
 
 export const getMeldChainName = (code: string): string | undefined =>
-  (MELD_CHAIN_NAMES as Record<string, string>)[code]
+  Object.hasOwn(MELD_CHAIN_NAMES, code)
+    ? (MELD_CHAIN_NAMES as Record<string, string>)[code]
+    : undefined

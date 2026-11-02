@@ -48,6 +48,8 @@ import {
   toServiceProvider
 } from './networkPartnerAdapters'
 import {
+  MELD_API_VERSION,
+  MELD_VERSION_HEADER,
   MeldNetworkPartnerParam as Param,
   MeldNetworkPartnerPath
 } from './networkPartnerPaths'
@@ -71,8 +73,14 @@ const joinPath = (...segments: string[]): string =>
 export const meldApiClient = (sandbox = false) => {
   const apiBaseUrl = sandbox ? sandboxBaseUrl : baseUrl
 
+  const versionHeaders = { [MELD_VERSION_HEADER]: MELD_API_VERSION }
+
   const get = <T>(path: string, schema: z.ZodType<T>): Promise<T> =>
-    fetchJson(`${apiBaseUrl}/${path}`, { method: 'GET' }, schema)
+    fetchJson(
+      `${apiBaseUrl}/${path}`,
+      { method: 'GET', headers: versionHeaders },
+      schema
+    )
 
   const post = <T>(
     path: string,
@@ -83,7 +91,7 @@ export const meldApiClient = (sandbox = false) => {
       `${apiBaseUrl}/${path}`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...versionHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       },
       schema

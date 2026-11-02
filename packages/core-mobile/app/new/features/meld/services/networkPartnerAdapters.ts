@@ -7,6 +7,7 @@ import {
   SearchPaymentMethods,
   ServiceProvider
 } from '../types'
+import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from '../consts'
 import { getMeldChainName } from './meldChainNames'
 import {
   NpCountry,
@@ -17,6 +18,17 @@ import {
   NpRoute,
   NpRoutePaymentMethod
 } from './networkPartnerSchemas'
+
+const NATIVE_WITHOUT_CONTRACT_CODES: ReadonlySet<string> = new Set([
+  'MATIC_POLYGON',
+  'MON_MONAD'
+] as const)
+
+const toContractAddress = (np: NpCurrency): string | null =>
+  np.contract ??
+  (NATIVE_WITHOUT_CONTRACT_CODES.has(np.currencyCode)
+    ? NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS
+    : null)
 
 const asArray = <T>(value: T[] | null | undefined): T[] =>
   Array.isArray(value) ? value : []
@@ -46,7 +58,7 @@ export const toCryptoCurrency = (np: NpCurrency): CryptoCurrency => ({
     np.chainCode ??
     null,
   chainId: np.chainId ?? null,
-  contractAddress: np.contract ?? null
+  contractAddress: toContractAddress(np)
 })
 
 export const toFiatCurrency = (np: NpCurrency): FiatCurrency => ({
