@@ -53,7 +53,7 @@ index 9ec4cfe..fff872c 100644
    withDelay,
    withTiming,
    useFrameCallback,
-@@ -77,6 +79,7 @@ export const Container = React.memo(
+@@ -77,6 +79,7 @@
          onTabChange,
          width: customWidth,
          allowHeaderOverscroll,
@@ -61,7 +61,7 @@ index 9ec4cfe..fff872c 100644
        },
        ref
      ) => {
-@@ -106,12 +109,17 @@ export const Container = React.memo(
+@@ -106,12 +109,17 @@
        )
  
        const contentInset = React.useMemo(() => {
@@ -81,21 +81,30 @@ index 9ec4cfe..fff872c 100644
  
        const snappingTo: ContextType['snappingTo'] = useSharedValue(0)
        const offset: ContextType['offset'] = useSharedValue(0)
-@@ -227,7 +235,9 @@ export const Container = React.memo(
+@@ -226,9 +234,17 @@
+        * */
        const toggleSyncScrollFrame = (toggle: boolean) =>
          syncScrollFrame.setActive(toggle)
++      const lastSyncAt = useSharedValue(-Infinity)
        const syncScrollFrame = useFrameCallback(({ timeSinceFirstFrame }) => {
 -        syncCurrentTabScrollPosition()
-+        if (timeSinceFirstFrame % 100 === 0) {
++        if (
++          timeSinceFirstFrame < lastSyncAt.value ||
++          timeSinceFirstFrame - lastSyncAt.value >= 100
++        ) {
++          lastSyncAt.value = timeSinceFirstFrame
 +          syncCurrentTabScrollPosition()
 +        }
          if (timeSinceFirstFrame > 1500) {
++          lastSyncAt.value = -Infinity
            scheduleOnRN(toggleSyncScrollFrame, false)
          }
-@@ -325,6 +335,58 @@ export const Container = React.memo(
+       }, false)
+@@ -324,6 +340,58 @@
+           indexDecimal.value = e.position + e.offset
          },
        })
- 
++
 +      // Forward vertical pans on the header to the focused tab's scrollable so
 +      // the header can be collapsed by swiping anywhere on it. Horizontal pans
 +      // and short presses pass through so nested gestures (e.g. a chart's
@@ -147,11 +156,10 @@ index 9ec4cfe..fff872c 100644
 +            }),
 +        [contentInset, focusedTab, refMap, scrollYCurrent, headerScrollOffset]
 +      )
-+
+ 
        React.useImperativeHandle(
          ref,
-         () => ({
-@@ -343,9 +405,24 @@ export const Container = React.memo(
+@@ -343,9 +411,24 @@
            getCurrentIndex: () => {
              return index.value
            },
@@ -177,7 +185,7 @@ index 9ec4cfe..fff872c 100644
        )
  
        return (
-@@ -376,6 +453,7 @@ export const Container = React.memo(
+@@ -376,6 +459,7 @@
              headerTranslateY,
              width,
              allowHeaderOverscroll,
@@ -185,26 +193,10 @@ index 9ec4cfe..fff872c 100644
            }}
          >
            <Animated.View
-@@ -391,22 +469,24 @@ export const Container = React.memo(
+@@ -391,23 +475,25 @@
                  !cancelTranslation && stylez,
                ]}
              >
--              <View
--                style={[styles.container, styles.headerContainer]}
--                onLayout={getHeaderHeight}
--                pointerEvents="box-none"
--              >
--                {renderHeader &&
--                  renderHeader({
--                    containerRef,
--                    index,
--                    tabNames: tabNamesArray,
--                    focusedTab,
--                    indexDecimal,
--                    onTabPress,
--                    tabProps,
--                  })}
--              </View>
 +              <GestureDetector gesture={headerPanGesture}>
 +                <View
 +                  style={[styles.container, styles.headerContainer]}
@@ -224,8 +216,25 @@ index 9ec4cfe..fff872c 100644
 +                </View>
 +              </GestureDetector>
                <View
+-                style={[styles.container, styles.headerContainer]}
+-                onLayout={getHeaderHeight}
+-                pointerEvents="box-none"
+-              >
+-                {renderHeader &&
+-                  renderHeader({
+-                    containerRef,
+-                    index,
+-                    tabNames: tabNamesArray,
+-                    focusedTab,
+-                    indexDecimal,
+-                    onTabPress,
+-                    tabProps,
+-                  })}
+-              </View>
+-              <View
                  style={[styles.container, styles.tabBarContainer]}
                  onLayout={getTabBarHeight}
+                 pointerEvents="box-none"
 diff --git a/node_modules/react-native-collapsible-tab-view/src/hooks.tsx b/node_modules/react-native-collapsible-tab-view/src/hooks.tsx
 index 35ea1de..b6d7ad2 100644
 --- a/node_modules/react-native-collapsible-tab-view/src/hooks.tsx
