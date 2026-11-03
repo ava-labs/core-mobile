@@ -7,7 +7,7 @@ import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLo
 import { RecurringSchedulesBanner } from 'new/features/recurringSwap/components/RecurringSchedulesBanner'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
@@ -26,11 +26,13 @@ const viewInExplorerIcon = require('../../../assets/icons/flashlight.png')
 export const ActivityScreen = ({
   isSearchBarFocused = false,
   searchText = '',
-  containerStyle
+  containerStyle,
+  onScrollResync
 }: {
   isSearchBarFocused?: boolean
   searchText?: string
   containerStyle: ViewStyle
+  onScrollResync?: () => void
 }): JSX.Element => {
   const { openUrl } = useInAppBrowser()
   const header = useHeaderMeasurements()
@@ -183,6 +185,14 @@ export const ActivityScreen = ({
   const activityListData = useMemo(() => {
     return isLoadingXpToken ? [] : data
   }, [data, isLoadingXpToken])
+
+  const isListEmpty = activityListData.length === 0
+  const listKey = xpToken?.symbol
+
+  // CollapsibleTabList swaps/remounts its list on these; re-align it to the header
+  useEffect(() => {
+    onScrollResync?.()
+  }, [isListEmpty, listKey, onScrollResync])
 
   return (
     <Animated.View

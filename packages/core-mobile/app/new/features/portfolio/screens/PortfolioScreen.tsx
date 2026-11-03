@@ -557,7 +557,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
     if (!isInAppDefiBlocked) {
       baseTabs.push({
         tabName: 'Activity',
-        component: <ActivityScreen containerStyle={contentContainerStyle} />
+        component: (
+          <ActivityScreen
+            onScrollResync={handleScrollResync}
+            containerStyle={contentContainerStyle}
+          />
+        )
       })
     }
 
