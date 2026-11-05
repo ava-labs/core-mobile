@@ -62,9 +62,7 @@ export const SelectServiceProvider = ({
   const token = useMeldTokenWithBalance({ category })
 
   const network = useMemo(() => {
-    return token?.networkChainId
-      ? getNetwork(token.tokenWithBalance.networkChainId)
-      : token && 'chainId' in token.tokenWithBalance
+    return token && 'chainId' in token.tokenWithBalance
       ? getNetwork(token.tokenWithBalance.chainId)
       : undefined
   }, [getNetwork, token])
