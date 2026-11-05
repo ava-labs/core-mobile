@@ -16,7 +16,10 @@ import {
   SearchRoutesParams,
   ServiceProvider
 } from '../types'
-import { ServiceProviderCategories } from '../consts'
+import {
+  ServiceProviderCategories,
+  SUPPORTED_MELD_CRYPTO_CODES
+} from '../consts'
 import { meldApiClient, MeldApiClient } from './apiClient'
 import { NpRoute } from './networkPartnerSchemas'
 
@@ -78,7 +81,11 @@ class MeldService {
       category: firstCategory(categories),
       country: countries?.[0]
     })
-    return onlyCodes(result, c => c.currencyCode, cryptoCurrencies)
+    return onlyCodes(
+      onlyCodes(result, c => c.currencyCode, [...SUPPORTED_MELD_CRYPTO_CODES]),
+      c => c.currencyCode,
+      cryptoCurrencies
+    )
   }
 
   async searchServiceProviders({

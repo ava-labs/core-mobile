@@ -1,24 +1,14 @@
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { tokenAddresses } from 'consts/tokenIds'
-import { selectIsSolanaSupportBlocked } from 'store/posthog/slice'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAllCustomTokens } from 'store/customToken'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { getEthereumNetwork } from 'services/network/utils/providerUtils'
 import { useTokenLookup, type TokenInfo } from 'common/hooks/useTokenLookup'
 import { tokenLookupResponseKey } from 'common/utils/tokenLookup'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
-import { isDefined } from 'common/utils/isDefined'
 import Logger from 'utils/Logger'
 import { meldContractTokenKey } from '../utils'
-import {
-  NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
-  SOLANA_MELD_CHAIN_ID
-} from '../consts'
+import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from '../consts'
 import { CryptoCurrency } from '../types'
 
 type MeldContractTokenMap = Map<string, NetworkContractToken>
@@ -38,7 +28,7 @@ type MeldTokenCandidate = {
  */
 const toCandidate = (
   crypto: CryptoCurrency,
-  scopedChainIds: number[]
+  cChainId: number | undefined
 ): MeldTokenCandidate | undefined => {
   const { contractAddress, chainId } = crypto
   if (!contractAddress || !chainId) return undefined
@@ -50,23 +40,9 @@ const toCandidate = (
     return undefined
   }
 
-  // Meld reports Solana under its own chain id, not the numeric one the rest of
-  // the app keys by.
-  const numericChainId =
-    chainId === SOLANA_MELD_CHAIN_ID.toString()
-      ? ChainId.SOLANA_MAINNET_ID
-      : Number(chainId)
+  const numericChainId = Number(chainId)
 
-  if (!scopedChainIds.includes(numericChainId)) return undefined
-
-  // Parity with the contract-token catalog this replaced: SPL support is
-  // deliberately limited to USDC. Widening it is a product decision.
-  if (
-    numericChainId === ChainId.SOLANA_MAINNET_ID &&
-    contractAddress !== tokenAddresses.USDC_SOLANA
-  ) {
-    return undefined
-  }
+  if (numericChainId !== cChainId) return undefined
 
   return {
     chainId: numericChainId,
@@ -103,14 +79,7 @@ const toContractToken = (
     logoUri: info.meta?.logoUri ?? undefined
   }
 
-  return candidate.chainId === ChainId.SOLANA_MAINNET_ID
-    ? {
-        ...shared,
-        type: TokenType.SPL,
-        contractType: TokenType.SPL,
-        caip2Id: candidate.caip2Id
-      }
-    : { ...shared, type: TokenType.ERC20 }
+  return { ...shared, type: TokenType.ERC20 }
 }
 
 /**
@@ -119,37 +88,21 @@ const toContractToken = (
  *
  * Resolves them with a single batched `/v1/token/lookup` for the handful of
  * currencies Meld actually supports, rather than downloading the full ~53k
- * C-Chain and Ethereum contract-token catalogs to read a few dozen entries out
+ * C-Chain contract-token catalogs to read a few dozen entries out
  * of them.
  */
 export const useMeldContractTokenMap = (
   cryptoCurrencies: CryptoCurrency[]
 ): MeldContractTokenMap => {
-  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const allCustomTokens = useSelector(selectAllCustomTokens)
-  const { allNetworks } = useNetworks()
-  const cChainNetwork = useCChainNetwork()
-  const ethereumNetwork = getEthereumNetwork(allNetworks, isDeveloperMode)
-
-  // Matches the chains the catalog hooks covered: the active C-Chain and
-  // Ethereum, plus Solana for the single USDC entry.
-  const scopedChainIds = useMemo(
-    () =>
-      [
-        cChainNetwork?.chainId,
-        ethereumNetwork?.chainId,
-        isSolanaSupportBlocked ? undefined : ChainId.SOLANA_MAINNET_ID
-      ].filter(isDefined),
-    [cChainNetwork?.chainId, ethereumNetwork?.chainId, isSolanaSupportBlocked]
-  )
+  const cChainId = useCChainNetwork()?.chainId
 
   const candidates = useMemo(
     () =>
       cryptoCurrencies
-        .map(crypto => toCandidate(crypto, scopedChainIds))
-        .filter(isDefined),
-    [cryptoCurrencies, scopedChainIds]
+        .map(crypto => toCandidate(crypto, cChainId))
+        .filter((c): c is MeldTokenCandidate => c !== undefined),
+    [cryptoCurrencies, cChainId]
   )
 
   const lookupIds = useMemo(
@@ -178,12 +131,12 @@ export const useMeldContractTokenMap = (
     // Custom tokens are user-added and absent from the aggregator catalog. The
     // contract-token hooks this replaced merged them in for the same chains, so
     // dropping them here would quietly stop resolving them.
-    for (const chainId of scopedChainIds) {
-      for (const token of allCustomTokens[chainId] ?? []) {
-        map.set(meldContractTokenKey(chainId, token.address), token)
+    if (cChainId !== undefined) {
+      for (const token of allCustomTokens[cChainId] ?? []) {
+        map.set(meldContractTokenKey(cChainId, token.address), token)
       }
     }
 
     return map
-  }, [candidates, lookupTokens, scopedChainIds, allCustomTokens])
+  }, [candidates, lookupTokens, cChainId, allCustomTokens])
 }
