@@ -13,8 +13,6 @@ export enum ServiceProviderStatus {
 }
 
 export enum MELD_CURRENCY_CODES {
-  BTC = 'BTC',
-  USDC = 'USDC',
   AVAXC = 'AVAXC',
   USDC_AVAXC = 'USDC_AVAXC',
   USDT_AVAXC = 'USDT_AVAXC'

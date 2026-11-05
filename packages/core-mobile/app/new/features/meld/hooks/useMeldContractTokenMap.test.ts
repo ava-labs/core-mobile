@@ -5,6 +5,7 @@ import { useMeldContractTokenMap } from './useMeldContractTokenMap'
 
 const C_CHAIN = 43114
 const POLYGON = 137
+const ETHEREUM = 1
 const NATIVE_SENTINEL = '0x0000000000000000000000000000000000000000'
 
 const mockState = {
@@ -120,6 +121,24 @@ describe('useMeldContractTokenMap', () => {
       ])
 
       expect(requestedAddresses()).toEqual(['0xF6'])
+    })
+
+    it('does not resolve Ethereum mainnet tokens into the contract token map', () => {
+      const address = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+      mockState.lookupData = Object.fromEntries([
+        entry('eip155:1', address, {
+          symbol: 'USDC',
+          meta: { decimals: { 'eip155:1': 6 }, logoUri: 'https://usdc' }
+        })
+      ])
+
+      const map = render([
+        currency({ chainId: ETHEREUM.toString(), contractAddress: address })
+      ])
+
+      expect(requestedAddresses()).toEqual([])
+      expect(map.has(`${ETHEREUM}-${address.toLowerCase()}`)).toBe(false)
+      expect(map.size).toBe(0)
     })
 
     it('requests nothing when there are no currencies', () => {
