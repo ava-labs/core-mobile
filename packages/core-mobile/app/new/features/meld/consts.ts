@@ -16,8 +16,15 @@ export enum MELD_CURRENCY_CODES {
   BTC = 'BTC',
   USDC = 'USDC',
   AVAXC = 'AVAXC',
-  USDC_AVAXC = 'USDC_AVAXC'
+  USDC_AVAXC = 'USDC_AVAXC',
+  USDT_AVAXC = 'USDT_AVAXC'
 }
+
+export const SUPPORTED_MELD_CRYPTO_CODES: readonly string[] = [
+  MELD_CURRENCY_CODES.AVAXC,
+  MELD_CURRENCY_CODES.USDC_AVAXC,
+  MELD_CURRENCY_CODES.USDT_AVAXC
+]
 
 export const NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS =
   '0x0000000000000000000000000000000000000000'
@@ -418,8 +425,6 @@ export const ServiceProviderNames: Record<string, string> = {
   [ServiceProviders.SWAPPED]: 'Swapped.com',
   [ServiceProviders.BOOMFI]: 'Boomfi'
 }
-
-export const SOLANA_MELD_CHAIN_ID = 101
 
 export const MeldCurrencyType = {
   CRYPTO: 'CRYPTO',

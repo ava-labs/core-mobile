@@ -1,4 +1,3 @@
-import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from '../consts'
 import {
   npPartners,
   npCryptoCurrencies,
@@ -73,14 +72,6 @@ describe('toCryptoCurrency', () => {
     expect(toCryptoCurrency({ currencyCode: 'X' }).chainName).toBeNull()
   })
 
-  it('marks native-without-contract Meld codes with the zero address', () => {
-    const matic = toCryptoCurrency(
-      mustFind(npCryptoCurrencies, c => c.currencyCode === 'MATIC_POLYGON')
-    )
-    expect(matic.chainId).toBe('137')
-    expect(matic.contractAddress).toBe(NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS)
-  })
-
   it('keeps a null contract for other currencies without a contract', () => {
     const usdc = toCryptoCurrency(
       mustFind(npCryptoCurrencies, c => c.currencyCode === 'USDC_MONAD')
@@ -88,15 +79,15 @@ describe('toCryptoCurrency', () => {
     expect(usdc.contractAddress).toBeNull()
   })
 
-  it('does not override an explicit contract', () => {
+  it('passes an explicit contract through', () => {
     expect(
       toCryptoCurrency({
-        currencyCode: 'POL',
-        chainCode: 'POLYGON',
-        chainId: '137',
-        contract: '0x0000000000000000000000000000000000001010'
+        currencyCode: 'USDC_AVAXC',
+        chainCode: 'AVAXC',
+        chainId: '43114',
+        contract: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e'
       }).contractAddress
-    ).toBe('0x0000000000000000000000000000000000001010')
+    ).toBe('0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e')
   })
 })
 
