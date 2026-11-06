@@ -1,4 +1,7 @@
-import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
+import {
+  sanitizeFeatureFlagPayloads,
+  sanitizeFeatureFlags
+} from './sanitizeFeatureFlags'
 import { FeatureFlags, FeatureGates } from './types'
 
 describe('app/contexts/posthogUtils.ts', () => {
@@ -61,6 +64,27 @@ describe('app/contexts/posthogUtils.ts', () => {
         expect(featureFlags[FeatureGates.FAST_STAKE_FEE_ENABLED]).toBe('1000')
         // Version not satisfied: the gate is disabled outright.
         expect(featureFlags[FeatureGates.DELEGATION_FEE_ENABLED]).toBe(false)
+      })
+    })
+
+    describe('config-payload gates', () => {
+      it('does not evaluate their payload as an app-version range', () => {
+        expect(
+          sanitizeFeatureFlags(
+            {
+              featureFlags: {
+                [FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION]: true
+              },
+              featureFlagPayloads: {
+                [FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION]:
+                  JSON.stringify({ recommendedVersion: '1.2.3' })
+              }
+            },
+            '1.0.0'
+          )
+        ).toStrictEqual({
+          [FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION]: true
+        })
       })
     })
 
@@ -218,6 +242,60 @@ describe('app/contexts/posthogUtils.ts', () => {
           }
         )
       })
+    })
+  })
+
+  describe('sanitizeFeatureFlagPayloads', () => {
+    const LEDGER = FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION
+
+    it('decodes JSON-encoded payloads of config-payload gates', () => {
+      expect(
+        sanitizeFeatureFlagPayloads({
+          featureFlags: { [LEDGER]: true },
+          featureFlagPayloads: {
+            [LEDGER]: JSON.stringify({ recommendedVersion: '1.2.3' })
+          }
+        })
+      ).toStrictEqual({ [LEDGER]: { recommendedVersion: '1.2.3' } })
+    })
+
+    it('accepts an already-decoded payload object', () => {
+      expect(
+        sanitizeFeatureFlagPayloads({
+          featureFlags: { [LEDGER]: true },
+          featureFlagPayloads: { [LEDGER]: { recommendedVersion: '1.2.3' } }
+        })
+      ).toStrictEqual({ [LEDGER]: { recommendedVersion: '1.2.3' } })
+    })
+
+    it('drops payloads that are not valid JSON', () => {
+      expect(
+        sanitizeFeatureFlagPayloads({
+          featureFlags: { [LEDGER]: true },
+          featureFlagPayloads: { [LEDGER]: '{recommendedVersion: 1.2.3' }
+        })
+      ).toStrictEqual({})
+    })
+
+    it('ignores payloads of version-range gates', () => {
+      expect(
+        sanitizeFeatureFlagPayloads({
+          featureFlags: { [FeatureGates.FUSION]: true },
+          featureFlagPayloads: { [FeatureGates.FUSION]: JSON.stringify('^1') }
+        })
+      ).toStrictEqual({})
+    })
+
+    it('returns an empty object when there are no payloads', () => {
+      expect(
+        sanitizeFeatureFlagPayloads({ featureFlags: { [LEDGER]: true } })
+      ).toStrictEqual({})
+    })
+
+    it('throws on an invalid response', () => {
+      expect(() => sanitizeFeatureFlagPayloads(null)).toThrow(
+        'invalid response'
+      )
     })
   })
 })
