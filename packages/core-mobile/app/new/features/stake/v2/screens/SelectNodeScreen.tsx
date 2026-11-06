@@ -287,7 +287,7 @@ const SelectNodeScreen = (): JSX.Element => {
 
   return (
     <ListScreenV2
-      title={`Find and select your\npreferred node`}
+      title="Select a node"
       data={validators}
       renderItem={renderItem}
       isModal
