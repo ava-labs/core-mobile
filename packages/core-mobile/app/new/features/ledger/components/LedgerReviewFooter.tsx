@@ -8,7 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import React from 'react'
 import { Operation } from 'services/earn/computeDelegationSteps/types'
-import { LedgerDevice } from 'services/ledger/types'
+import { LedgerAppType, LedgerDevice } from 'services/ledger/types'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
 import { LedgerAvalancheAppOutdatedHint } from './LedgerAvalancheAppOutdatedHint'
 
@@ -71,6 +71,7 @@ type LedgerReviewFooterProps = {
   stepSubtitle: string
   ledgerCurrentStep: number
   totalSteps: number
+  appType?: LedgerAppType
 }
 
 export const LedgerReviewFooter = ({
@@ -84,14 +85,19 @@ export const LedgerReviewFooter = ({
   stepTitle,
   stepSubtitle,
   ledgerCurrentStep,
-  totalSteps
+  totalSteps,
+  appType = LedgerAppType.AVALANCHE
 }: LedgerReviewFooterProps): JSX.Element | null => {
   const { theme } = useTheme()
+  const outdatedAppHint =
+    appType === LedgerAppType.AVALANCHE ? (
+      <LedgerAvalancheAppOutdatedHint />
+    ) : null
 
   if (ledgerPhase === LedgerReviewPhase.CONNECTING) {
     return (
       <View sx={{ gap: 16, marginTop: 24 }}>
-        <LedgerAvalancheAppOutdatedHint />
+        {outdatedAppHint}
         {deviceForWallet && (
           <View
             sx={{
@@ -188,7 +194,7 @@ export const LedgerReviewFooter = ({
         : `${stepTitle} [${ledgerCurrentStep}/${totalSteps}]`
     return (
       <View sx={{ gap: 16, marginTop: 24 }}>
-        <LedgerAvalancheAppOutdatedHint />
+        {outdatedAppHint}
         <AnimatedIconWithText
           icon={
             <Icons.Custom.Ledger

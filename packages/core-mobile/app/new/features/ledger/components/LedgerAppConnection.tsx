@@ -32,6 +32,11 @@ export enum AppConnectionStep {
   COMPLETE = 'complete'
 }
 
+const SOLANA_STEPS = [
+  AppConnectionStep.SOLANA_CONNECT,
+  AppConnectionStep.SOLANA_LOADING
+]
+
 interface StepConfig {
   icon: React.ReactNode
   title: string
@@ -442,7 +447,9 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         />
       )}
 
-      <LedgerAvalancheAppOutdatedHint sx={{ marginTop: 16 }} />
+      {!SOLANA_STEPS.includes(currentStep) && (
+        <LedgerAvalancheAppOutdatedHint sx={{ marginTop: 16 }} />
+      )}
 
       {renderStepContent()}
     </View>
