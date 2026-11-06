@@ -217,7 +217,11 @@ export const useManageWallet = (): {
 
         showSnackbar('Account added successfully')
       } catch (error) {
-        Logger.error('Unable to add account', error)
+        // SentryService captures the Error itself and files this string under
+        // extra.message, so put the cause there for triage without changing
+        // grouping (which stays stack-based on the throw site).
+        const cause = error instanceof Error ? error.message : String(error)
+        Logger.error(`Unable to add account: ${cause}`, error)
         showSnackbar('Unable to add account')
       } finally {
         setIsAddingAccount(false)
