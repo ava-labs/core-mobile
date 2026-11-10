@@ -1,3 +1,5 @@
+import type { SiweMalformedReason } from 'vmModule/utils/siwe/parseSiweMessage'
+
 /**
  * Payload for dApp transaction lifecycle analytics events
  * (_success, _confirmed, _failed).
@@ -305,6 +307,12 @@ export type AnalyticsEvents = {
     optionalNamespaces?: string
     dappUrl: string
   }
+  WalletConnectSessionProposalTrust: {
+    validation: 'VALID' | 'UNKNOWN' | 'INVALID' | 'NONE'
+    isScam: boolean
+    trustLevel: 'MALICIOUS' | 'SUSPICIOUS' | 'UNVERIFIED' | 'TRUSTED'
+    dAppHostname: string
+  }
 
   // CP-7638 - DeFi aggregator
   DeFiAggregatorsCount: { count: number }
@@ -330,6 +338,10 @@ export type AnalyticsEvents = {
   BrowserViewHistoryTapped: undefined
   BrowserHistoryTapped: { url: string }
   WalletConnectedToDapp: { dAppUrl: string }
+  SiweMalformedMessageDetected: {
+    reason: SiweMalformedReason
+    dAppUrl: string
+  }
   TxSubmittedToDapp: undefined
 
   //Gasless

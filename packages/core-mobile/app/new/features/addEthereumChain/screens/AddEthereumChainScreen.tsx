@@ -1,12 +1,15 @@
 import { GroupList, GroupListItem, Text } from '@avalabs/k2-alpine'
 import React, { ReactNode, useCallback } from 'react'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
+import { AlertType } from '@avalabs/vm-module-types'
 import { AddEthereumChainParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { ActionSheet } from 'common/components/ActionSheet'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { router } from 'expo-router'
 import { DappLogo } from 'common/components/DappLogo'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 const AddEthereumChainScreen = ({
   params: { request, network }
@@ -15,6 +18,9 @@ const AddEthereumChainScreen = ({
 }): ReactNode => {
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const willSwitchDeveloperMode = Boolean(network.isTestnet) !== isDeveloperMode
+  const targetMode = network.isTestnet ? 'Testnet' : 'Mainnet'
 
   const rejectAndClose = useCallback(() => {
     onReject(request)
@@ -83,10 +89,17 @@ const AddEthereumChainScreen = ({
         subtitle: network.explorerUrl
       },
       {
-        title: 'Testnet',
-        subtitle: String(network.isTestnet)
+        title: 'Network type',
+        subtitle: network.isTestnet ? 'Testnet' : 'Mainnet'
       }
     ]
+
+    if (willSwitchDeveloperMode) {
+      data.push({
+        title: 'Wallet mode',
+        subtitle: `Approving will switch Core to ${targetMode} mode`
+      })
+    }
 
     return (
       <GroupList
@@ -103,12 +116,20 @@ const AddEthereumChainScreen = ({
         }}
       />
     )
-  }, [network])
+  }, [network, willSwitchDeveloperMode, targetMode])
 
   return (
     <ActionSheet
       isModal
       onClose={() => onReject(request)}
+      alert={
+        willSwitchDeveloperMode
+          ? {
+              type: AlertType.WARNING,
+              message: `This will also switch Core to ${targetMode} mode, changing the networks and balances shown across the app.`
+            }
+          : undefined
+      }
       confirm={{
         label: 'Approve',
         onPress: approve

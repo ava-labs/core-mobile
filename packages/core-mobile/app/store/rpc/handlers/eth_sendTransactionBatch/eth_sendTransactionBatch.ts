@@ -124,6 +124,8 @@ class EthSendTransactionBatchHandler
         walletId: activeWalletId,
         walletType: activeWallet.type,
         accountIndex: activeAccount.index,
+        // Required: readBatchSigningContext refuses to sign without it.
+        fromAddress: activeAccount.addressC,
         network,
         [RequestContext.QUICK_SWAPS_AVAILABLE]:
           selectIsQuickSwapsAvailable(state)

@@ -1,6 +1,6 @@
 import { AppListenerEffectAPI } from 'store/types'
-import { RpcMethod, RpcRequest } from 'store/rpc/types'
-import { rpcErrors } from '@metamask/rpc-errors'
+import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { addAccount } from 'store/account/thunks'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -13,6 +13,7 @@ import { CoreAccountType } from '@avalabs/types'
 import { UNSUPPORTED_WALLET_TYPE_ERROR } from 'services/wallet/types'
 import { Account, PrimaryAccount } from 'store/account'
 import { HandleResponse, RpcRequestHandler } from '../../types'
+import { isVerifiedCoreDomain } from '../../wc_sessionRequest/utils'
 import { parseRequestParams } from './util'
 
 const FALLBACK_ADD_ACCOUNT_ERROR_MESSAGE = 'Failed to add account'
@@ -49,6 +50,23 @@ class AvalancheAddAccountHandler
     request: AvalancheAddAccountRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse<string> => {
+    // pre-#4076 sessions may still hold Core methods for a spoofed extension identity
+    if (
+      request.provider === RpcProvider.WALLET_CONNECT &&
+      !isVerifiedCoreDomain(request.data.verifyContext)
+    ) {
+      Logger.warn('avalanche_addAccount: rejected unverified WC request', {
+        origin: request.data.verifyContext?.verified.origin,
+        validation: request.data.verifyContext?.verified.validation
+      })
+      return {
+        success: false,
+        error: providerErrors.unauthorized(
+          'Request is not from a verified Core domain'
+        )
+      }
+    }
+
     const { dispatch, getState } = listenerApi
     const state = getState()
     const activeAccount = selectActiveAccount(state)

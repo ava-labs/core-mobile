@@ -1,7 +1,35 @@
 import { NftContentType, NftImageData, NftItemExternalData } from './types'
-import { convertIPFSResolver } from './utils'
+import { assertSafeNftUrl, convertIPFSResolver } from './utils'
 
 const BASE64_SVG_PREFIX = 'data:image/svg+xml;base64,'
+// Cap the size of inline base64 metadata before decoding/parsing so a hostile tokenUri can't force a huge allocation / JSON.parse.
+const MAX_INLINE_METADATA_BYTES = 1_000_000
+
+// RN follows redirects natively; re-check response.url (final) before reading.
+// A missing final URL fails closed; the redirected request is still sent.
+const assertFinalUrlSafe = (response: Response, requestedUrl: string): void => {
+  if (!response.url) {
+    throw new Error(
+      '[Nft] Refusing to read a response whose final URL is unknown'
+    )
+  }
+  if (response.url !== requestedUrl) {
+    let finalProtocol: string
+    try {
+      finalProtocol = new URL(response.url).protocol
+    } catch {
+      throw new Error(
+        '[Nft] Refusing to read a response with an invalid final URL'
+      )
+    }
+    if (finalProtocol !== 'https:') {
+      throw new Error(
+        `[Nft] Refusing to read a non-https final URL (scheme: ${finalProtocol})`
+      )
+    }
+    assertSafeNftUrl(response.url)
+  }
+}
 
 export class NftProcessor {
   async fetchImage(imageData: string): Promise<NftImageData> {
@@ -14,18 +42,24 @@ export class NftProcessor {
     }
 
     const imageUrl = convertIPFSResolver(imageData)
-    const type = await this.identifyByMagicNumber(imageUrl)
-    return { uri: imageUrl, type }
+    const safeImageUrl = assertSafeNftUrl(imageUrl)
+    const type = await this.identifyByMagicNumber(safeImageUrl)
+    return { uri: safeImageUrl, type }
   }
 
   private async identifyByMagicNumber(url: string): Promise<NftContentType> {
-    const response = await fetch(url, {
+    const safeUrl = assertSafeNftUrl(url)
+    const response = await fetch(safeUrl, {
       method: 'GET',
       headers: { Range: 'bytes=0-256' }
     })
 
+    assertFinalUrlSafe(response, safeUrl)
+
     if (!response.ok) {
-      throw new Error(`[NftProcessor] HTTP ${response.status} fetching ${url}`)
+      throw new Error(
+        `[NftProcessor] HTTP ${response.status} fetching ${safeUrl}`
+      )
     }
 
     const buffer = await response.arrayBuffer()
@@ -86,18 +120,28 @@ export class NftProcessor {
     const base64MetaPrefix = 'data:application/json;base64,'
     if (tokenUri.startsWith(base64MetaPrefix)) {
       const base64Metadata = tokenUri.substring(base64MetaPrefix.length)
-      const metadata = JSON.parse(
-        Buffer.from(base64Metadata, 'base64').toString()
-      )
-      return metadata as NftItemExternalData
+      if (base64Metadata.length > MAX_INLINE_METADATA_BYTES) {
+        throw new Error('[NftProcessor] inline metadata exceeds size limit')
+      }
+      try {
+        const metadata = JSON.parse(
+          Buffer.from(base64Metadata, 'base64').toString()
+        )
+        return metadata as NftItemExternalData
+      } catch {
+        throw new Error('[NftProcessor] failed to parse inline metadata')
+      }
     } else {
       const ipfsPath = convertIPFSResolver(tokenUri)
+      const safeIpfsPath = assertSafeNftUrl(ipfsPath)
 
-      const response = await fetch(ipfsPath)
+      const response = await fetch(safeIpfsPath)
+
+      assertFinalUrlSafe(response, safeIpfsPath)
 
       if (!response.ok) {
         throw new Error(
-          `[NftProcessor] fetchMetadata error from ${ipfsPath} with status code ${response.status}`
+          `[NftProcessor] fetchMetadata error from ${safeIpfsPath} with status code ${response.status}`
         )
       }
 

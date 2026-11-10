@@ -7,8 +7,11 @@ import commonLoc from '../../locators/commonEls.loc'
 import settingsLoc from '../../locators/settings.loc'
 
 describe.skip('Withdraw', () => {
-  it(`should follow withdraw flow for AVAX`, async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it(`should follow withdraw flow for AVAX`, async () => {
     await txPage.withdraw()
   })
 

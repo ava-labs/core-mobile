@@ -1,16 +1,23 @@
 import settings from '../../pages/settings.page'
 import common from '../../pages/commonEls.page'
-import warmup from '../../helpers/warmup'
+import warmup, { restartAndUnlock } from '../../helpers/warmup'
 import { customNetwork } from '../../helpers/networks'
 import portfolioPage from '../../pages/portfolio.page'
 import { actions } from '../../helpers/actions'
 import { selectors } from '../../helpers/selectors'
+
+const editedNetworkName = 'POLYGON (WRONG)'
 
 describe('Settings', () => {
   before(async () => {
     await warmup()
     await settings.goNetworks()
     await settings.tapNetworkSwitches(true)
+  })
+
+  after(async () => {
+    await restartAndUnlock()
+    await settings.resetNetworks([customNetwork.name, editedNetworkName])
   })
 
   it('Custom Networks - should add a custom network', async () => {
@@ -33,25 +40,23 @@ describe('Settings', () => {
   })
 
   it('Custom Networks - should edit a custom network', async () => {
-    const networkWrongName = 'POLYGON (WRONG)'
     await settings.goNetworks()
     await settings.tapNetworkByName(customNetwork.name)
-    await settings.editNetwork(networkWrongName)
+    await settings.editNetwork(editedNetworkName)
     await settings.verifyNetworkDetails({
       ...customNetwork,
-      name: 'POLYGON (WRONG)'
+      name: editedNetworkName
     })
   })
 
   it('Custom Networks - should remove a custom network', async () => {
-    const networkName = 'POLYGON (WRONG)'
-    await settings.removeNetwork(networkName)
-    await common.typeSearchBar(networkName)
+    await settings.removeNetwork(editedNetworkName)
+    await common.typeSearchBar(editedNetworkName)
     await actions.isNotVisible(
-      selectors.getById(`network_toggle_enabled__${networkName}`)
+      selectors.getById(`network_toggle_enabled__${editedNetworkName}`)
     )
     await actions.isNotVisible(
-      selectors.getById(`network_toggle_disabled__${networkName}`)
+      selectors.getById(`network_toggle_disabled__${editedNetworkName}`)
     )
   })
 })

@@ -51,7 +51,7 @@ fi
 
 if [[ "$IS_SMOKE" == "true" ]]; then
   echo "Running iOS SMOKE tests"
-  yarn appium:smokeIos
+  yarn appium:smoke:ios
 else
   echo "Running iOS FULL tests"
   yarn appium:ios

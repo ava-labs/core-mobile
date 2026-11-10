@@ -4,8 +4,11 @@ import browserPage from '../../pages/browser.page'
 import browserLoc from '../../locators/browser.loc'
 
 describe('Browser - Tab Management', () => {
-  it('Should be able to add tabs', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('Should be able to add tabs', async () => {
     await bottomTabsPage.tapBrowserTab()
 
     // go to core

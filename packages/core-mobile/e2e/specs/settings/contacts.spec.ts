@@ -1,7 +1,7 @@
 import settings from '../../pages/settings.page'
 import cl from '../../locators/commonEls.loc'
 import cp from '../../pages/commonEls.page'
-import warmup from '../../helpers/warmup'
+import warmup, { restartAndUnlock } from '../../helpers/warmup'
 
 const networkAndAddress: Record<string, string> = {
   [cl.evm]: cl.myEvmAddress,
@@ -15,6 +15,11 @@ const newAddress: Record<string, string> = {
 describe('Settings', () => {
   before(async () => {
     await warmup()
+  })
+
+  after(async () => {
+    await restartAndUnlock()
+    await settings.removeAllContacts()
   })
 
   it('Contacts - Should verify the empty state', async () => {

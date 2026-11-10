@@ -1,5 +1,7 @@
-import { AlertType } from '@avalabs/vm-module-types'
-import { evaluateBatchApproval } from './quickSwapsBypass'
+import { Alert, AlertType } from '@avalabs/vm-module-types'
+import { getAlertMessage } from 'features/approval/screens/ApprovalScreen/utils'
+import WalletService from 'services/wallet/WalletService'
+import { evaluateBatchApproval, signBatchRequests } from './quickSwapsBypass'
 import { approvalValidators } from './validators'
 
 // `approvalValidators` is mocked as a mutable array so each test can
@@ -58,15 +60,74 @@ describe('evaluateBatchApproval', () => {
 
     expect(result.kind).toBe('manual')
     // The fallback WARNING alert is surfaced on the batch screen so the
-    // user sees why auto-approval was declined.
-    expect(
-      (params as { displayData: { alert?: unknown } }).displayData.alert
-    ).toEqual({
+    // user sees why auto-approval was declined. Title and description are kept
+    // as separate fields — the sheets compose them (see getAlertMessage), so
+    // the title is no longer baked into the description.
+    const alert = (params as { displayData: { alert?: Alert } }).displayData
+      .alert
+
+    expect(alert).toEqual({
       type: AlertType.WARNING,
       details: {
         title: 'Manual approval required',
-        description: 'Manual approval required\nslippage exceeded'
+        description: 'slippage exceeded'
       }
     })
+    // What the user actually reads is unchanged by that split.
+    expect(getAlertMessage(alert)).toBe(
+      'Manual approval required\nslippage exceeded'
+    )
+  })
+})
+
+describe('signBatchRequests signer verification', () => {
+  const FROM = '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'
+
+  const request = (context: Record<string, unknown>) =>
+    ({ requestId: '1', sessionId: 'core-mobile', context } as never)
+
+  const fullContext = {
+    walletId: 'w1',
+    walletType: 'MNEMONIC',
+    accountIndex: 0,
+    fromAddress: FROM,
+    network: { chainId: 43114 }
+  }
+
+  it('passes the signer address through to WalletService', async () => {
+    const signSpy = jest
+      .spyOn(WalletService, 'sign')
+      .mockResolvedValue('0xsigned')
+
+    const result = await signBatchRequests(
+      request(fullContext),
+      [{ to: FROM, value: 0n } as never],
+      'eth_sendTransactionBatch'
+    )
+
+    expect(result).toEqual({ signedTxs: [{ signedData: '0xsigned' }] })
+    expect(signSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ fromAddress: FROM })
+    )
+    signSpy.mockRestore()
+  })
+
+  it('refuses to sign when the context carries no signer address', async () => {
+    const signSpy = jest.spyOn(WalletService, 'sign')
+    const { fromAddress: _dropped, ...withoutAddress } = fullContext
+
+    const result = await signBatchRequests(
+      request(withoutAddress),
+      [{ to: FROM, value: 0n } as never],
+      'eth_sendTransactionBatch'
+    )
+
+    expect(result).toEqual({
+      error: expect.objectContaining({
+        message: expect.stringContaining('signing context missing')
+      })
+    })
+    expect(signSpy).not.toHaveBeenCalled()
+    signSpy.mockRestore()
   })
 })

@@ -3,8 +3,11 @@ import earnPage from '../../../pages/earn.page'
 import commonPage from '../../../pages/commonEls.page'
 
 describe('Earn', () => {
-  it('should borrow AVAX', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('should borrow AVAX', async () => {
     await earnPage.deposit('aave', 'AVAX', '0.0001')
     await earnPage.borrow()
   })

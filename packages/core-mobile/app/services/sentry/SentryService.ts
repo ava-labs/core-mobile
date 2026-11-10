@@ -199,13 +199,17 @@ const captureMessage = (
   message: string,
   context?: Record<string, unknown>,
   tags?: Record<string, string>,
-  fingerprint?: string[]
+  fingerprint?: string[],
+  level?: Sentry.SeverityLevel
 ): void => {
   if (!isAvailable) {
     return
   }
 
   Sentry.withScope(scope => {
+    if (level) {
+      scope.setLevel(level)
+    }
     if (context) {
       scope.setContext(
         'details',

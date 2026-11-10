@@ -15,6 +15,7 @@ import {
   useInjectedJavascript
 } from 'hooks/browser/useInjectedJavascript'
 import { useEvmInjectedProvider } from 'hooks/browser/useEvmInjectedProvider'
+import { getMessageFrameInfo } from 'hooks/browser/messageFrameInfo'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
 import React, {
   forwardRef,
@@ -30,7 +31,12 @@ import RNWebView, {
   WebViewNavigation,
   WebViewNavigationEvent
 } from 'react-native-webview'
-import { WebViewErrorEvent } from 'react-native-webview/lib/WebViewTypes'
+import {
+  FileDownloadEvent,
+  WebViewErrorEvent,
+  WebViewOpenWindowEvent
+} from 'react-native-webview/lib/WebViewTypes'
+import { openInSystemBrowser } from 'utils/openInSystemBrowser'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
@@ -48,7 +54,11 @@ import { selectIsInjectedProviderBlocked } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
 import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
-import { isSameOriginSpaNavigation, isValidHttpUrl } from '../utils'
+import {
+  classifyLoadUrl,
+  isSameOriginSpaNavigation,
+  isValidHttpUrl
+} from '../utils'
 import { WebView } from './Webview'
 
 export interface BrowserTabRef {
@@ -67,6 +77,12 @@ export interface BrowserTabRef {
 // Module-scoped for a stable reference so the WebView's memoized handlers don't
 // churn each render.
 const WC_BROWSER_ORIGIN_WHITELIST = ['http://*', 'https://*', 'wc:*']
+
+// Clears the overlay if the new page never renders.
+const PROVISIONAL_NAVIGATION_TIMEOUT_MS = 10_000
+// Global rate limit so a hostile iframe cannot flood logs.
+const FRAME_DROP_WARN_WINDOW_MS = 10_000
+let lastFrameDropWarnAt = 0
 
 export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
   // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -92,7 +108,9 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       providerShimJs,
       handleProviderMessage,
       handleDomainMetadata,
-      handleCommittedUrl
+      handleCommittedUrl,
+      handleProvisionalCrossOriginNavigation,
+      handleProvisionalNavigationAborted
     } = useEvmInjectedProvider(webViewRef, tabId)
 
     const isInjectedProviderBlocked = useSelector(
@@ -123,6 +141,9 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       activeHistoryUrl.length > 0 ? activeHistoryUrl : ''
     )
     const [error, setError] = useState<unknown | undefined>(undefined)
+    // Overlay blocks the old page's UI while the new origin is provisional.
+    const [isProvisionalNavigation, setIsProvisionalNavigation] =
+      useState(false)
 
     const lastNavStateRef = useRef<{
       url: string
@@ -134,10 +155,48 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       canGoForward: false
     })
     const lastSyncedUrlRef = useRef<string>('')
+    const lastSyncedTitleRef = useRef<string | undefined>(undefined)
+    // Ref mirror: native callbacks need it before React state commits.
+    const isProvisionalNavigationRef = useRef(false)
     const backAttemptUrlRef = useRef<string | null>(null)
     const backAttemptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
       null
     )
+    const provisionalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+      null
+    )
+
+    const clearProvisionalNavigation = useCallback((): void => {
+      if (provisionalTimerRef.current) {
+        clearTimeout(provisionalTimerRef.current)
+        provisionalTimerRef.current = null
+      }
+      isProvisionalNavigationRef.current = false
+      setIsProvisionalNavigation(false)
+    }, [])
+
+    const beginProvisionalNavigation = useCallback((): void => {
+      isProvisionalNavigationRef.current = true
+      setIsProvisionalNavigation(true)
+      if (provisionalTimerRef.current) {
+        clearTimeout(provisionalTimerRef.current)
+      }
+      provisionalTimerRef.current = setTimeout(() => {
+        provisionalTimerRef.current = null
+        isProvisionalNavigationRef.current = false
+        setIsProvisionalNavigation(false)
+        handleProvisionalNavigationAborted()
+      }, PROVISIONAL_NAVIGATION_TIMEOUT_MS)
+    }, [handleProvisionalNavigationAborted])
+
+    useEffect(() => {
+      return () => {
+        if (provisionalTimerRef.current) {
+          clearTimeout(provisionalTimerRef.current)
+          provisionalTimerRef.current = null
+        }
+      }
+    }, [])
 
     const [favicon, setFavicon] = useState<string | undefined>(undefined)
     const [description, setDescription] = useState('')
@@ -169,20 +228,30 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       if (isWebViewDrivenNavigation) {
         return
       }
-
       if (next !== urlToLoad) {
         setUrlToLoad(next)
       }
     }, [activeHistory?.url, urlToLoad])
 
     useEffect(() => {
-      //initiate deep link if user copies WC link to clipboard
-      if (clipboard.startsWith('wc:')) {
-        setPendingDeepLink({
-          url: clipboard,
-          origin: DeepLinkOrigin.ORIGIN_QR_CODE
-        } as DeepLink)
-      }
+      if (!clipboard.startsWith('wc:')) return
+      showAlert({
+        title: 'WalletConnect Link Detected',
+        description:
+          'A WalletConnect link was found in your clipboard. Would you like to connect?',
+        buttons: [
+          { text: 'Cancel' },
+          {
+            text: 'Connect',
+            onPress: () => {
+              setPendingDeepLink({
+                url: clipboard,
+                origin: DeepLinkOrigin.ORIGIN_QR_CODE
+              } as DeepLink)
+            }
+          }
+        ]
+      })
     }, [clipboard, setPendingDeepLink])
 
     const reload = (): void => {
@@ -328,8 +397,86 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       })
     }, [])
 
+    // Address-bar sync is idempotent per URL; the provider must be told on
+    // every commit.
+    const syncCommittedUrl = useCallback(
+      (url: string, title?: string): void => {
+        if (!url || url.startsWith('about:')) return
+
+        handleCommittedUrl(url)
+
+        if (lastSyncedUrlRef.current === url) return
+        lastSyncedUrlRef.current = url
+        lastSyncedTitleRef.current = title
+
+        // History and the URL bar belong to whichever tab is active: the
+        // reducer writes to `activeTabId` and the URL entry is shared browser
+        // chrome. Background tabs keep a live WebView and can still commit
+        // (redirect, meta refresh, timer), so writing from one would surface a
+        // URL whose page isn't the one on screen. The provider origin above is
+        // per-tab and must keep tracking either way.
+        if (disabled) return
+
+        dispatch(
+          addHistoryForActiveTab({
+            title: title ?? url,
+            url
+          })
+        )
+
+        if (!inputRef?.current?.isFocused()) {
+          setUrlEntry(url)
+        }
+      },
+      [handleCommittedUrl, dispatch, inputRef, setUrlEntry, disabled]
+    )
+
+    // Commit title is empty or stale; onLoad upgrades it once.
+    const refreshCommittedTitle = useCallback(
+      (title?: string): void => {
+        const url = lastSyncedUrlRef.current
+        if (disabled || !url || !title) return
+        if (title === lastSyncedTitleRef.current) return
+        lastSyncedTitleRef.current = title
+        // Reducer replaces the entry wholesale; carry favicon/title or they
+        // are lost.
+        const { favicon: currentFavicon, description: currentDescription } =
+          tab?.activeHistory ?? {}
+        dispatch(
+          addHistoryForActiveTab({
+            title,
+            url,
+            ...(currentFavicon !== undefined && { favicon: currentFavicon }),
+            ...(currentDescription !== undefined && {
+              description: currentDescription
+            })
+          })
+        )
+      },
+      [dispatch, disabled, tab?.activeHistory]
+    )
+
     const onMessageHandler = useCallback(
       (event: WebViewMessageEvent) => {
+        const frame = getMessageFrameInfo(event.nativeEvent)
+        // Fail closed: undefined (legacy Android bridge) is treated as a
+        // subframe.
+        if (frame.isMainFrame !== true) {
+          const now = Date.now()
+          if (
+            now < lastFrameDropWarnAt ||
+            now - lastFrameDropWarnAt >= FRAME_DROP_WARN_WINDOW_MS
+          ) {
+            lastFrameDropWarnAt = now
+            Logger.warn(
+              `[Browser] Ignored WebView message without proven main-frame provenance (isMainFrame=${String(
+                frame.isMainFrame
+              )})`
+            )
+          }
+          return
+        }
+
         try {
           const wrapper = JSON.parse(
             event.nativeEvent.data
@@ -342,7 +489,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
               parseDescriptionAndFavicon(wrapper, event)
               break
             case 'provider_request': {
-              handleProviderMessage(wrapper.payload)
+              handleProviderMessage(wrapper.payload, frame)
               break
             }
             case 'domain_metadata': {
@@ -405,33 +552,17 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         showWalletConnectDialog,
         handleProviderMessage,
         handleDomainMetadata,
+        injectedProviderEnabled,
         urlToLoad
       ]
     )
 
-    // Surfaces a URL we trust as actually-rendered to the user-facing URL bar
-    // and to the EVM provider's origin tracker. The address-bar/history sync
-    // is idempotent per URL, but the provider must be notified on every
-    // commit: a reload keeps the same URL yet creates a fresh document whose
-    // shim _accounts cache starts empty and needs re-priming.
-    const syncCommittedUrl = (url: string, title?: string): void => {
+    // Only commit callback advances the URL bar across origins.
+    const handleCommit = (event: WebViewNavigationEvent): void => {
+      const url = event.nativeEvent.url
       if (!url || url.startsWith('about:')) return
-
-      handleCommittedUrl(url)
-
-      if (lastSyncedUrlRef.current === url) return
-      lastSyncedUrlRef.current = url
-
-      dispatch(
-        addHistoryForActiveTab({
-          title: title ?? url,
-          url
-        })
-      )
-
-      if (!inputRef?.current?.isFocused()) {
-        setUrlEntry(url)
-      }
+      clearProvisionalNavigation()
+      syncCommittedUrl(url, event.nativeEvent.title)
     }
 
     const onLoad = (event: WebViewNavigationEvent): void => {
@@ -445,12 +576,36 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         setError(undefined)
       }
 
-      // onLoad maps to didFinishNavigation (iOS) / onPageFinished (Android) —
-      // both fire only after the navigation has rendered, so this is the
-      // single trusted point at which we surface a cross-origin URL change.
-      // iOS's HistoryShim also routes pushState/replaceState through here so
-      // SPA URL changes on iOS land here too.
-      syncCommittedUrl(event.nativeEvent.url, event.nativeEvent.title)
+      // onLoad maps to didFinishNavigation (iOS) / onPageFinished (Android).
+      // It also fires after a cross-origin navigation that never committed
+      // (Android onPageFinished after a 204 or window.stop(); an iOS
+      // history-shim event once the page has cancelled the load). A real
+      // commit already cleared the provisional flag in handleCommit, so a
+      // flag that is still set here means the committed document is still
+      // live and the router's liveOrigin must be handed back to it before
+      // the deadline that would have done so is dropped. A shim event fired
+      // while the navigation is still pending carries loading=true and was
+      // returned early above, so a page cannot use it to lift the block.
+      if (isProvisionalNavigationRef.current) {
+        handleProvisionalNavigationAborted()
+      }
+      clearProvisionalNavigation()
+
+      const url = event.nativeEvent.url
+      const title = event.nativeEvent.title
+
+      switch (
+        classifyLoadUrl({ url, lastSyncedUrl: lastSyncedUrlRef.current })
+      ) {
+        case 'refresh-title':
+          refreshCommittedTitle(title)
+          break
+        case 'sync':
+          syncCommittedUrl(url, title)
+          break
+        case 'ignore':
+          break
+      }
     }
 
     const onNavigationStateChange = (navState: WebViewNavigation): void => {
@@ -483,6 +638,24 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         })
       ) {
         syncCommittedUrl(nextUrl, navState.title)
+      } else if (nextUrl && lastSyncedUrlRef.current) {
+        // Cancel signing from the committed origin; URL bar intentionally not
+        // updated until commit, so an uncommitted navigation cannot spoof the
+        // address bar.
+        try {
+          const nextOrigin = new URL(nextUrl).origin
+          const lastOrigin = new URL(lastSyncedUrlRef.current).origin
+          if (
+            nextOrigin !== 'null' &&
+            lastOrigin !== 'null' &&
+            nextOrigin !== lastOrigin
+          ) {
+            handleProvisionalCrossOriginNavigation(nextUrl)
+            beginProvisionalNavigation()
+          }
+        } catch {
+          // ignore malformed URL
+        }
       }
 
       // Cancel pending "no-op back" fallback only when the URL actually changes.
@@ -514,13 +687,18 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     }
 
     const onError = (event: WebViewErrorEvent): void => {
+      if (isProvisionalNavigationRef.current) {
+        handleProvisionalNavigationAborted()
+      }
+      clearProvisionalNavigation()
+
       // Fallback: unknown schemes can sometimes reach `onError` without triggering
       // `onShouldStartLoadWithRequest` (depending on redirect/navigation type).
       const failedUrl = event.nativeEvent.url ?? ''
-      const description = event.nativeEvent.description ?? ''
+      const errorDescription = event.nativeEvent.description ?? ''
 
       if (
-        description.includes('ERR_UNKNOWN_URL_SCHEME') &&
+        errorDescription.includes('ERR_UNKNOWN_URL_SCHEME') &&
         isDeepLinkUrl(failedUrl)
       ) {
         // Only the active tab may turn a failed custom-scheme navigation into a
@@ -550,6 +728,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         return
       }
 
+      clearProvisionalNavigation()
       progress.value = 0
       setError(event.nativeEvent)
     }
@@ -577,6 +756,47 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       [disabled, setPendingDeepLink]
     )
 
+    // Attachments and non-displayable types never commit; registering this
+    // handler is what makes the fork cancel the render, so keep it.
+    const onFileDownload = useCallback(
+      ({ nativeEvent: { downloadUrl } }: FileDownloadEvent): void => {
+        Logger.warn(
+          `[ProviderSecurity] Blocked in-webview render of downloadable response: ${downloadUrl}`
+        )
+        if (!isValidHttpUrl(downloadUrl)) {
+          return
+        }
+        showAlert({
+          title: 'Download detected',
+          description:
+            'This link points to a file that cannot be displayed safely in the in-app browser. Open it in your default browser to download it?',
+          buttons: [
+            { text: 'Cancel' },
+            {
+              text: 'Open',
+              onPress: () => {
+                openInSystemBrowser(downloadUrl)
+              }
+            }
+          ]
+        })
+      },
+      []
+    )
+
+    // Native backstop for window.open.
+    const handleOpenWindow = useCallback(
+      (event: WebViewOpenWindowEvent): void => {
+        const targetUrl = event.nativeEvent.targetUrl
+        if (typeof targetUrl !== 'string' || !isValidHttpUrl(targetUrl)) {
+          return
+        }
+        dispatch(addTab())
+        dispatch(addHistoryForActiveTab({ title: targetUrl, url: targetUrl }))
+      },
+      [dispatch]
+    )
+
     const renderLoading = (): JSX.Element => {
       return (
         <LoadingState
@@ -597,6 +817,21 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     return (
       <View style={{ flex: 1 }}>
         {/* Main content */}
+        {isProvisionalNavigation && !error && !!urlToLoad?.length && (
+          <LoadingState
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 10,
+              paddingTop: insets.top,
+              paddingBottom: insets.bottom,
+              backgroundColor: theme.colors.$surfacePrimary
+            }}
+          />
+        )}
         {error ? (
           <ErrorState
             sx={{ flex: 1, paddingTop: insets.top, backgroundColor }}
@@ -633,6 +868,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             injectedJavaScript={injectedJavascript}
             url={urlToLoad}
             onLoad={onLoad}
+            onCommit={handleCommit}
             onNavigationStateChange={onNavigationStateChange}
             onMessage={onMessageHandler}
             // Whitelist `wc:` (only) alongside http/https so WalletConnect
@@ -657,6 +893,8 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             }}
             onLoadProgress={onProgress}
             onError={onError}
+            onFileDownload={onFileDownload}
+            onOpenWindow={handleOpenWindow}
           />
         )}
       </View>

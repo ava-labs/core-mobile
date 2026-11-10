@@ -7,9 +7,11 @@ import portfolioPage from '../../../pages/portfolio.page'
 import { selectors } from '../../../helpers/selectors'
 
 describe('Portfolio tab', () => {
-  it('Assets - filter assets by network', async () => {
+  before(async () => {
     await warmup()
+  })
 
+  it('Assets - filter assets by network', async () => {
     await commonElsPage.filter(commonElsLoc.pChain)
     await portfolioPage.displayAssetsByNetwork(commonElsLoc.pChain_3)
 

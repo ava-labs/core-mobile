@@ -7,8 +7,11 @@ import { actions } from '../../../helpers/actions'
 import { selectors } from '../../../helpers/selectors'
 
 describe.skip('Portfolio tab', () => {
-  it('Collectibles - hide unreachable collectibles on manage list', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('Collectibles - hide unreachable collectibles on manage list', async () => {
     await portfolioPage.tapCollectiblesTab()
     await commonElsPage.selectDropdown('view', 'List view')
     await commonElsPage.selectDropdown('view', 'Manage list')

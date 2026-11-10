@@ -22,7 +22,7 @@ describe('buildEvmProviderShim', () => {
   describe('embedded values', () => {
     it('embeds the chain ID', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain("var _chainId = '0xa86a'")
+      expect(shim).toContain('var _chainId = "0xa86a"')
     })
 
     it('does not embed the address (no pre-seeded account)', () => {
@@ -36,8 +36,8 @@ describe('buildEvmProviderShim', () => {
         address: defaultParams.address,
         uuid: defaultParams.uuid
       })
-      expect(shim).toContain("var _chainId = '0x1'")
-      expect(shim).not.toContain("var _chainId = '0xa86a'")
+      expect(shim).toContain('var _chainId = "0x1"')
+      expect(shim).not.toContain('var _chainId = "0xa86a"')
     })
 
     it('accepts an empty address without embedding it', () => {
@@ -284,15 +284,15 @@ describe('buildEvmProviderShim', () => {
     })
 
     it('uses rdns app.core.mobile', () => {
-      expect(shim).toContain("rdns: 'app.core.mobile'")
+      expect(shim).toContain('rdns: "app.core.mobile"')
     })
 
     it('sets provider name to Core Mobile', () => {
-      expect(shim).toContain("name: 'Core Mobile'")
+      expect(shim).toContain('name: "Core Mobile"')
     })
 
     it('includes a base64 SVG icon', () => {
-      expect(shim).toContain("icon: 'data:image/svg+xml;base64,")
+      expect(shim).toContain('icon: "data:image/svg+xml;base64,')
     })
 
     it('freezes providerInfo per EIP-6963 spec', () => {

@@ -230,11 +230,17 @@ const ActivityHomeScreen = (): JSX.Element => {
             isSearchBarFocused={isSearchBarFocused}
             searchText={searchText}
             containerStyle={contentContainerStyle}
+            onScrollResync={handleScrollResync}
           />
         )
       }
     ]
-  }, [contentContainerStyle, searchText, isSearchBarFocused])
+  }, [
+    contentContainerStyle,
+    searchText,
+    isSearchBarFocused,
+    handleScrollResync
+  ])
 
   useFocusEffect(() => {
     if (!KeyboardController.isVisible()) {

@@ -56,7 +56,7 @@ adb logcat -d | grep -E "AndroidRuntime|ANR|FATAL EXCEPTION|com.avaxwallet.inter
 
 if [[ "$IS_SMOKE" == "true" ]]; then
   echo "Running ANDROID SMOKE tests"
-  yarn appium:smokeAndroid
+  yarn appium:smoke:android
 else
   echo "Running ANDROID FULL tests"
   yarn appium:android

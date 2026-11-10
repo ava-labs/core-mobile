@@ -41,6 +41,10 @@ export function buildEvmProviderShim({
   return `(function() {
   'use strict';
 
+  // Pin the loaded document's origin; window.location changes after a 204
+  // navigation and could spoof a trusted origin.
+  var _docOrigin = window.location.origin;
+
   // ──────────────────────────────────────────────
   // 1. Injection guards
   // ──────────────────────────────────────────────
@@ -106,7 +110,7 @@ export function buildEvmProviderShim({
     'wallet_addEthereumChain': true,
     'wallet_watchAsset': true
   };
-  var _chainId = '${chainId}';
+  var _chainId = ${JSON.stringify(chainId)};
   // _accounts is seeded empty. Native primes it via
   // __coreProviderEmit('accountsChanged', [...]) on page load if the origin
   // already has a permission grant; otherwise the dApp must call
@@ -272,13 +276,15 @@ export function buildEvmProviderShim({
               method: 'provider_request',
               payload: JSON.stringify({
                 id: swId,
-                origin: window.location.origin,
+                origin: _docOrigin,
                 request: { method: method, params: params }
               })
             }));
           } catch(swErr) {
             delete _pendingInteractive['wallet_switchEthereumChain'];
-            reject({ code: ${JSON_RPC_INTERNAL_ERROR_CODE}, message: '${BRIDGE_UNAVAILABLE_MESSAGE}' });
+            reject({ code: ${JSON_RPC_INTERNAL_ERROR_CODE}, message: ${JSON.stringify(
+    BRIDGE_UNAVAILABLE_MESSAGE
+  )} });
           }
         });
       }
@@ -307,7 +313,7 @@ export function buildEvmProviderShim({
           method: 'provider_request',
           payload: JSON.stringify({
             id: id,
-            origin: window.location.origin,
+            origin: _docOrigin,
             request: { method: method, params: params }
           })
         };
@@ -317,7 +323,9 @@ export function buildEvmProviderShim({
         } catch(e) {
           delete _callbacks[id];
           if (isInteractive) delete _pendingInteractive[method];
-          reject({ code: ${JSON_RPC_INTERNAL_ERROR_CODE}, message: '${BRIDGE_UNAVAILABLE_MESSAGE}' });
+          reject({ code: ${JSON_RPC_INTERNAL_ERROR_CODE}, message: ${JSON.stringify(
+    BRIDGE_UNAVAILABLE_MESSAGE
+  )} });
         }
       });
     },
@@ -423,10 +431,10 @@ export function buildEvmProviderShim({
   // 7. EIP-6963 announcement
   // ──────────────────────────────────────────────
   var providerInfo = Object.freeze({
-    uuid: '${uuid}',
-    name: '${INJECTED_PROVIDER_NAME}',
-    icon: '${INJECTED_PROVIDER_ICON}',
-    rdns: '${INJECTED_PROVIDER_RDNS}'
+    uuid: ${JSON.stringify(uuid)},
+    name: ${JSON.stringify(INJECTED_PROVIDER_NAME)},
+    icon: ${JSON.stringify(INJECTED_PROVIDER_ICON)},
+    rdns: ${JSON.stringify(INJECTED_PROVIDER_RDNS)}
   });
 
   var _providerDetail = Object.freeze({

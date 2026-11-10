@@ -3,6 +3,10 @@ import settingsPage from '../../pages/settings.page'
 import common from '../../pages/commonEls.page'
 
 describe('Settings', () => {
+  before(async () => {
+    await warmup()
+  })
+
   const notiData = {
     Stake: 'Stake complete alerts',
     Balance: 'Wallet balance change alerts',
@@ -14,7 +18,6 @@ describe('Settings', () => {
   }
 
   it('Notifications - should have all notifications enabled by default', async () => {
-    await warmup()
     await settingsPage.goSettings()
     await settingsPage.tapNotifications()
     await settingsPage.verifyNotificationsScreen(notiData)
