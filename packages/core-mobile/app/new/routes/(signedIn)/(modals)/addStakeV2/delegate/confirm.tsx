@@ -1,6 +1,6 @@
 import { showAlert } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import { Href, useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import {
   RESTAKE_NODE_ENDING_ERROR,
   RESTAKE_NODE_FULL_ERROR,
@@ -8,6 +8,7 @@ import {
   RESTAKE_NODES_FETCH_FAILED_ERROR,
   useAdvancedReviewSource
 } from 'features/stake/v2/hooks/useAdvancedReviewSource'
+import { DELEGATE_NODE_SELECTION_HREF } from 'features/stake/v2/constants'
 import StakeConfirmScreen from 'features/stake/v2/screens/StakeConfirmScreen'
 import React, { useEffect, useRef } from 'react'
 import { truncateNodeId } from 'utils/Utils'
@@ -67,7 +68,7 @@ export default function DelegateConfirmRoute(): JSX.Element {
       buttons: [
         {
           text: 'OK',
-          onPress: () => replace('/addStakeV2/delegate/selectNode' as Href)
+          onPress: () => replace(DELEGATE_NODE_SELECTION_HREF)
         }
       ]
     })
