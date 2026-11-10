@@ -2,7 +2,6 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { isTokenVisible } from 'store/balance/utils'
 import { TokenVisibility } from 'store/portfolio'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
-import { ChainId } from '@avalabs/core-chains-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { router } from 'expo-router'
 import { getLocalTokenId } from 'services/balance/utils/getLocalTokenId'
@@ -13,8 +12,7 @@ import {
   NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
   PaymentMethodNames,
   PaymentMethods,
-  ServiceProviderCategories,
-  SOLANA_MELD_CHAIN_ID
+  ServiceProviderCategories
 } from './consts'
 import {
   CreateCryptoQuoteNotFoundError,
@@ -43,14 +41,13 @@ export const asZeroBalanceToken = (
   } as LocalTokenWithBalance)
 
 /**
- * Meld only ever trades native, ERC-20 and SPL tokens. This is an allowlist
+ * Meld only ever trades native and ERC-20 tokens. This is an allowlist
  * rather than an ERC-721/ERC-1155 denylist so newly added token types (e.g.
  * `HYPERCORE_SPOT`) can't silently leak into the buy/withdraw lists.
  */
 const MELD_LISTABLE_TOKEN_TYPES: TokenType[] = [
   TokenType.NATIVE,
-  TokenType.ERC20,
-  TokenType.SPL
+  TokenType.ERC20
 ]
 
 export type MeldListFilterOptions = {
@@ -77,20 +74,12 @@ export const meldContractTokenKey = (
   address: string
 ): string => `${chainId}-${address.toLowerCase()}`
 
-/**
- * Meld reports Solana under its own `SOLANA_MELD_CHAIN_ID`, so it has to be
- * translated to the numeric chain id the contract-token catalog is keyed by.
- */
 export const meldCurrencyTokenKey = (
   crypto: CryptoCurrency
-): string | undefined => {
-  if (!crypto.contractAddress || !crypto.chainId) return undefined
-  const chainId =
-    crypto.chainId === SOLANA_MELD_CHAIN_ID.toString()
-      ? ChainId.SOLANA_MAINNET_ID
-      : crypto.chainId
-  return meldContractTokenKey(chainId, crypto.contractAddress)
-}
+): string | undefined =>
+  crypto.contractAddress && crypto.chainId
+    ? meldContractTokenKey(crypto.chainId, crypto.contractAddress)
+    : undefined
 
 export const isSupportedNativeErc20Token = (
   crypto: CryptoCurrency,
@@ -109,33 +98,11 @@ export const isSupportedToken = (
   token.chainId?.toString() === crypto.chainId &&
   crypto.contractAddress?.toLowerCase() === token.address.toLowerCase()
 
-export const isSupportedSPLToken = (
-  crypto: CryptoCurrency,
-  token: LocalTokenWithBalance
-): boolean =>
-  token.networkChainId === ChainId.SOLANA_MAINNET_ID &&
-  token.type === TokenType.SPL &&
-  crypto.contractAddress?.toLowerCase() === token.address.toLowerCase()
-
-export const isBtcToken = (
-  crypto: CryptoCurrency,
-  token: LocalTokenWithBalance
-): boolean => crypto.currencyCode === 'BTC' && token.symbol === 'BTC'
-
-export const isSolToken = (
-  crypto: CryptoCurrency,
-  token: LocalTokenWithBalance
-): boolean => crypto.currencyCode === 'SOL' && token.symbol === 'SOL'
-
 export const isTokenTradable = (
   crypto: CryptoCurrency,
   token: LocalTokenWithBalance
 ): boolean =>
-  isSupportedNativeErc20Token(crypto, token) ||
-  isSupportedToken(crypto, token) ||
-  isBtcToken(crypto, token) ||
-  isSolToken(crypto, token) ||
-  isSupportedSPLToken(crypto, token)
+  isSupportedNativeErc20Token(crypto, token) || isSupportedToken(crypto, token)
 
 export const dismissMeldStack = (
   _: typeof ACTIONS.OnrampCompleted | typeof ACTIONS.OfframpCompleted,
