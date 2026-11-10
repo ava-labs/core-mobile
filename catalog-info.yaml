@@ -69,7 +69,6 @@ spec:
     - resource:default/walletconnect
     - resource:default/coingecko
     - resource:default/currency-api
-    - resource:default/avalanche-c-chain-public-rpc-mainnet
     - resource:default/aave
     - resource:default/merkl
     - resource:default/branch

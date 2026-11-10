@@ -107,7 +107,6 @@ The App Check token is sent as `X-Firebase-AppCheck`. The generated API clients 
 | Sentry                       | Error reporting. Events are scrubbed. Off in E2E builds.                               |
 | CoinGecko                    | Free-tier prices called directly. A 429 falls back to the paid route on `proxy-api-worker`. |
 | currency-api (jsDelivr)      | Fiat rates. Fallback: `latest.currency-api.pages.dev`.                                 |
-| Avalanche C-Chain public RPC | `https://api.avax.network/ext/bc/C/rpc`, used by the perps constants.                  |
 | Aave                         | DeFi market data and Merit APRs. Flag `in-app-defi`.                                   |
 | Merkl                        | User rewards.                                                                          |
 | Branch                       | Deep links through `react-native-branch`.                                              |
