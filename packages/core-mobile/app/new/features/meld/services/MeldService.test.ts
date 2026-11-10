@@ -117,41 +117,41 @@ describe('MeldService', () => {
     expect(client.getDefaultsByCountry).not.toHaveBeenCalled()
   })
 
-  it('searchCryptoCurrencies filters client-side by requested codes', async () => {
+  it('searchCryptoCurrencies only returns AVAX, USDC and USDT on the C-Chain', async () => {
     client.getCryptoCurrencies.mockResolvedValue([
       { currencyCode: 'AVAXC' },
-      { currencyCode: 'BTC' }
+      { currencyCode: 'USDC_AVAXC' },
+      { currencyCode: 'USDT_AVAXC' },
+      { currencyCode: 'BTC' },
+      { currencyCode: 'SOL' },
+      { currencyCode: 'USDC' },
+      { currencyCode: 'USDC_ETHEREUM' },
+      { currencyCode: 'MATIC_POLYGON' },
+      { currencyCode: 'MON_MONAD' },
+      { currencyCode: 'WAVAX_AVAXC' },
+      { currencyCode: null }
     ])
     await expect(
-      MeldService.searchCryptoCurrencies({
-        categories: [onramp],
-        cryptoCurrencies: ['BTC']
-      })
-    ).resolves.toEqual([{ currencyCode: 'BTC' }])
-  })
-
-  it('searchCryptoCurrencies returns every item when no codes are requested', async () => {
-    const items = [{ currencyCode: 'AVAXC' }, { currencyCode: 'BTC' }]
-    client.getCryptoCurrencies.mockResolvedValue(items)
-    await expect(
       MeldService.searchCryptoCurrencies({ categories: [onramp] })
-    ).resolves.toEqual(items)
+    ).resolves.toEqual([
+      { currencyCode: 'AVAXC' },
+      { currencyCode: 'USDC_AVAXC' },
+      { currencyCode: 'USDT_AVAXC' }
+    ])
   })
 
-  it('searchCryptoCurrencies drops items with a null code when filtering', async () => {
+  it('searchCryptoCurrencies narrows further by requested codes', async () => {
     client.getCryptoCurrencies.mockResolvedValue([
-      { currencyCode: null },
+      { currencyCode: 'AVAXC' },
+      { currencyCode: 'USDC_AVAXC' },
       { currencyCode: 'BTC' }
     ])
     await expect(
       MeldService.searchCryptoCurrencies({
         categories: [onramp],
-        cryptoCurrencies: ['BTC']
+        cryptoCurrencies: ['USDC_AVAXC', 'BTC']
       })
-    ).resolves.toEqual([{ currencyCode: 'BTC' }])
-    await expect(
-      MeldService.searchCryptoCurrencies({ categories: [onramp] })
-    ).resolves.toEqual([{ currencyCode: null }, { currencyCode: 'BTC' }])
+    ).resolves.toEqual([{ currencyCode: 'USDC_AVAXC' }])
   })
 
   it('searchFiatCurrencies and searchCountries filter by the requested codes', async () => {

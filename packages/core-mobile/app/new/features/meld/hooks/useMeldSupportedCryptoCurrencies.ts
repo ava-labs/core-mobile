@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
-import { ChainId } from '@avalabs/core-chains-sdk'
 import { LocalTokenWithBalance } from 'store/balance'
 import { selectActiveAccount } from 'store/account'
 import { selectEnabledChainIds } from 'store/network'
@@ -9,7 +8,6 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import {
   NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
-  SOLANA_MELD_CHAIN_ID,
   ServiceProviderCategories
 } from '../consts'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from '../types'
@@ -49,19 +47,6 @@ const buildHeldTokenMaps = (
         token
       )
     }
-    // Held SPL tokens carry only networkChainId — the balance mapper omits
-    // chainId for the spl branch — so they need their own keying to be
-    // findable under the SOLANA_MAINNET_ID-based lookup key.
-    if (
-      token.type === TokenType.SPL &&
-      token.networkChainId === ChainId.SOLANA_MAINNET_ID &&
-      token.address
-    ) {
-      heldTokenMap.set(
-        meldContractTokenKey(ChainId.SOLANA_MAINNET_ID, token.address),
-        token
-      )
-    }
   }
 
   return { heldNativeMap, heldTokenMap }
@@ -78,12 +63,6 @@ const resolveTokenWithBalance = ({
   contractTokenMap: Map<string, NetworkContractToken>
   filterOptions: MeldListFilterOptions
 }): LocalTokenWithBalance | undefined => {
-  if (crypto.currencyCode === 'BTC') {
-    return heldNativeMap.get(ChainId.BITCOIN.toString())
-  }
-  if (crypto.currencyCode === 'SOL') {
-    return heldNativeMap.get(ChainId.SOLANA_MAINNET_ID.toString())
-  }
   if (
     crypto.chainId &&
     crypto.contractAddress === NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS
@@ -144,11 +123,7 @@ export const useMeldSupportedCryptoCurrencies = ({
     }
     const heldTokenMaps = buildHeldTokenMaps(tokensWithBalance, filterOptions)
 
-    // erc20/native results come before SPL: the balance sort downstream is
-    // stable for zero-balance ties, so this pass order fixes their display
-    // order.
-    const erc20AndNative: CryptoCurrencyWithBalance[] = []
-    const spl: CryptoCurrencyWithBalance[] = []
+    const result: CryptoCurrencyWithBalance[] = []
     for (const crypto of cryptoCurrencies) {
       const match = resolveTokenWithBalance({
         crypto,
@@ -157,14 +132,10 @@ export const useMeldSupportedCryptoCurrencies = ({
         filterOptions
       })
       if (match) {
-        const isSpl = crypto.chainId === SOLANA_MELD_CHAIN_ID.toString()
-        ;(isSpl ? spl : erc20AndNative).push({
-          ...crypto,
-          tokenWithBalance: match
-        })
+        result.push({ ...crypto, tokenWithBalance: match })
       }
     }
-    return [...erc20AndNative, ...spl]
+    return result
   }, [
     cryptoCurrencies,
     tokensWithBalance,

@@ -577,18 +577,18 @@ describe('buildDisplayTokenUnit', () => {
 })
 
 describe('isTokenTradable for network-partner native currencies', () => {
-  const maticCrypto = toCryptoCurrency(
-    npCryptoCurrencies.find(c => c.currencyCode === 'MATIC_POLYGON') ?? {
-      currencyCode: 'MATIC_POLYGON'
+  const avaxCrypto = toCryptoCurrency(
+    npCryptoCurrencies.find(c => c.currencyCode === 'AVAXC') ?? {
+      currencyCode: 'AVAXC'
     }
   )
 
-  it('treats a held native Polygon token as tradable for MATIC_POLYGON', () => {
+  it('treats a held native C-Chain token as tradable for AVAXC', () => {
     const token = {
-      networkChainId: 137,
+      networkChainId: 43114,
       type: TokenType.NATIVE
     } as LocalTokenWithBalance
-    expect(isTokenTradable(maticCrypto, token)).toBe(true)
+    expect(isTokenTradable(avaxCrypto, token)).toBe(true)
   })
 
   it('does not match a native token on a different chain', () => {
@@ -596,6 +596,6 @@ describe('isTokenTradable for network-partner native currencies', () => {
       networkChainId: 1,
       type: TokenType.NATIVE
     } as LocalTokenWithBalance
-    expect(isTokenTradable(maticCrypto, token)).toBe(false)
+    expect(isTokenTradable(avaxCrypto, token)).toBe(false)
   })
 })

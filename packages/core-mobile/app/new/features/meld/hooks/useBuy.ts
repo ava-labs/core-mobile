@@ -78,7 +78,9 @@ export const useBuy = (): {
       if (token || address) {
         const cryptoCurrency = getTradableCryptoCurrency(token, address)
         setOnrampToken(cryptoCurrency)
-        navigate('/meld/onramp/selectBuyAmount')
+        navigate(
+          cryptoCurrency ? '/meld/onramp/selectBuyAmount' : '/meld/onramp'
+        )
       } else {
         setOnrampToken(undefined)
         navigate('/meld/onramp')
