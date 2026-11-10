@@ -44,10 +44,7 @@ export async function subscribeBalanceChangeNotifications(
   }
 
   //subscribe
-  const chainIds = [
-    ChainId.AVALANCHE_MAINNET_ID.toString(),
-    ChainId.AVALANCHE_TESTNET_ID.toString()
-  ]
+  const chainIds = [ChainId.AVALANCHE_MAINNET_ID.toString()]
   const response = await subscribeForBalanceChange({
     addresses,
     chainIds,
