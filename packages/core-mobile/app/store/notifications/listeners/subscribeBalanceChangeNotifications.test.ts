@@ -116,10 +116,7 @@ describe('subscribeBalanceChangeNotifications', () => {
 
     expect(subscribeForBalanceChange).toHaveBeenCalledWith({
       addresses: ['address1'],
-      chainIds: [
-        ChainId.AVALANCHE_MAINNET_ID.toString(),
-        ChainId.AVALANCHE_TESTNET_ID.toString()
-      ],
+      chainIds: [ChainId.AVALANCHE_MAINNET_ID.toString()],
       deviceArn: 'deviceArn'
     })
   })
