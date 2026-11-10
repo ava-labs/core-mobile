@@ -1,0 +1,19 @@
+site_name: core-mobile
+repo_url: https://github.com/ava-labs/core-mobile
+edit_uri: edit/main/docs/
+
+nav:
+  - Overview: index.md
+  - Guides:
+      - Development: development.md
+      - Release: release.md
+  - Ledger:
+      - Overview: ledger-flows/README.md
+      - Connection: ledger-flows/ledger-connection.md
+      - Transaction signing: ledger-flows/transaction-signing.md
+      - Account discovery design: ledger-flows/ledger-account-discovery-design.md
+  - Injected provider: injected-provider/working_demo.md
+  - Dependency resolutions: dependencies_resolutions.md
+
+plugins:
+  - techdocs-core
