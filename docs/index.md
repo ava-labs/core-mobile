@@ -46,7 +46,6 @@ flowchart LR
         SENT["Sentry"]
         CG["CoinGecko"]
         CUR["currency-api (jsDelivr)"]
-        HL["Hyperliquid"]
         AAVE["Aave"]
         MERKL["Merkl"]
         BR["Branch"]
@@ -70,7 +69,6 @@ flowchart LR
     APP -->|"errors"| SENT
     APP -->|"prices"| CG
     APP -->|"fiat rates"| CUR
-    APP -.->|"perps"| HL
     APP -.->|"DeFi"| AAVE
     APP -->|"rewards"| MERKL
     APP -->|"deep links"| BR
@@ -92,7 +90,7 @@ Each base URL is an env var. Production values come from CI secrets, not from th
 | `core-gas-station-api`         | `GAS_STATION_URL`                 | Gasless transactions through `@avalabs/core-gasless-sdk`. Flags `gasless-feature` and `gasless-instant`. | App Check header set on the SDK          |
 | `core-seedless-api`            | `SEEDLESS_URL`, `SEEDLESS_API_KEY` | Seedless registration, account add and key derivation (`/v1/register`, `/v1/addAccount`, `/v1/deriveMissingKeys`) | API key in `Authorization`. Without the key the seedless service is a no-op. |
 | `proxy-api-worker`             | `PROXY_URL`                       | `GET /networks`; DeBank (`/proxy/debank/v1/...`); CoinGecko (`/proxy/coingecko/...`, also the 429 fallback); Blockaid (`/proxy/blockaid`); Contentful (`/proxy/contentful`); Meld (`/proxy/meld/...`, `/proxy/meld-sandbox/...`); Markr (`/proxy/markr-helium/info/partner`); Hashflow (`/proxy/hashflow`); PostHog flags (`/proxy/posthog/decide`); MoonPay (`/moonpay/:address`); perps geo check (`/perps/available`) | None sent by the app |
-| `core-proxy-api`               | `GLACIER_URL`                     | Glacier calls through `/v1/proxy/glacier`: chains, NFTs, validators, transactions and Earn              | App Check or `x-core-api-key`                     |
+| `core-proxy-api`               | `GLACIER_URL`                     | Glacier calls through `/v1/proxy/glacier`: chains, NFTs, validators, transactions and Earn              | App Check, plus `x-core-api-key` when `CORE_API_KEY` is set |
 
 The App Check token is sent as `X-Firebase-AppCheck`. The generated API clients and the Glacier SDK also send `x-application-name` (`core-mobile-ios` or `core-mobile-android`) and `x-application-version`.
 
@@ -110,7 +108,6 @@ The App Check token is sent as `X-Firebase-AppCheck`. The generated API clients 
 | CoinGecko                    | Free-tier prices called directly. A 429 falls back to the paid route on `proxy-api-worker`. |
 | currency-api (jsDelivr)      | Fiat rates. Fallback: `latest.currency-api.pages.dev`.                                 |
 | Avalanche C-Chain public RPC | `https://api.avax.network/ext/bc/C/rpc`, used by the perps constants.                  |
-| Hyperliquid                  | Perps through `@avalabs/perps-sdk`, REST and WebSocket. Flag `perpetuals`.            |
 | Aave                         | DeFi market data and Merit APRs. Flag `in-app-defi`.                                   |
 | Merkl                        | User rewards.                                                                          |
 | Branch                       | Deep links through `react-native-branch`.                                              |

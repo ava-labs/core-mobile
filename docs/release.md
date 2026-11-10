@@ -18,9 +18,9 @@ Triggers for Bitrise builds are set in the Bitrise UI. `bitrise.yml` does not de
 
 ## Versioning
 
-- The version comes from the branch or tag. A `release/X.Y.Z` branch or an `X.Y.Z-rcN` tag gives `X.Y.Z`. Other refs give `0.0.0` (`scripts/bitrise/getAppVersion.sh`).
+- The version comes from the branch or tag. A `release/X.Y.Z` branch or an `X.Y.Z-rcN` tag gives `X.Y.Z`. Other refs give `0.0.0` (`packages/core-mobile/scripts/bitrise/getAppVersion.sh`).
 - The repository keeps placeholder version values.
-- On iOS the build number is `$BITRISE_BUILD_NUMBER`. On Android it is computed in `scripts/bitrise/getBuildNumber.sh`.
+- On iOS the build number is `$BITRISE_BUILD_NUMBER`. On Android it is computed in `packages/core-mobile/scripts/bitrise/getBuildNumber.sh`.
 
 ## Workflows
 
@@ -38,7 +38,7 @@ Triggers for Bitrise builds are set in the Bitrise UI. `bitrise.yml` does not de
 
 - Env files and Google services files are in AWS Secrets Manager under `core/dev/mobile/.env.*`.
 - The manual GitHub workflow `bitrise-envs-sync.yml` pushes them to Bitrise.
-- `scripts/bitrise/setEnv.sh` copies `.env.{production|internal}[.e2e]` to `.env`. It also picks the internal or external Google services files.
+- `packages/core-mobile/scripts/bitrise/setEnv.sh` copies `.env.{production|internal}[.e2e]` to `.env`. It also picks the internal or external Google services files.
 
 ## Checks on pull requests
 
