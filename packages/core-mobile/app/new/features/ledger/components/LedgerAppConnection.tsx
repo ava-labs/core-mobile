@@ -22,6 +22,7 @@ import {
 } from 'services/ledger/types'
 import { LedgerDeviceList } from './LedgerDeviceList'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
+import { LedgerAvalancheAppOutdatedHint } from './LedgerAvalancheAppOutdatedHint'
 
 export enum AppConnectionStep {
   AVALANCHE_CONNECT = 'avalanche-connect',
@@ -30,6 +31,11 @@ export enum AppConnectionStep {
   SOLANA_LOADING = 'solana-loading',
   COMPLETE = 'complete'
 }
+
+const SOLANA_STEPS = [
+  AppConnectionStep.SOLANA_CONNECT,
+  AppConnectionStep.SOLANA_LOADING
+]
 
 interface StepConfig {
   icon: React.ReactNode
@@ -439,6 +445,10 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           subtitleText="Connected via Bluetooth"
           testID="connected_device_list"
         />
+      )}
+
+      {!SOLANA_STEPS.includes(currentStep) && (
+        <LedgerAvalancheAppOutdatedHint sx={{ marginTop: 16 }} />
       )}
 
       {renderStepContent()}

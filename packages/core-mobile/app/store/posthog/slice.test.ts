@@ -19,6 +19,8 @@ import {
   selectIsFastStakeFeeBlocked,
   selectIsDelegationFeeBlocked,
   selectIsFilterSmallUtxosAvailable,
+  selectLedgerAvalancheAppRecommendedVersion,
+  setFeatureFlagPayloads,
   posthogSlice
 } from './slice'
 import { DefaultFeatureFlagConfig, initialState } from './types'
@@ -466,5 +468,122 @@ describe('selectIsFilterSmallUtxosAvailable', () => {
       }
     })
     expect(selectIsFilterSmallUtxosAvailable(state)).toBe(true)
+  })
+})
+
+const posthogStateFrom = (posthog: typeof initialState): RootState =>
+  ({
+    app: { walletType: WalletType.MNEMONIC },
+    posthog
+  } as unknown as RootState)
+
+describe('setFeatureFlagPayloads', () => {
+  it('replaces featureFlagPayloads with the payload', () => {
+    const payloads = {
+      [FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION]: {
+        recommendedVersion: '1.2.3'
+      }
+    }
+    const state = posthogSlice.reducer(
+      initialState,
+      setFeatureFlagPayloads(payloads)
+    )
+    expect(state.featureFlagPayloads).toEqual(payloads)
+  })
+})
+
+describe('selectLedgerAvalancheAppRecommendedVersion', () => {
+  const LEDGER = FeatureGates.LEDGER_AVALANCHE_APP_RECOMMENDED_VERSION
+
+  const stateWith = ({
+    flags = { [FeatureGates.EVERYTHING]: true, [LEDGER]: true },
+    payload
+  }: {
+    flags?: Record<string, unknown>
+    payload?: unknown
+  }): RootState =>
+    ({
+      app: { walletType: WalletType.MNEMONIC },
+      posthog: {
+        featureFlags: flags,
+        featureFlagPayloads: payload === undefined ? {} : { [LEDGER]: payload }
+      }
+    } as unknown as RootState)
+
+  it('returns the recommended version when the gate is on and the payload is valid', () => {
+    expect(
+      selectLedgerAvalancheAppRecommendedVersion(
+        stateWith({ payload: { recommendedVersion: '1.2.3' } })
+      )
+    ).toBe('1.2.3')
+  })
+
+  it('is undefined by default', () => {
+    expect(
+      selectLedgerAvalancheAppRecommendedVersion(posthogStateFrom(initialState))
+    ).toBeUndefined()
+  })
+
+  it('is undefined when the gate is off', () => {
+    expect(
+      selectLedgerAvalancheAppRecommendedVersion(
+        stateWith({
+          flags: { [FeatureGates.EVERYTHING]: true, [LEDGER]: false },
+          payload: { recommendedVersion: '1.2.3' }
+        })
+      )
+    ).toBeUndefined()
+  })
+
+  it('is undefined when the gate is missing', () => {
+    expect(
+      selectLedgerAvalancheAppRecommendedVersion(
+        stateWith({
+          flags: { [FeatureGates.EVERYTHING]: true },
+          payload: { recommendedVersion: '1.2.3' }
+        })
+      )
+    ).toBeUndefined()
+  })
+
+  it('is undefined when EVERYTHING is off', () => {
+    expect(
+      selectLedgerAvalancheAppRecommendedVersion(
+        stateWith({
+          flags: { [FeatureGates.EVERYTHING]: false, [LEDGER]: true },
+          payload: { recommendedVersion: '1.2.3' }
+        })
+      )
+    ).toBeUndefined()
+  })
+
+  it('is undefined when payloads were never stored (pre-existing persisted state)', () => {
+    const state = {
+      app: { walletType: WalletType.MNEMONIC },
+      posthog: {
+        featureFlags: { [FeatureGates.EVERYTHING]: true, [LEDGER]: true }
+      }
+    } as unknown as RootState
+    expect(selectLedgerAvalancheAppRecommendedVersion(state)).toBeUndefined()
+  })
+
+  it.each([
+    undefined,
+    null,
+    '1.2.3',
+    JSON.stringify({ recommendedVersion: '1.2.3' }),
+    ['1.2.3'],
+    {},
+    { recommendedVersion: 123 },
+    { recommendedVersion: '1.2' },
+    { recommendedVersion: 'v1.2.3' },
+    { recommendedVersion: '1.2.3-rc1' },
+    { recommendedVersion: '1_2_3' },
+    { recommendedVersion: ' 1.2.3' },
+    { version: '1.2.3' }
+  ])('is undefined for malformed payload %p', payload => {
+    expect(
+      selectLedgerAvalancheAppRecommendedVersion(stateWith({ payload }))
+    ).toBeUndefined()
   })
 })
