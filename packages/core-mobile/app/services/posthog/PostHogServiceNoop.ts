@@ -1,4 +1,4 @@
-import { FeatureGates, FeatureVars, PostHogServiceInterface } from './types'
+import { FetchFeatureFlagsResult, PostHogServiceInterface } from './types'
 
 export class PostHogServiceNoop implements PostHogServiceInterface {
   configure(): void {
@@ -17,9 +17,7 @@ export class PostHogServiceNoop implements PostHogServiceInterface {
     //noop
   }
 
-  async fetchFeatureFlags(): Promise<
-    Partial<Record<FeatureGates | FeatureVars, string | boolean>> | undefined
-  > {
+  async fetchFeatureFlags(): Promise<FetchFeatureFlagsResult | undefined> {
     //noop
     return undefined
   }

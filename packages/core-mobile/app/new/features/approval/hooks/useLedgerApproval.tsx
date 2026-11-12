@@ -148,6 +148,7 @@ export const useLedgerApproval = (
         stepSubtitle="Sign the transaction on your Ledger device"
         ledgerCurrentStep={1}
         totalSteps={1}
+        appType={appType}
       />
     )
   }, [
@@ -160,7 +161,8 @@ export const useLedgerApproval = (
     isLedgerConnected,
     isReconnecting,
     handleReconnect,
-    cancelLedger
+    cancelLedger,
+    appType
   ])
 
   const isLedgerActive = ledgerPhase !== LedgerReviewPhase.IDLE
