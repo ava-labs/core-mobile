@@ -548,7 +548,7 @@ __metadata:
     "@avalabs/crypto-nitro": 0.3.2
     "@avalabs/crypto-sdk": 1.0.2
     "@avalabs/evm-module": 5.0.0
-    "@avalabs/fusion-sdk": 0.28.1
+    "@avalabs/fusion-sdk": 0.28.2
     "@avalabs/glacier-sdk": 3.1.0-alpha.101
     "@avalabs/hw-app-avalanche": 2.1.0
     "@avalabs/k2-alpine": "workspace:*"
@@ -976,9 +976,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/fusion-sdk@npm:0.28.1":
-  version: 0.28.1
-  resolution: "@avalabs/fusion-sdk@npm:0.28.1"
+"@avalabs/fusion-sdk@npm:0.28.2":
+  version: 0.28.2
+  resolution: "@avalabs/fusion-sdk@npm:0.28.2"
   dependencies:
     "@bitcoinerlab/secp256k1": ^1.2.0
     "@layerzerolabs/lz-v2-utilities": ^3.0.17
@@ -995,7 +995,7 @@ __metadata:
     "@solana/kit": ^5.0.0 || ^6.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: 56e74d53debd2bbf7e1e08ee9b047e99135e1c558e5002de4e9568cb23f62c1794144b8d6ac51dbeadbfa07447e0f48b311e9013dc220fe42a17c16b2a93231a
+  checksum: 520e94f9f4c291f15ab63ffaee60c93e4618a62b2a82ebc69412048ce464cfdb205ab025a20fc4010a298560a9bae4b198b8952cda3ee050c837d8c962346528
   languageName: node
   linkType: hard
 
@@ -36951,7 +36951,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 23f6340fbc0e9d6c2f59271aea780576e774af61b4f50715bc24ab46771ab3d1f91300500bdd6fbd264b0ca7b777185816a054c603d4a1f98b0bf3a5cb206068
+  checksum: a409fe9e626ffbfa333cef4818392ebf344d3fbe5c67dbfedb244854ae3263c35da2a1c07581ce19fad8bc65980fa713d33aa5c646d678ff3bab8cafbac8a4e7
   languageName: node
   linkType: hard
 
