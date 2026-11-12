@@ -21,6 +21,93 @@ export const convertIPFSResolver = (url: string): string => {
   }
 }
 
+// NFT tokenUri/image URLs are attacker-controlled: restrict private, loopback,
+// link-local, CGNAT and IPv4-mapped IPv6 hosts.
+const PRIVATE_IPV4_PATTERNS = [
+  /^127\./,
+  /^10\./,
+  /^169\.254\./, // link-local (cloud metadata)
+  /^192\.168\./,
+  /^172\.(1[6-9]|2\d|3[0-1])\./,
+  /^100\.(6[4-9]|[7-9]\d|1[0-1]\d|12[0-7])\./
+]
+
+const isPrivateIpv4 = (host: string): boolean =>
+  host === '0.0.0.0' || PRIVATE_IPV4_PATTERNS.some(p => p.test(host))
+
+// ::ffff:a.b.c.d or ::ffff:XXXX:XXXX (hex) -> dotted quad, else undefined
+const ipv4FromMappedIpv6 = (host: string): string | undefined => {
+  const dotted = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i.exec(host)
+  if (dotted?.[1]) return dotted[1]
+  const hex = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i.exec(host)
+  if (hex?.[1] && hex[2]) {
+    const hi = parseInt(hex[1], 16)
+    const lo = parseInt(hex[2], 16)
+    return `${Math.floor(hi / 256)}.${hi % 256}.${Math.floor(lo / 256)}.${
+      lo % 256
+    }`
+  }
+  return undefined
+}
+
+const isPrivateOrReservedHost = (hostname: string): boolean => {
+  // strip one trailing dot: "localhost." resolves like "localhost"
+  const host = hostname
+    .toLowerCase()
+    .replace(/^\[|\]$/g, '')
+    .replace(/\.$/, '')
+
+  if (
+    host === 'localhost' ||
+    host.endsWith('.localhost') ||
+    host.endsWith('.local')
+  ) {
+    return true
+  }
+
+  if (host.includes(':')) {
+    const mapped = ipv4FromMappedIpv6(host)
+    if (mapped) return isPrivateIpv4(mapped)
+    return (
+      host === '::1' ||
+      host === '::' ||
+      /^fe[89ab][0-9a-f]:/.test(host) ||
+      /^f[cd]/.test(host)
+    )
+  }
+
+  return isPrivateIpv4(host)
+}
+
+/**
+ * Returns the URL that may be fetched. `http:` is upgraded to `https:` before
+ * the check; release builds' ATS no longer permits cleartext.
+ */
+export const assertSafeNftUrl = (rawUrl: string): string => {
+  let parsed: URL
+  try {
+    parsed = new URL(rawUrl)
+  } catch {
+    throw new Error(`[Nft] Refusing to fetch invalid URL: ${rawUrl}`)
+  }
+
+  if (parsed.protocol === 'http:') {
+    parsed.protocol = 'https:'
+  }
+
+  if (parsed.protocol !== 'https:') {
+    throw new Error(
+      `[Nft] Refusing to fetch non-https URL (scheme: ${parsed.protocol})`
+    )
+  }
+
+  if (isPrivateOrReservedHost(parsed.hostname)) {
+    throw new Error('[Nft] Refusing to fetch private/reserved host')
+  }
+
+  return parsed.toString()
+}
+
 export const isNftTokenType = (
   type: TokenType | undefined
 ): type is TokenType.ERC721 | TokenType.ERC1155 => {

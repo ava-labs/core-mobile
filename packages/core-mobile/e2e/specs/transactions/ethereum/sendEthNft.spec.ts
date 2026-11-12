@@ -6,8 +6,11 @@ import portfolio from '../../../pages/portfolio.page'
 import warmup from '../../../helpers/warmup'
 
 describe.skip('Send transaction', () => {
-  it('should send NFT on Ethereum', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('should send NFT on Ethereum', async () => {
     await portfolio.tapCollectiblesTab()
     await common.filter(commonLoc.ethereum)
     await txPage.sendNft('Untitled')

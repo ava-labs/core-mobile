@@ -1,14 +1,18 @@
 import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useLocalSearchParams } from 'expo-router'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
-import React from 'react'
+import { useSecureScreen } from 'hooks/useSecureScreen'
+import React, { useRef } from 'react'
+import { sensitiveDataStore } from 'utils/sensitiveDataStore'
 
 const ShowRecoveryPhraseScreen = (): JSX.Element => {
+  useSecureScreen()
   const {
     theme: { colors }
   } = useTheme()
-  const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
+  // Read once on mount and hold in a ref so the mnemonic is never in route state
+  const mnemonicRef = useRef(sensitiveDataStore.getMnemonic() ?? '')
+  const mnemonic = mnemonicRef.current
 
   return (
     <ScrollScreen

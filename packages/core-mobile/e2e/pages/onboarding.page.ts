@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import onboardingLoc from '../locators/onboarding.loc'
@@ -113,7 +112,7 @@ class OnboardingPage {
   get verifyYourRecoveryPhraseTitle() {
     return selectors.getByText(onboardingLoc.verifyYourRecoveryPhraseTitle)
   }
-  
+
   get bottomSheet() {
     return selectors.getById(onboardingLoc.bottomSheet)
   }
@@ -137,12 +136,13 @@ class OnboardingPage {
     } else {
       try {
         console.log('you are using a dev build, skipping metro dev menu now...')
-        const precedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
-        const metroDevMenu = selectors.getByText(`http://${precedingHost}:8081`)
+        // The dev launcher may list Metro under localhost/10.0.2.2 or the host's LAN IP
+        const metroDevMenu = selectors.getBySomeText(':8081')
         const dismissBtn = selectors.getByText('AvaxWallet')
         await actions.waitFor(metroDevMenu)
-        await actions.tap(metroDevMenu, dismissBtn)
-        await actions.waitFor(dismissBtn, 30000)
+        await actions.tap(metroDevMenu)
+        // The first bundle from a cold Metro cache can take minutes before the dev menu shows
+        await actions.waitFor(dismissBtn, 180000)
         await actions.dragAndDrop(dismissBtn, [0, 1500])
         console.log('Dismissed Metro dev menu')
       } catch (e) {
@@ -160,7 +160,7 @@ class OnboardingPage {
 
     if (!isE2EBuild && !isDeviceFarm) {
       try {
-        const dismissBtn = selectors.getByText("AvaxWallet")
+        const dismissBtn = selectors.getByText('AvaxWallet')
         await actions.dragAndDrop(dismissBtn, [0, 1500])
       } catch (e) {
         console.log('Metro dev menu is not found...')
@@ -215,14 +215,14 @@ class OnboardingPage {
 
   async enterPin(pin = '000000') {
     await actions.waitFor(this.enterPinFirstScreenTitle)
-    
+
     // Disable biometrics toggle if it's enabled (to avoid biometric prompt during login)
     const isToggleOn = await actions.isBiometricToggleOn(1500)
     if (isToggleOn) {
       const toggleOn = selectors.getById('toggle_biometrics_on')
       await actions.tap(toggleOn)
     }
-    
+
     await this.tapZero(pin)
     await actions.waitFor(this.enterPinSecondScreenTitle)
     await this.tapZero(pin)
@@ -238,13 +238,57 @@ class OnboardingPage {
     }
   }
 
-  async dismissUpdateAppModal() {
-    while (await actions.getVisible(this.updateAppModalTitle)) {
-      await actions.delay(1000)
-      await actions.dragAndDrop(this.updateAppModalTitle, [0, 1000])
-      console.log('Dismissed update app modal')
+  // The app hides this modal only when E2E_MNEMONIC is baked into the build (isE2EBuild),
+  // so dev builds show it once after login when the store version is newer
+  async dismissUpdateAppModal(timeout = 10000) {
+    const isE2EBuild =
+      process.env.E2E === 'true' || !!process.env.E2E_LOCAL_PATH
+    if (isE2EBuild) return
+
+    if (!(await actions.isElementVisible(this.updateAppModalTitle, timeout)))
+      return
+    await actions.dragAndDrop(this.updateAppModalTitle, [0, 1000])
+    await actions.waitForNotVisible(this.updateAppModalTitle)
+    console.log('Dismissed update app modal')
+  }
+
+  // AppDelegate requests App Tracking Transparency ~1s after a fresh install's first launch,
+  // and appium:autoAcceptAlerts doesn't reliably catch it before the first taps
+  async dismissTrackingPrompt(timeout = 5000) {
+    if (!driver.isIOS) return
+
+    try {
+      await driver.waitUntil(
+        async () => {
+          try {
+            await driver.getAlertText()
+            return true
+          } catch {
+            return false
+          }
+        },
+        { timeout, interval: 500 }
+      )
+    } catch {
+      return
     }
-    await actions.delay(1000)
+
+    try {
+      await driver.execute('mobile: alert', {
+        action: 'accept',
+        buttonLabel: 'Allow'
+      })
+    } catch {
+      try {
+        await driver.dismissAlert()
+      } catch (error) {
+        const isAlreadyDismissed =
+          error instanceof Error &&
+          /no such alert/i.test(`${error.name} ${error.message}`)
+        if (!isAlreadyDismissed) throw error
+      }
+    }
+    console.log('Dismissed App Tracking Transparency prompt')
   }
 
   async dismissBottomSheet(element = this.bottomSheet) {
@@ -291,19 +335,25 @@ class OnboardingPage {
   }
 
   async selectWord(words: string[], questionId: string) {
-    const title = await actions.getText(selectors.getById(`${questionId}_title`))
+    const title = await actions.getText(
+      selectors.getById(`${questionId}_title`)
+    )
     if (title) {
       const target = title.match(/"(.*?)"/)
       const targetIndex = target && target[1] ? words.indexOf(target[1]) : -1
       const isBefore = title.indexOf('before') > -1
       if (isBefore) {
-        await actions.click(selectors.getById(`${questionId}_${words[targetIndex - 1]}`))
+        await actions.click(
+          selectors.getById(`${questionId}_${words[targetIndex - 1]}`)
+        )
       } else {
-        await actions.click(selectors.getById(`${questionId}_${words[targetIndex + 1]}`))
+        await actions.click(
+          selectors.getById(`${questionId}_${words[targetIndex + 1]}`)
+        )
       }
     }
   }
-  
+
   async tapKeypadUpButton() {
     const upKeypad = await actions.getVisible(commonElsPage.keypadUpButton)
     if (upKeypad) {
@@ -311,12 +361,12 @@ class OnboardingPage {
     }
   }
 
-  async unlockEnterPin() {
+  async unlockEnterPin(pin = '000000') {
     try {
-      await this.tapZero()
+      await this.tapZero(pin)
     } catch {
       await this.tapKeypadUpButton()
-      await this.tapZero()
+      await this.tapZero(pin)
     }
   }
 }

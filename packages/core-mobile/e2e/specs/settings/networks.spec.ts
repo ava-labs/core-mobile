@@ -1,7 +1,7 @@
 import settings from '../../pages/settings.page'
 import sl from '../../locators/settings.loc'
 import common from '../../pages/commonEls.page'
-import warmup from '../../helpers/warmup'
+import warmup, { restartAndUnlock } from '../../helpers/warmup'
 import { networks, Network } from '../../helpers/networks'
 import portfolioPage from '../../pages/portfolio.page'
 import commonElsLoc from '../../locators/commonEls.loc'
@@ -10,6 +10,11 @@ describe('Settings', () => {
   before(async () => {
     await warmup()
     await settings.goNetworks()
+  })
+
+  after(async () => {
+    await restartAndUnlock()
+    await settings.resetNetworks()
   })
 
   it('Networks - should list the default networks', async () => {

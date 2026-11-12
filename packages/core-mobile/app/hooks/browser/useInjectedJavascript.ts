@@ -257,12 +257,12 @@ export function useInjectedJavascript(): InjectedJavascripts {
       configurable: false
     });
     Object.defineProperty(window, 'alert', {
-      value: customPrompt,
+      value: customAlert,
       writable: false,
       configurable: false
     });
     Object.defineProperty(window, 'confirm', {
-      value: customPrompt,
+      value: customConfirm,
       writable: false,
       configurable: false
     });

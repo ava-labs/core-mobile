@@ -4,8 +4,11 @@ import common from '../../pages/commonEls.page'
 import settings from '../../pages/settings.page'
 
 describe('Settings', () => {
-  it('Theme - should have system appereance by default', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('Theme - should have system appereance by default', async () => {
     await settings.goSettings()
     await settings.tapTheme()
     await settings.verifyTheme(settingsLoc.system, [

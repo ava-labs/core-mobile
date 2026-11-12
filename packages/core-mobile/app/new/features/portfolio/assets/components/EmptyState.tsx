@@ -127,7 +127,7 @@ export const EmptyState = ({
     }
 
     return {
-      minHeight: '100%',
+      flexGrow: 1,
       paddingHorizontal: 16,
       paddingBottom: insets.bottom + 32,
       paddingTop: 14,

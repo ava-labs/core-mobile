@@ -94,6 +94,7 @@ export function useWallet(): UseWallet {
 
       return Promise.resolve(walletId)
     } catch (error) {
+      Logger.error('Failed to store wallet with PIN', error)
       throw Error('Failed to store wallet with PIN')
     }
   }

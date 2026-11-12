@@ -1,11 +1,20 @@
 import settings from '../../pages/settings.page'
-import warmup from '../../helpers/warmup'
+import warmup, { restartAndUnlock } from '../../helpers/warmup'
 import common from '../../pages/commonEls.page'
 import { actions } from '../../helpers/actions'
+import settingsLoc from '../../locators/settings.loc'
 
 describe('Settings', () => {
-  it('Import wallet - Private key wallet is imported', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  after(async () => {
+    await restartAndUnlock()
+    await settings.removeImportedWallets([settingsLoc.imported, 'Wallet 2'])
+  })
+
+  it('Import wallet - Private key wallet is imported', async () => {
     await common.goMyWallets()
     await settings.importWalletViaPK(process.env.E2E_PK as string)
     await settings.tapWalletByName('Imported')

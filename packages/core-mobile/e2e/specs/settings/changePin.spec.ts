@@ -1,11 +1,21 @@
 import settings from '../../pages/settings.page'
 import { actions } from '../../helpers/actions'
-import warmup from '../../helpers/warmup'
+import warmup, { restartAndUnlock } from '../../helpers/warmup'
 
 describe('Settings', () => {
+  before(async () => {
+    await warmup()
+  })
+
+  after(async () => {
+    const pin = await restartAndUnlock(['111111', '000000'])
+    if (pin !== '000000') {
+      await settings.changePinTo(pin, '000000')
+    }
+  })
+
   it('Change Pin - should change PIN', async () => {
     // go to change pin page
-    await warmup()
     await settings.goSettings()
     await settings.tapSecurityAndPrivacy()
     await settings.tapChangePin()

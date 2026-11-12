@@ -31,6 +31,14 @@ jest.mock('services/wallet/WalletService', () => ({
   }
 }))
 
+const mockGetSession = jest.fn()
+jest.mock('services/walletconnectv2/WalletConnectService', () => ({
+  __esModule: true,
+  default: {
+    getSession: (topic: string) => mockGetSession(topic)
+  }
+}))
+
 jest.mock('utils/Logger', () => ({
   warn: jest.fn()
 }))
@@ -75,7 +83,41 @@ const testRequest: RpcRequest<RpcMethod.AVALANCHE_GET_ACCOUNTS> = {
   peerMeta: mockSession.peer.metadata
 }
 
+const ACCOUNT_1_C = '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'
+const ACCOUNT_2_C = '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+
+const sessionApproving = (...addresses: string[]): unknown => ({
+  ...mockSession,
+  namespaces: {
+    eip155: {
+      ...mockSession.namespaces.eip155,
+      accounts: addresses.map(address => `eip155:43114:${address}`)
+    }
+  }
+})
+
+const withVerify = (
+  validation: 'VALID' | 'UNKNOWN' | 'INVALID',
+  origin: string
+): RpcRequest<RpcMethod.AVALANCHE_GET_ACCOUNTS> => ({
+  ...testRequest,
+  data: {
+    ...testRequest.data,
+    verifyContext: { verified: { validation, origin, verifyUrl: '' } }
+  }
+})
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ids = (result: any): string[] =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  result.success ? result.value.map((a: any) => a.id) : []
+
 describe('avalanche_getAccounts handler', () => {
+  beforeEach(() => {
+    mockGetSession.mockReset()
+    mockGetSession.mockReturnValue(mockSession)
+  })
+
   it('should contain correct methods', () => {
     expect(handler.methods).toEqual(['avalanche_getAccounts'])
   })
@@ -165,6 +207,58 @@ describe('avalanche_getAccounts handler', () => {
           { address: 'avax1test2', index: 1 }
         ])
       }
+    })
+  })
+  describe('account scope', () => {
+    it('returns only the session-approved accounts to an unverified WalletConnect peer', async () => {
+      mockGetSession.mockReturnValue(sessionApproving(ACCOUNT_1_C))
+      const result = await handler.handle(testRequest, mockListenerApi)
+      expect(ids(result)).toEqual(['0'])
+    })
+
+    it('returns only the session-approved accounts to a peer claiming the Core extension', async () => {
+      mockGetSession.mockReturnValue(sessionApproving(ACCOUNT_2_C))
+      const result = await handler.handle(
+        withVerify(
+          'UNKNOWN',
+          'chrome-extension://agoakfejjabomempkjlepdflaleeobhb'
+        ),
+        mockListenerApi
+      )
+      expect(ids(result)).toEqual(['1'])
+    })
+
+    it('returns the whole wallet to a Verify-attested Core app', async () => {
+      mockGetSession.mockReturnValue(sessionApproving(ACCOUNT_1_C))
+      const result = await handler.handle(
+        withVerify('VALID', 'https://core.app'),
+        mockListenerApi
+      )
+      expect(ids(result)).toEqual(['0', '1'])
+    })
+
+    it('scopes a Core domain to the session when Verify does not attest it', async () => {
+      mockGetSession.mockReturnValue(sessionApproving(ACCOUNT_1_C))
+      const result = await handler.handle(
+        withVerify('UNKNOWN', 'https://core.app'),
+        mockListenerApi
+      )
+      expect(ids(result)).toEqual(['0'])
+    })
+
+    it('returns the whole wallet to in-app requests without a session lookup', async () => {
+      const result = await handler.handle(
+        { ...testRequest, provider: RpcProvider.CORE_MOBILE },
+        mockListenerApi
+      )
+      expect(ids(result)).toEqual(['0', '1'])
+      expect(mockGetSession).not.toHaveBeenCalled()
+    })
+
+    it('refuses a WalletConnect request with no session', async () => {
+      mockGetSession.mockReturnValue(undefined)
+      const result = await handler.handle(testRequest, mockListenerApi)
+      expect(result.success).toBe(false)
     })
   })
 })

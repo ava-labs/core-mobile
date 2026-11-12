@@ -565,6 +565,23 @@ class TransactionsPage {
     await this.verifyLocale(locale, currency)
   }
 
+  async ensureLocale(locale: string, currency: string) {
+    await this.tapBuy()
+    const isSet =
+      (await actions.isElementVisible(
+        selectors.getById(`right_value__${locale}`),
+        20000
+      )) &&
+      (await actions.isElementVisible(
+        selectors.getById(`right_value__${currency}`),
+        3000
+      ))
+    if (!isSet) {
+      await this.setLocale(locale, currency)
+    }
+    await commonElsPage.dismissBottomSheet()
+  }
+
   async tapMax() {
     await actions.tap(this.maxBtn)
   }

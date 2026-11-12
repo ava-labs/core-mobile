@@ -1,10 +1,11 @@
 import { AppListenerEffectAPI } from 'store/types'
-import { rpcErrors } from '@metamask/rpc-errors'
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { selectAccountById, selectActiveAccount } from 'store/account/slice'
 import { setActiveAccount } from 'store/account/thunks'
 import Logger from 'utils/Logger'
-import { RpcMethod, RpcRequest } from '../../../types'
+import { RpcMethod, RpcProvider, RpcRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
+import { isVerifiedCoreDomain } from '../../wc_sessionRequest/utils'
 import { parseRequestParams } from './utils'
 
 type AvalancheSelectAccountRequest =
@@ -29,6 +30,23 @@ class AvalancheSelectAccountHandler
       return {
         success: false,
         error: rpcErrors.invalidParams('Account id is invalid')
+      }
+    }
+
+    // pre-#4076 sessions may still hold Core methods for a spoofed extension identity
+    if (
+      request.provider === RpcProvider.WALLET_CONNECT &&
+      !isVerifiedCoreDomain(request.data.verifyContext)
+    ) {
+      Logger.warn('avalanche_selectAccount: rejected unverified WC request', {
+        origin: request.data.verifyContext?.verified.origin,
+        validation: request.data.verifyContext?.verified.validation
+      })
+      return {
+        success: false,
+        error: providerErrors.unauthorized(
+          'Request is not from a verified Core domain'
+        )
       }
     }
 

@@ -1,23 +1,16 @@
 import { renderHook } from '@testing-library/react-hooks'
-import { ChainId } from '@avalabs/core-chains-sdk'
 import { TokenType, NetworkContractToken } from '@avalabs/vm-module-types'
-import { tokenAddresses } from 'consts/tokenIds'
 import type { CryptoCurrency } from '../types'
 import { useMeldContractTokenMap } from './useMeldContractTokenMap'
 
 const C_CHAIN = 43114
-const ETHEREUM = 1
 const POLYGON = 137
-const SOLANA = ChainId.SOLANA_MAINNET_ID
-const MELD_SOLANA_CHAIN_ID = '101'
+const ETHEREUM = 1
 const NATIVE_SENTINEL = '0x0000000000000000000000000000000000000000'
 
 const mockState = {
-  isSolanaSupportBlocked: false,
-  isDeveloperMode: false,
   customTokens: {} as { [chainId: string]: NetworkContractToken[] },
   cChainNetwork: undefined as { chainId: number } | undefined,
-  ethereumNetwork: undefined as { chainId: number } | undefined,
   lookupData: {} as { [key: string]: unknown }
 }
 
@@ -27,29 +20,13 @@ jest.mock('react-redux', () => ({
   useSelector: (selector: () => unknown) => selector()
 }))
 
-jest.mock('store/posthog/slice', () => ({
-  selectIsSolanaSupportBlocked: () => mockState.isSolanaSupportBlocked
-}))
-
-jest.mock('store/settings/advanced', () => ({
-  selectIsDeveloperMode: () => mockState.isDeveloperMode
-}))
-
 jest.mock('store/customToken', () => ({
   selectAllCustomTokens: () => mockState.customTokens
-}))
-
-jest.mock('hooks/networks/useNetworks', () => ({
-  useNetworks: () => ({ allNetworks: {} })
 }))
 
 jest.mock('hooks/earn/useCChainNetwork', () => ({
   __esModule: true,
   default: () => mockState.cChainNetwork
-}))
-
-jest.mock('services/network/utils/providerUtils', () => ({
-  getEthereumNetwork: () => mockState.ethereumNetwork
 }))
 
 jest.mock('common/hooks/useTokenLookup', () => ({
@@ -104,22 +81,18 @@ const requestedAddresses = (): string[] =>
 describe('useMeldContractTokenMap', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockState.isSolanaSupportBlocked = false
-    mockState.isDeveloperMode = false
     mockState.customTokens = {}
     mockState.cChainNetwork = { chainId: C_CHAIN }
-    mockState.ethereumNetwork = { chainId: ETHEREUM }
     mockState.lookupData = {}
   })
 
   describe('which currencies get looked up', () => {
-    it('looks up currencies on the scoped chains', () => {
+    it('looks up currencies on the C-Chain', () => {
       render([
-        currency({ chainId: C_CHAIN.toString(), contractAddress: '0xA1' }),
-        currency({ chainId: ETHEREUM.toString(), contractAddress: '0xB2' })
+        currency({ chainId: C_CHAIN.toString(), contractAddress: '0xA1' })
       ])
 
-      expect(requestedAddresses()).toEqual(['0xA1', '0xB2'])
+      expect(requestedAddresses()).toEqual(['0xA1'])
     })
 
     it('skips currencies with no contract address or chain', () => {
@@ -141,7 +114,7 @@ describe('useMeldContractTokenMap', () => {
       expect(requestedAddresses()).toEqual(['0xD4'])
     })
 
-    it('skips chains outside the scoped set', () => {
+    it('skips chains other than the C-Chain', () => {
       render([
         currency({ chainId: POLYGON.toString(), contractAddress: '0xE5' }),
         currency({ chainId: C_CHAIN.toString(), contractAddress: '0xF6' })
@@ -150,50 +123,26 @@ describe('useMeldContractTokenMap', () => {
       expect(requestedAddresses()).toEqual(['0xF6'])
     })
 
+    it('does not resolve Ethereum mainnet tokens into the contract token map', () => {
+      const address = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+      mockState.lookupData = Object.fromEntries([
+        entry('eip155:1', address, {
+          symbol: 'USDC',
+          meta: { decimals: { 'eip155:1': 6 }, logoUri: 'https://usdc' }
+        })
+      ])
+
+      const map = render([
+        currency({ chainId: ETHEREUM.toString(), contractAddress: address })
+      ])
+
+      expect(requestedAddresses()).toEqual([])
+      expect(map.has(`${ETHEREUM}-${address.toLowerCase()}`)).toBe(false)
+      expect(map.size).toBe(0)
+    })
+
     it('requests nothing when there are no currencies', () => {
       render([])
-
-      expect(requestedAddresses()).toEqual([])
-    })
-  })
-
-  describe('solana', () => {
-    it("translates Meld's solana chain id and allows USDC", () => {
-      render([
-        currency({
-          chainId: MELD_SOLANA_CHAIN_ID,
-          contractAddress: tokenAddresses.USDC_SOLANA
-        })
-      ])
-
-      expect(mockLookupSpy.mock.calls[0]?.[0]).toEqual([
-        {
-          caip2Id: expect.stringContaining('solana:'),
-          address: tokenAddresses.USDC_SOLANA
-        }
-      ])
-    })
-
-    it('allows only USDC on solana, matching the catalog it replaced', () => {
-      render([
-        currency({
-          chainId: MELD_SOLANA_CHAIN_ID,
-          contractAddress: 'SomeOtherSplMintAddress1111111111111111111'
-        })
-      ])
-
-      expect(requestedAddresses()).toEqual([])
-    })
-
-    it('drops solana entirely when solana support is blocked', () => {
-      mockState.isSolanaSupportBlocked = true
-
-      render([
-        currency({
-          chainId: MELD_SOLANA_CHAIN_ID,
-          contractAddress: tokenAddresses.USDC_SOLANA
-        })
-      ])
 
       expect(requestedAddresses()).toEqual([])
     })
@@ -221,33 +170,6 @@ describe('useMeldContractTokenMap', () => {
         decimals: 6,
         logoUri: 'https://joe',
         type: TokenType.ERC20
-      })
-    })
-
-    it('builds an SPL token with its caip2Id and contractType', () => {
-      const address = tokenAddresses.USDC_SOLANA
-      const caip2Id = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
-      mockState.lookupData = {
-        [`${caip2Id}-${address}`]: {
-          name: 'USD Coin',
-          symbol: 'USDC',
-          meta: { decimals: { [caip2Id]: 6 }, logoUri: 'https://usdc' }
-        }
-      }
-
-      const map = render([
-        currency({ chainId: MELD_SOLANA_CHAIN_ID, contractAddress: address })
-      ])
-      const token = map.get(`${SOLANA}-${address.toLowerCase()}`)
-
-      expect(token).toMatchObject({
-        address,
-        chainId: SOLANA,
-        symbol: 'USDC',
-        decimals: 6,
-        type: TokenType.SPL,
-        contractType: TokenType.SPL,
-        caip2Id
       })
     })
 
@@ -285,7 +207,7 @@ describe('useMeldContractTokenMap', () => {
   })
 
   describe('custom tokens', () => {
-    it('merges custom tokens for the scoped chains', () => {
+    it('merges custom tokens for the C-Chain', () => {
       const custom = {
         address: '0xCustom1',
         name: 'Custom',
@@ -301,7 +223,7 @@ describe('useMeldContractTokenMap', () => {
       expect(map.get(`${C_CHAIN}-0xcustom1`)).toBe(custom)
     })
 
-    it('ignores custom tokens on unscoped chains', () => {
+    it('ignores custom tokens on other chains', () => {
       mockState.customTokens = {
         [POLYGON]: [
           {
@@ -321,15 +243,12 @@ describe('useMeldContractTokenMap', () => {
   })
 
   describe('missing networks', () => {
-    it('scopes to whatever networks resolved', () => {
-      mockState.ethereumNetwork = undefined
+    it('requests nothing when the C-Chain network is unresolved', () => {
+      mockState.cChainNetwork = undefined
 
-      render([
-        currency({ chainId: ETHEREUM.toString(), contractAddress: '0xG7' }),
-        currency({ chainId: C_CHAIN.toString(), contractAddress: '0xH8' })
-      ])
+      render([currency({ contractAddress: '0xH8' })])
 
-      expect(requestedAddresses()).toEqual(['0xH8'])
+      expect(requestedAddresses()).toEqual([])
     })
   })
 })

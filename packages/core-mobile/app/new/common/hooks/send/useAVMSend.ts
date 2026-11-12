@@ -132,7 +132,8 @@ const useAVMSend: SendAdapterAVM = ({
         // displayed balance — same as pre-filter behavior: worst case the
         // send fails at build instead of validation. Max (getMaxAmount)
         // never degrades this way.
-        spendableBalance: filterSmallUtxos ? spendableBalance : undefined
+        spendableBalance: filterSmallUtxos ? spendableBalance : undefined,
+        isTestnet: Boolean(network?.isTestnet)
       })
 
       setError(undefined)
@@ -147,7 +148,8 @@ const useAVMSend: SendAdapterAVM = ({
     amount,
     selectedToken,
     filterSmallUtxos,
-    spendableBalance
+    spendableBalance,
+    network
   ])
 
   const getMaxAmount = useCallback(async () => {

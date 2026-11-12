@@ -23,6 +23,8 @@ import {
 } from './types'
 import {
   getAddressWithCaip2ChainId,
+  isAddressApprovedInNamespace,
+  isChainDeclaredInSession,
   updateAccountListInNamespace,
   updateChainListInNamespace
 } from './utils'
@@ -199,11 +201,13 @@ class WalletConnectService implements WalletConnectServiceInterface {
   updateSession = async ({
     session,
     chainId,
-    account
+    account,
+    addActiveAccount = false
   }: {
     session: SessionTypes.Struct
     chainId: number
     account: Account
+    addActiveAccount?: boolean
   }): Promise<void> => {
     const caip2ChainId = getCaip2ChainId(chainId)
     const blockchainNamespace = caip2ChainId.split(
@@ -214,6 +218,17 @@ class WalletConnectService implements WalletConnectServiceInterface {
     if (!session.namespaces[blockchainNamespace]) {
       Logger.info(
         `Skipping WC session update for namespace '${blockchainNamespace}' – not present in session.`
+      )
+      return
+    }
+
+    // a chain the dApp never declared has nothing to sync, and the
+    // sign-client rejects events for it
+    if (
+      !isChainDeclaredInSession({ session, blockchainNamespace, caip2ChainId })
+    ) {
+      Logger.info(
+        `skipping WC session update: chain '${caip2ChainId}' is not declared in session '${session.peer.metadata.name}'`
       )
       return
     }
@@ -234,6 +249,15 @@ class WalletConnectService implements WalletConnectServiceInterface {
       `updating WC session '${session.peer.metadata.name}' with chainId '${caip2ChainId}' and account '${addressWithCaip2ChainId}'`
     )
 
+    // fail closed: only a real account switch opts in to adding an account
+    // the user did not approve for this session (CP-15152)
+    const shouldAnnounceAccount =
+      addActiveAccount ||
+      isAddressApprovedInNamespace({
+        caip10Account: addressWithCaip2ChainId,
+        accounts: session.namespaces[blockchainNamespace]?.accounts ?? []
+      })
+
     const namespaces: SessionTypes.Namespaces = {}
 
     for (const key of Object.keys(session.namespaces)) {
@@ -243,7 +267,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
       // for the matching namespace, we need to update both chain and account lists
       // for the rest, we just leave as is
-      if (key === blockchainNamespace) {
+      if (key === blockchainNamespace && shouldAnnounceAccount) {
         updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
 
         updateAccountListInNamespace({
@@ -262,6 +286,13 @@ class WalletConnectService implements WalletConnectServiceInterface {
       topic,
       namespaces
     })
+
+    if (!shouldAnnounceAccount) {
+      Logger.info(
+        'skipping emitting wallet connect events since the active account was not approved for this session'
+      )
+      return
+    }
 
     // emitting events
     // but only for evm chains since neither wagmi/universal provider can handle non-evm chain events
@@ -297,16 +328,18 @@ class WalletConnectService implements WalletConnectServiceInterface {
   updateSessionWithTimeout = async ({
     session,
     chainId,
-    account
+    account,
+    addActiveAccount
   }: {
     session: SessionTypes.Struct
     chainId: number
     account: Account
+    addActiveAccount?: boolean
   }): Promise<void> => {
     // if dapp is not online, updateSession will be stuck for a long time
     // we are using promiseWithTimeout here to exit early when that happens
     return promiseWithTimeout(
-      this.updateSession({ session, chainId, account }),
+      this.updateSession({ session, chainId, account, addActiveAccount }),
       UPDATE_SESSION_TIMEOUT
     ).catch(e => {
       Logger.warn(
@@ -318,10 +351,12 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
   updateSessions = async ({
     chainId,
-    account
+    account,
+    addActiveAccount = false
   }: {
     chainId: number
     account: Account
+    addActiveAccount?: boolean
   }): Promise<void> => {
     const promises: Promise<void>[] = []
 
@@ -329,7 +364,8 @@ class WalletConnectService implements WalletConnectServiceInterface {
       const promise = this.updateSessionWithTimeout({
         session,
         chainId,
-        account
+        account,
+        addActiveAccount
       })
       promises.push(promise)
     })
@@ -374,6 +410,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
             ]
 
         this.updateNamespaceForNonEvmCaip2ChainId({
+          session,
           account,
           namespace,
           caip2ChainIds,
@@ -387,6 +424,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
           : [BitcoinCaip2ChainId.MAINNET]
 
         this.updateNamespaceForNonEvmCaip2ChainId({
+          session,
           account,
           namespace,
           caip2ChainIds,
@@ -406,28 +444,41 @@ class WalletConnectService implements WalletConnectServiceInterface {
   }
 
   private updateNamespaceForNonEvmCaip2ChainId = ({
+    session,
     account,
     namespace,
     caip2ChainIds,
     blockchainNamespace
   }: {
+    session: SessionTypes.Struct
     account: Account
     namespace: SessionTypes.Namespace
     caip2ChainIds: string[]
     blockchainNamespace: BlockchainNamespace
   }): void => {
     caip2ChainIds.forEach(caip2ChainId => {
-      updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
       const addressWithCaip2ChainId = getAddressWithCaip2ChainId({
         account,
         blockchainNamespace,
         caip2ChainId
       })
-      addressWithCaip2ChainId &&
-        updateAccountListInNamespace({
-          account: addressWithCaip2ChainId,
-          accounts: namespace.accounts
+
+      if (
+        !addressWithCaip2ChainId ||
+        !isChainDeclaredInSession({
+          session,
+          blockchainNamespace,
+          caip2ChainId
         })
+      ) {
+        return
+      }
+
+      updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
+      updateAccountListInNamespace({
+        account: addressWithCaip2ChainId,
+        accounts: namespace.accounts
+      })
     })
   }
 

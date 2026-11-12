@@ -1,11 +1,19 @@
 import settings from '../../pages/settings.page'
 import sl from '../../locators/settings.loc'
 import common from '../../pages/commonEls.page'
-import warmup from '../../helpers/warmup'
+import warmup, { restartAndUnlock } from '../../helpers/warmup'
 
 describe('Settings', () => {
-  it('Accounts - should auto-add the second account', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  after(async () => {
+    await restartAndUnlock()
+    await settings.resetAccounts()
+  })
+
+  it('Accounts - should auto-add the second account', async () => {
     await common.goMyWallets()
     await settings.verifyMyWalletsAccountName(sl.account)
     await settings.verifyMyWalletsAccountName(sl.account2)

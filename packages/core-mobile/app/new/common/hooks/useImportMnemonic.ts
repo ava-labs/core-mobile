@@ -7,6 +7,7 @@ import { onWalletImported } from 'store/app/slice'
 import { AppThunkDispatch } from 'store/types'
 import { importMnemonicWalletAndAccount } from 'store/wallet/thunks'
 import Logger from 'utils/Logger'
+import { validateMnemonic } from 'bip39'
 
 export const useImportMnemonic = (): {
   isImporting: boolean
@@ -24,11 +25,21 @@ export const useImportMnemonic = (): {
         return
       }
 
+      const normalizedMnemonic = mnemonic
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, ' ')
+      if (!validateMnemonic(normalizedMnemonic)) {
+        Logger.error('Invalid mnemonic provided for seed wallet import')
+        showSnackbar('Import failed: invalid recovery phrase')
+        return
+      }
+
       setIsImporting(true)
       try {
         const { walletId } = await dispatch(
           importMnemonicWalletAndAccount({
-            mnemonic,
+            mnemonic: normalizedMnemonic,
             name
           })
         ).unwrap()

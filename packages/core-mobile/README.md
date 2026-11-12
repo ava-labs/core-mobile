@@ -7,7 +7,7 @@
 | Node.js | >= 20.18 | via [volta](https://volta.sh/) or [nvm](https://github.com/nvm-sh/nvm) |
 | Yarn | any launcher | delegates to the repo-pinned 3.6.4 (`corepack enable` or `brew install yarn`) |
 | Xcode | latest stable | includes an iOS simulator runtime (iOS builds) |
-| Ruby | 3.2.x | for CocoaPods via Bundler — `brew install ruby@3.2` or rbenv/rvm; no global CocoaPods install needed |
+| Ruby | 3.3.x | for CocoaPods via Bundler — `brew install ruby@3.3` or rbenv/rvm; no global CocoaPods install needed |
 | JDK | 17 | e.g. `brew install --cask zulu@17` (Android builds) |
 | Android Studio | latest stable | install an SDK + emulator, then export `ANDROID_HOME` (see Android section) |
 | AWS CLI | v2 | for fetching env files — [install guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) |

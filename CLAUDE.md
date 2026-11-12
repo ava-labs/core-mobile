@@ -185,8 +185,8 @@ High-performance crypto operations implemented in C++ using the Nitro Modules fr
 
 ## Key Dependencies
 
-- **React Native**: 0.85
-- **Expo**: SDK 56
+- **React Native**: 0.86
+- **Expo**: SDK 57
 - **React**: 19.2
 - **Avalanche SDKs**: Various `@avalabs/*` packages at 3.1.0-alpha.x
 - **Nitro Modules**: 0.35 for native module architecture
@@ -209,3 +209,19 @@ High-performance crypto operations implemented in C++ using the Nitro Modules fr
 **Native module errors:**
 - For crypto: bump `@avalabs/crypto-nitro` (and any matching `@avalabs/crypto-sdk`), then `yarn install && yarn core podInstall` to refresh native bindings
 - Rebuild app after native changes
+
+## Docs and service catalogue
+
+`docs/` and `catalog-info.yaml` are published in the Core Backstage catalogue, so **update them in the same change as the code**:
+
+- New or changed backend calls, or env-var base URLs → `consumesApis` / `dependsOn` in `catalog-info.yaml` and the backend dependencies / third parties tables and flowchart in `docs/index.md`. A new third party also needs an `external-service` Resource in `catalog/external.yaml` of the service-catalogue repo.
+- `bitrise.yml`, GitHub workflows, `packages/core-mobile/scripts/bitrise` → `docs/release.md`.
+- Dev setup commands, Node version or env files → `docs/development.md` (and the commands in this file if they repeat them).
+
+Don't update docs for pure refactors, tests or dependency bumps.
+
+Links between docs pages are relative and stay inside `docs/` (MkDocs serves nothing outside it). Check with:
+
+```bash
+docker run --rm -v "$PWD:/content" -w /content spotify/techdocs build --strict -d /tmp/site
+```

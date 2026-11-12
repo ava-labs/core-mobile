@@ -15,6 +15,7 @@
         {
           "ios": {
             "deploymentTarget": "16.4",
+            "enableSceneSupport": true,
             "extraPods": [
               {
                 "name": "SDWebImage",

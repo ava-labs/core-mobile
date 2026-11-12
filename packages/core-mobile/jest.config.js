@@ -2,6 +2,8 @@ const coverageThreshold = require('./coverage-thresholds.json')
 
 module.exports = {
   preset: '@react-native/jest-preset',
+  // Reanimated 4.6+ .native files crash at import under Jest without its resolver
+  resolver: 'react-native-reanimated/jest/resolver',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   clearMocks: true,
   coverageDirectory: '<rootDir>/coverage',

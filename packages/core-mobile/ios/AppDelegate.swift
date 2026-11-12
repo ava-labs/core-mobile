@@ -6,11 +6,14 @@ import RNBranch
 import AppTrackingTransparency
 
 @main
-class AppDelegate: ExpoAppDelegate {
+class AppDelegate: ExpoAppDelegate, ExpoReactNativeFactoryProvider {
   var window: UIWindow?
  
   var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
+
+  // Expo's scene delegate defaults to "main"
+  var reactNativeFactoryModuleName: String { "AvaxWallet" }
 
   public override func application(
     _ application: UIApplication,
@@ -43,14 +46,6 @@ class AppDelegate: ExpoAppDelegate {
 
     reactNativeDelegate = delegate
     reactNativeFactory = factory
-
-    #if os(iOS) || os(tvOS)
-    window = UIWindow(frame: UIScreen.main.bounds)
-    factory.startReactNative(
-      withModuleName: "AvaxWallet",
-      in: window,
-      launchOptions: launchOptions)
-    #endif
 
     loadRocketSimConnect()
 
