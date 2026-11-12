@@ -202,5 +202,7 @@ export const toFastStakeValidator = (
   // Glacier types the fee as optional; the Fast Stake query filters on
   // `maxFeePercentage`, so it's present in practice. Fall back to '0' (a
   // gross estimate) rather than inventing a fee.
-  delegationFee: v.delegationFee ?? '0'
+  delegationFee: v.delegationFee ?? '0',
+  // Already on the 0-100 scale, like PVM's `uptime` string.
+  uptime: v.uptimePerformance == null ? undefined : String(v.uptimePerformance)
 })

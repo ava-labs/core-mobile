@@ -1,0 +1,75 @@
+# https://backstage.io/docs/features/software-catalog/descriptor-format
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: core-mobile
+  title: Core Mobile
+  description: Core mobile wallet app for iOS and Android (app name AvaxWallet).
+  annotations:
+    github.com/project-slug: ava-labs/core-mobile
+    backstage.io/source-location: url:https://github.com/ava-labs/core-mobile/tree/main/
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - typescript
+    - react-native
+    - expo
+    - mobile
+spec:
+  owner: group:default/core-engineering
+  domain: core-client-apps
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: core-mobile
+  description: Core mobile wallet app for iOS and Android, published on the App Store and Google Play.
+  annotations:
+    github.com/project-slug: ava-labs/core-mobile
+    backstage.io/source-location: url:https://github.com/ava-labs/core-mobile/tree/main/
+    backstage.io/techdocs-entity: system:default/core-mobile
+    backstage.io/techdocs-entity-path: /
+  links:
+    - url: https://apps.apple.com/app/id6443685999
+      title: App Store
+      icon: web
+    - url: https://play.google.com/store/apps/details?id=com.avaxwallet
+      title: Google Play
+      icon: web
+    - url: https://github.com/ava-labs/core-mobile/releases
+      title: GitHub Releases
+      icon: github
+  tags:
+    - typescript
+    - react-native
+    - expo
+    - mobile
+spec:
+  type: mobile-app
+  lifecycle: production
+  owner: group:default/core-engineering
+  system: core-mobile
+  consumesApis:
+    - api:default/core-balance-api
+    - api:default/core-profile-api
+    - api:default/token-aggregator-api
+    - api:default/core-notification-sender-api
+    - api:default/core-gas-station-api
+    - api:default/core-seedless-api
+    - api:default/proxy-api-worker
+    - api:default/core-proxy-api
+  dependsOn:
+    - resource:default/posthog
+    - resource:default/firebase-app-check
+    - resource:default/firebase-cloud-messaging
+    - resource:default/cubesigner
+    - resource:default/google-oauth
+    - resource:default/apple-oauth
+    - resource:default/sentry
+    - resource:default/walletconnect
+    - resource:default/coingecko
+    - resource:default/currency-api
+    - resource:default/aave
+    - resource:default/merkl
+    - resource:default/branch
+    - resource:default/coinbase-pay

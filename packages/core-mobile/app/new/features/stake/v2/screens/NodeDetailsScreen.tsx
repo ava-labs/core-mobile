@@ -20,7 +20,7 @@ import { format, fromUnixTime } from 'date-fns'
 import { useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { LayoutChangeEvent, TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -32,6 +32,12 @@ import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { formatLargeCurrency, truncateNodeId } from 'utils/Utils'
 import { determineNodeTags } from '../utils/determineNodeTags'
 import { formatUptime } from '../utils/formatUptime'
+import { isUptimeBelowRequirement } from '../utils/uptimeRequirement'
+import {
+  proceedOrWarnLowUptime,
+  resetLowUptimeAlertState
+} from '../utils/showLowUptimeAlert'
+import { DELEGATE_NODE_SELECTION_HREF } from '../constants'
 import { getValidatorExplorerUrl } from '../utils/getValidatorExplorerUrl'
 import { NodeTagPill } from '../components/NodeTagPill'
 import { useDelegateNodeSelection } from '../store'
@@ -49,9 +55,16 @@ const countFormatter = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0
 })
 
+type NodeStat = {
+  value: string
+  label: string
+  valueTestID?: string
+  isWarning?: boolean
+}
+
 const NodeDetailsScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { navigate } = useRouter()
+  const { navigate, dismissTo } = useRouter()
   const nodes = useDelegateNodeSelection(state => state.nodes)
   const index = useDelegateNodeSelection(state => state.index)
   const setIndex = useDelegateNodeSelection(state => state.setIndex)
@@ -87,8 +100,15 @@ const NodeDetailsScreen = (): JSX.Element => {
   const handleSelect = useCallback((): void => {
     // The picked node lives in the delegate node-selection store, so the
     // amount → duration → confirm steps read it from there (no params).
-    navigate({ pathname: '/addStakeV2/delegate/amount' })
-  }, [navigate])
+    proceedOrWarnLowUptime({
+      uptime: node?.uptime,
+      onProceed: () => navigate({ pathname: '/addStakeV2/delegate/amount' }),
+      onSelectNewNode: () => dismissTo(DELEGATE_NODE_SELECTION_HREF)
+    })
+  }, [navigate, dismissTo, node?.uptime])
+
+  // Leaving with the alert still open must not block later warnings.
+  useEffect(() => () => resetLowUptimeAlertState(), [])
 
   const handleViewInExplorer = useCallback((): void => {
     if (!node) return
@@ -175,31 +195,24 @@ const NodeDetailsScreen = (): JSX.Element => {
     [avaxPrice, formatCurrency]
   )
 
-  const stats = useMemo(() => {
+  const stats = useMemo<NodeStat[]>(() => {
     if (!node) return []
     return [
-      {
-        value: apyDisplay ?? NIL_VALUE,
-        caption: 'Annualized percentage yield'
-      },
-      {
-        value: delegatorWeight.toDisplay(),
-        caption: 'NodeID delegations (AVAX)'
-      },
+      { value: apyDisplay ?? NIL_VALUE, label: 'APY' },
+      { value: delegatorWeight.toDisplay(), label: 'Delegations (AVAX)' },
       {
         value: countFormatter.format(Number(node.delegatorCount ?? 0)),
-        caption: 'NodeID delegators'
+        label: 'Delegators'
       },
-      { value: weight.toDisplay(), caption: 'Node stake quantity (AVAX)' },
-      {
-        value: `${Number(node.delegationFee)}%`,
-        caption: 'NodeID delegation fee'
-      },
+      { value: weight.toDisplay(), label: 'Node staked quantity' },
+      { value: `${Number(node.delegationFee)}%`, label: 'Delegation fee' },
       {
         // `formatUptime` truncates below-100 values so a 99.999% node never
         // reads as "100%"; an exact 100 drops the ".00".
         value: `${formatUptime(node.uptime)}%`,
-        caption: 'Time responsive'
+        label: 'Uptime',
+        valueTestID: 'node_details_uptime_value',
+        isWarning: isUptimeBelowRequirement(node.uptime)
       }
     ]
   }, [node, apyDisplay, delegatorWeight, weight])
@@ -362,7 +375,7 @@ const NodeDetailsScreen = (): JSX.Element => {
           }}>
           {stats.map(stat => (
             <Card
-              key={stat.caption}
+              key={stat.label}
               sx={{
                 width: cellWidth,
                 minHeight: 100,
@@ -372,9 +385,17 @@ const NodeDetailsScreen = (): JSX.Element => {
                 justifyContent: 'flex-start',
                 gap: 0
               }}>
-              <Text variant="heading6">{stat.value}</Text>
-              <Text variant="caption" sx={{ color: '$textSecondary' }}>
-                {stat.caption}
+              <Text
+                variant="heading6"
+                testID={stat.valueTestID}
+                sx={stat.isWarning ? { color: '$textDanger' } : undefined}>
+                {stat.value}
+              </Text>
+              <Text
+                variant="caption"
+                testID="node_details_stat_label"
+                sx={{ color: '$textSecondary' }}>
+                {stat.label}
               </Text>
             </Card>
           ))}

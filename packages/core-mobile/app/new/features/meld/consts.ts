@@ -13,11 +13,16 @@ export enum ServiceProviderStatus {
 }
 
 export enum MELD_CURRENCY_CODES {
-  BTC = 'BTC',
-  USDC = 'USDC',
   AVAXC = 'AVAXC',
-  USDC_AVAXC = 'USDC_AVAXC'
+  USDC_AVAXC = 'USDC_AVAXC',
+  USDT_AVAXC = 'USDT_AVAXC'
 }
+
+export const SUPPORTED_MELD_CRYPTO_CODES: readonly string[] = [
+  MELD_CURRENCY_CODES.AVAXC,
+  MELD_CURRENCY_CODES.USDC_AVAXC,
+  MELD_CURRENCY_CODES.USDT_AVAXC
+]
 
 export const NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS =
   '0x0000000000000000000000000000000000000000'
@@ -327,15 +332,6 @@ export const PaymentMethodTimeLimits: Record<string, string> = {
   [PaymentMethods.PAYOUT_TO_CARD]: '3-5 days'
 }
 
-export enum PaymentTypes {
-  CARD = 'CARD',
-  BANK_TRANSFER = 'BANK_TRANSFER',
-  MOBILE_WALLET = 'MOBILE_WALLET',
-  LOCAL = 'LOCAL',
-  EXCHANGE = 'EXCHANGE',
-  CASH = 'CASH'
-}
-
 export enum ServiceProviders {
   AKOYA = 'AKOYA',
   ALCHEMYPAY = 'ALCHEMYPAY',
@@ -428,4 +424,11 @@ export const ServiceProviderNames: Record<string, string> = {
   [ServiceProviders.BOOMFI]: 'Boomfi'
 }
 
-export const SOLANA_MELD_CHAIN_ID = 101
+export const MeldCurrencyType = {
+  CRYPTO: 'CRYPTO',
+  FIAT: 'FIAT'
+} as const
+
+type ValueOf<T> = T[keyof T]
+
+export type MeldCurrencyType = ValueOf<typeof MeldCurrencyType>

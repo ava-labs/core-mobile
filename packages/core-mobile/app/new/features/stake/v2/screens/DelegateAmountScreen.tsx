@@ -30,8 +30,6 @@ import { getRestakePrefill } from '../store'
 const STAKING_MAX_BALANCE_PERCENTAGE = 0.9999
 
 /**
- * Advanced delegate "How much do you want to stake?" screen.
- *
  * Delegate-flow specific (unlike the shared Fast Stake `StakeAmountScreen`,
  * which uses the `CircularDial`): this one uses V1's `TokenUnitInputWidget`
  * keypad. Adds the node-capacity check — the amount can exceed the selected
@@ -196,8 +194,8 @@ const DelegateAmountScreen = (): JSX.Element => {
 
   return (
     <ScrollScreen
-      title={`How much would\nyou like to stake?`}
-      navigationTitle="How much would you like to stake?"
+      title="Enter an amount"
+      navigationTitle="Enter an amount"
       renderFooter={renderFooter}
       isModal
       shouldAvoidKeyboard

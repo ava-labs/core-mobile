@@ -1,3 +1,7 @@
+import { TokenType } from '@avalabs/vm-module-types'
+import { LocalTokenWithBalance } from 'store/balance'
+import { npCryptoCurrencies } from './services/__fixtures__/networkPartner'
+import { toCryptoCurrency } from './services/networkPartnerAdapters'
 import { PaymentMethods, ServiceProviderCategories } from './consts'
 import { CreateCryptoQuoteErrorCode, Quote } from './types'
 import {
@@ -5,6 +9,7 @@ import {
   getErrorMessage,
   humanizePaymentMethodName,
   isNoValidQuotesError,
+  isTokenTradable,
   resolveNoValidQuotesFallback,
   resolveQuoteDestinationAmount,
   resolveQuoteTokenAmount,
@@ -568,5 +573,29 @@ describe('buildDisplayTokenUnit', () => {
   it('displays a large amount correctly on an 18-decimal token', () => {
     const tokenUnit = buildDisplayTokenUnit(1234.56, 18, 'WETH')
     expect(tokenUnit.toDisplay({ asNumber: true })).toBe(1234.56)
+  })
+})
+
+describe('isTokenTradable for network-partner native currencies', () => {
+  const avaxCrypto = toCryptoCurrency(
+    npCryptoCurrencies.find(c => c.currencyCode === 'AVAXC') ?? {
+      currencyCode: 'AVAXC'
+    }
+  )
+
+  it('treats a held native C-Chain token as tradable for AVAXC', () => {
+    const token = {
+      networkChainId: 43114,
+      type: TokenType.NATIVE
+    } as LocalTokenWithBalance
+    expect(isTokenTradable(avaxCrypto, token)).toBe(true)
+  })
+
+  it('does not match a native token on a different chain', () => {
+    const token = {
+      networkChainId: 1,
+      type: TokenType.NATIVE
+    } as LocalTokenWithBalance
+    expect(isTokenTradable(avaxCrypto, token)).toBe(false)
   })
 })
