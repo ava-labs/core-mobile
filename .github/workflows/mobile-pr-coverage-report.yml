@@ -23,14 +23,14 @@ jobs:
       # This privileged workflow intentionally uses trusted reporter code from the
       # default branch rather than checking out unreviewed PR code.
       - name: Check out trusted reporter code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           repository: ${{ github.repository }}
           ref: ${{ github.event.repository.default_branch }}
 
       - name: Capture workflow context
         id: context
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const pullRequests = context.payload.workflow_run.pull_requests || []
@@ -46,7 +46,7 @@ jobs:
 
       - name: Find coverage artifact
         id: artifact
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const artifactName = 'mobile-pr-coverage'
@@ -68,7 +68,7 @@ jobs:
 
       - name: Download coverage artifact
         if: ${{ steps.artifact.outputs.exists == 'true' }}
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
           github-token: ${{ github.token }}
           run-id: ${{ steps.context.outputs.run_id }}
@@ -84,7 +84,7 @@ jobs:
             --markdown-out coverage-report.md
 
       - name: Publish coverage check
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const fs = require('fs')
@@ -142,7 +142,7 @@ jobs:
 
       - name: Sync coverage PR comment
         if: ${{ steps.context.outputs.has_pr == 'true' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const fs = require('fs')
