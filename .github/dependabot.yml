@@ -43,3 +43,15 @@ updates:
       - dependency-name: "redux-persist-transform-encrypt" # this project(https://github.com/maxdeviant/redux-persist-transform-encrypt) is dead and the latest version doesn't work.
       - dependency-name: "@storybook/*" # we're currently using storybook version 7.6.20, but still configuring it with v6 syntax. the latest version is 8.x.x and currently not compatible with our project.
       - dependency-name: "reactotron-react-native" # the latest version(5.1.9) causes a crash on iOS
+    cooldown:
+      default-days: 7
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7
