@@ -4,6 +4,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   computeMaxLength,
   getMaxDecimals,
+  getPercentageAmount,
   normalizeValue,
   normalizeNumericTextInput,
   parseDecimalToBigInt
@@ -346,5 +347,57 @@ describe('parseDecimalToBigInt', () => {
       expect(parseDecimalToBigInt('0.000001', 18)).toBe(1000000000000n)
       expect(parseDecimalToBigInt('0.00000001', 8)).toBe(1n)
     })
+  })
+})
+
+describe('getPercentageAmount', () => {
+  const balance18 = new TokenUnit(5919900000000000000n, 18, 'AVAX')
+
+  it('rescales an 18-decimal balance to 9-decimal subunits', () => {
+    const quarter = getPercentageAmount(balance18, 0.25, xpChainToken)
+    expect(quarter.getMaxDecimals()).toBe(9)
+    expect(quarter.getSymbol()).toBe('AVAX')
+    expect(quarter.toSubUnit()).toBe(1479975000n)
+    expect(getPercentageAmount(balance18, 0.5, xpChainToken).toSubUnit()).toBe(
+      2959950000n
+    )
+    expect(
+      getPercentageAmount(balance18, 0.9999, xpChainToken).toSubUnit()
+    ).toBe(5919308010n)
+  })
+
+  it('returns the same amount as balance.mul when decimals match', () => {
+    const balance9 = new TokenUnit(5919900000n, 9, 'AVAX')
+    const result = getPercentageAmount(balance9, 0.25, xpChainToken)
+    const expected = balance9.mul(0.25)
+    expect(result.getMaxDecimals()).toBe(9)
+    expect(result.toSubUnit()).toBe(expected.toSubUnit())
+    expect(result.toDisplay()).toBe(expected.toDisplay())
+  })
+
+  it('handles a 6-decimal token', () => {
+    const balance = new TokenUnit(2500000000000000000n, 18, 'USDC')
+    const result = getPercentageAmount(balance, 0.5, {
+      maxDecimals: 6,
+      symbol: 'USDC'
+    })
+    expect(result.getMaxDecimals()).toBe(6)
+    expect(result.toSubUnit()).toBe(1250000n)
+  })
+
+  it('scales up when the token has more decimals than the balance', () => {
+    const balance = new TokenUnit(1500000n, 6, 'USDC')
+    const result = getPercentageAmount(balance, 1, {
+      maxDecimals: 9,
+      symbol: 'USDC'
+    })
+    expect(result.toSubUnit()).toBe(1500000000n)
+  })
+
+  it('truncates so Max never exceeds the balance', () => {
+    const balance = new TokenUnit(1999999999999999999n, 18, 'AVAX')
+    const max = getPercentageAmount(balance, 1, xpChainToken)
+    expect(max.toSubUnit()).toBe(1999999999n)
+    expect(max.toSubUnit() * 10n ** 9n <= balance.toSubUnit()).toBe(true)
   })
 })
