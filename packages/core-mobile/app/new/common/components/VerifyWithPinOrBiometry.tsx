@@ -1,6 +1,7 @@
 import { PinInput, PinInputActions, Text, View } from '@avalabs/k2-alpine'
 import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { Keyboard, Platform } from 'react-native'
@@ -102,8 +103,23 @@ export const VerifyWithPinOrBiometry = ({
   )
 
   useEffect(() => {
-    if (verified) {
-      onVerifySuccess()
+    if (!verified) {
+      return
+    }
+    let cancelled = false
+    // Close the Android keyboard before navigating; the focus-effect blur fires too late to do it
+    const keyboardClosed = Keyboard.isVisible()
+      ? dismissKeyboardIfNeeded()
+      : Promise.resolve()
+    keyboardClosed
+      .then(() => {
+        if (!cancelled) {
+          onVerifySuccess()
+        }
+      })
+      .catch(Logger.error)
+    return () => {
+      cancelled = true
     }
   }, [verified, onVerifySuccess])
 
