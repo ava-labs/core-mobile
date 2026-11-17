@@ -147,6 +147,28 @@ describe('SeedlessWallet', () => {
         })
       ).rejects.toThrow('Public key not found')
     })
+    it('lists the stored EVM account indices in the miss message', async () => {
+      mockRetrieve.mockResolvedValue([
+        {
+          curve: Curve.SECP256K1,
+          derivationPath: "m/44'/60'/0'/0/0",
+          key: 'testPublicKey0'
+        },
+        {
+          curve: Curve.SECP256K1,
+          derivationPath: "m/44'/60'/0'/0/1",
+          key: 'testPublicKey1'
+        }
+      ])
+      await expect(
+        wallet.getPublicKeyFor({
+          derivationPath: "m/44'/9000'/1'/0/0",
+          curve: Curve.SECP256K1
+        })
+      ).rejects.toThrow(
+        "Public key not found for path: m/44'/9000'/1'/0/0 and curve: secp256k1. Stored EVM indices: [0, 1]"
+      )
+    })
   })
 
   describe('addAccount', () => {

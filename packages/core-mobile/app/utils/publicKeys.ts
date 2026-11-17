@@ -36,3 +36,21 @@ export type SeedlessPublicKeys = {
 
 export const isEvmPublicKey = (publicKey: AddressPublicKey): boolean =>
   publicKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
+
+/**
+ * Distinct account indices that have an EVM key, in stored order. Seedless
+ * storage can hold index gaps (e.g. {0, 2}), so callers that need "which
+ * accounts exist" must use this rather than the EVM key count.
+ */
+export const getEvmAccountIndices = (pubKeys: AddressPublicKey[]): number[] => {
+  const indices = new Set<number>()
+  for (const pubKey of pubKeys) {
+    if (!isEvmPublicKey(pubKey)) continue
+    // BIP44 EVM path m/44'/60'/0'/0/{accountIndex}
+    const accountIndex = Number(pubKey.derivationPath.split('/').pop())
+    if (Number.isInteger(accountIndex)) {
+      indices.add(accountIndex)
+    }
+  }
+  return Array.from(indices)
+}
