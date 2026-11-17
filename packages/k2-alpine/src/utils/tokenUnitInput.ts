@@ -97,3 +97,20 @@ export function computeMaxLength(
   const sanitized = front?.replace(/^0+(?!$)/, '') ?? ''
   return sanitized.length + 1 + maxDecimals
 }
+
+export const getPercentageAmount = (
+  balance: TokenUnit,
+  percent: number,
+  token: { maxDecimals: number; symbol: string }
+): TokenUnit => {
+  const amount = balance.mul(percent)
+  const fromDecimals = balance.getMaxDecimals()
+  if (fromDecimals === token.maxDecimals) return amount
+
+  const subUnit = amount.toSubUnit()
+  const rescaled =
+    fromDecimals > token.maxDecimals
+      ? subUnit / 10n ** BigInt(fromDecimals - token.maxDecimals)
+      : subUnit * 10n ** BigInt(token.maxDecimals - fromDecimals)
+  return new TokenUnit(rescaled, token.maxDecimals, token.symbol)
+}

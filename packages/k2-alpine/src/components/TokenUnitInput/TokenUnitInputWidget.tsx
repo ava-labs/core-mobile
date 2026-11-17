@@ -3,6 +3,7 @@ import { Sx, SxProp } from 'dripsy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { View } from '../Primitives'
 import { Button } from '../Button/Button'
+import { getPercentageAmount } from '../../utils/tokenUnitInput'
 import { TokenUnitInput, TokenUnitInputHandle } from './TokenUnitInput'
 
 export interface TokenUnitInputPreset {
@@ -78,10 +79,11 @@ export const TokenUnitInputWidget = ({
   const textInputRef = useRef<TokenUnitInputHandle>(null)
 
   const handlePressButton = (button: AmountButton, index: number): void => {
-    // Build the TokenUnit without a float round-trip: percentage presets come
-    // straight from `balance.mul` (bigint math), fixed presets round to the
-    // nearest subunit. Going through `displayValue * 10 ** decimals` could
-    // diverge by a subunit from the bigint parsing `TokenUnitInput` uses.
+    // Build the TokenUnit without a float round-trip: percentage presets are
+    // `balance.mul` rescaled to `token.maxDecimals` (bigint math), fixed
+    // presets round to the nearest subunit. Going through
+    // `displayValue * 10 ** decimals` could diverge by a subunit from the
+    // bigint parsing `TokenUnitInput` uses.
     const valueUnit =
       button.value !== undefined
         ? new TokenUnit(
@@ -89,7 +91,7 @@ export const TokenUnitInputWidget = ({
             token.maxDecimals,
             token.symbol
           )
-        : balance.mul(button.percent ?? 0)
+        : getPercentageAmount(balance, button.percent ?? 0, token)
     textInputRef.current?.setValue(
       valueUnit.toDisplay({ asNumber: true }).toString()
     )
@@ -111,13 +113,14 @@ export const TokenUnitInputWidget = ({
           isSelected:
             b.value !== undefined
               ? value.toDisplay({ asNumber: true }) === b.value
-              : value.toDisplay() === balance.mul(b.percent ?? 0).toDisplay()
+              : value.toDisplay() ===
+                getPercentageAmount(balance, b.percent ?? 0, token).toDisplay()
         }))
       )
 
       onChange?.(value)
     },
-    [onChange, balance]
+    [onChange, balance, token]
   )
 
   return (
