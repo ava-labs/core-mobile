@@ -5,20 +5,20 @@ on:
     branches:
       - 'main'
 
-permissions:
-  contents: read
-  # The following give Dependabot permission to write Eslint annotation results
-  checks: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   test:
+    permissions:
+      contents: read
     name: Test
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
 
       - name: Set up node
         uses: actions/setup-node@v3

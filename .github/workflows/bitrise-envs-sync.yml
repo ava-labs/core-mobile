@@ -3,6 +3,8 @@ name: Bitrise Envs Sync
 on:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   upload-envs-to-bitrise:
     name: Upload envs to Bitrise
@@ -14,6 +16,8 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4.0.2

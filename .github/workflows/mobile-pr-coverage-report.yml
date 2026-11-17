@@ -1,21 +1,21 @@
 name: Mobile PR Coverage Report
 
-on:
+on: # zizmor: ignore[dangerous-triggers] runs default-branch code; the artifact is parsed as data
   workflow_run:
     workflows:
       - Mobile PR
     types:
       - completed
 
-permissions:
-  actions: read
-  checks: write
-  contents: read
-  issues: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   report:
+    permissions:
+      actions: read
+      checks: write
+      contents: read
+      issues: write
     name: Coverage Report
     runs-on: ubuntu-latest
 
@@ -27,6 +27,7 @@ jobs:
         with:
           repository: ${{ github.repository }}
           ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
 
       - name: Capture workflow context
         id: context
@@ -79,9 +80,11 @@ jobs:
         run: |
           node scripts/github/coverage/summarizeCoverage.js \
             --artifacts-dir coverage-artifacts \
-            --run-url "${{ steps.context.outputs.run_url }}" \
+            --run-url "${STEPS_CONTEXT_OUTPUTS_RUN_URL}" \
             --json-out coverage-report.json \
             --markdown-out coverage-report.md
+        env:
+          STEPS_CONTEXT_OUTPUTS_RUN_URL: ${{ steps.context.outputs.run_url }}
 
       - name: Publish coverage check
         uses: actions/github-script@v7
