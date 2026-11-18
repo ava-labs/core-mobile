@@ -10,6 +10,12 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { Space } from 'common/components/Space'
 import { useRouter } from 'expo-router'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
+import {
+  REVOKE_ACCESS_TESTNET_URL,
+  REVOKE_ACCESS_URL
+} from 'common/consts/urls'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import React, { useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -33,6 +39,8 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const lockWalletWithPIN = useSelector(selectLockWalletWithPIN)
   const { allApprovedDapps } = useConnectedDapps()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { openUrl } = useInAppBrowser()
   const wallet = useActiveWallet()
   const {
     biometricType,
@@ -88,9 +96,19 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
           navigate('/accountSettings/connectedSites')
         },
         value: allApprovedDapps.length.toString()
+      },
+      {
+        // WSR-PERM-005: review & revoke token approvals with Core's own tool
+        title: 'Token approvals',
+        subtitle: 'Review and revoke token approvals in Core Web',
+        onPress: () => {
+          openUrl(
+            isDeveloperMode ? REVOKE_ACCESS_TESTNET_URL : REVOKE_ACCESS_URL
+          ).catch(Logger.error)
+        }
       }
     ]
-  }, [allApprovedDapps.length, navigate])
+  }, [allApprovedDapps.length, isDeveloperMode, navigate, openUrl])
 
   const pinAndBiometricData = useMemo(() => {
     const data: GroupListItem[] = [
@@ -214,6 +232,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
           fontFamily: 'Inter-Regular'
         }}
         valueSx={{ fontSize: 16, lineHeight: 22 }}
+        separatorMarginRight={16}
       />
       <Space y={24} />
 

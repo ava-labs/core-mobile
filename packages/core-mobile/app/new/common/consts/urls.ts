@@ -16,3 +16,9 @@ export const HELP_URL = 'https://support.core.app/en/'
 // Note: not yet published at time of writing (CP-14520).
 export const PERPS_HELP_URL =
   'https://support.core.app/en/articles/core-mobile-what-are-perpetual-futures'
+
+// Core Web tool for reviewing and revoking token approvals. Uses the testnet
+// host (test.core.app) when developer mode is on.
+export const REVOKE_ACCESS_URL = 'https://core.app/tools/revoke-access'
+export const REVOKE_ACCESS_TESTNET_URL =
+  'https://test.core.app/tools/revoke-access'
