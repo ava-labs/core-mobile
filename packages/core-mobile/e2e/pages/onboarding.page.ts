@@ -213,7 +213,7 @@ class OnboardingPage {
     await actions.tap(this.import, this.enterPinFirstScreenTitle)
   }
 
-  async enterPin(pin = '000000') {
+  async enterPin(pin = '193746') {
     await actions.waitFor(this.enterPinFirstScreenTitle)
 
     // Disable biometrics toggle if it's enabled (to avoid biometric prompt during login)
@@ -228,7 +228,7 @@ class OnboardingPage {
     await this.tapZero(pin)
   }
 
-  async tapZero(pin = '000000') {
+  async tapZero(pin = '193746') {
     if (driver.isIOS) {
       await actions.typeSlowly(this.pinInputField, pin)
     } else {
@@ -361,7 +361,7 @@ class OnboardingPage {
     }
   }
 
-  async unlockEnterPin(pin = '000000') {
+  async unlockEnterPin(pin = '193746') {
     try {
       await this.tapZero(pin)
     } catch {

@@ -371,7 +371,7 @@ class Settings {
     await actions.tap(this.contacts)
   }
 
-  async enterCurrentPin(pin = '000000') {
+  async enterCurrentPin(pin = '193746') {
     await actions.waitFor(this.enterYourCurrentPinTitle)
     await onboardingPage.tapZero(pin)
   }
@@ -902,7 +902,7 @@ class Settings {
     await actions.tap(this.changePin)
   }
 
-  async setNewPin(newPin = '111111') {
+  async setNewPin(newPin = '284615') {
     await actions.waitFor(this.enterYourNewPinTitle)
     await onboardingPage.tapZero(newPin)
     await actions.waitFor(this.confirmYourNewPinTitle)

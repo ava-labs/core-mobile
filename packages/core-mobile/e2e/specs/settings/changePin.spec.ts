@@ -8,9 +8,9 @@ describe('Settings', () => {
   })
 
   after(async () => {
-    const pin = await restartAndUnlock(['111111', '000000'])
-    if (pin !== '000000') {
-      await settings.changePinTo(pin, '000000')
+    const pin = await restartAndUnlock(['284615', '193746'])
+    if (pin !== '193746') {
+      await settings.changePinTo(pin, '193746')
     }
   })
 
@@ -29,7 +29,7 @@ describe('Settings', () => {
     await settings.enterCurrentPin()
     await actions.isNotVisible(settings.enterYourNewPinTitle)
     // Update the biometrics
-    await settings.enterCurrentPin('111111')
+    await settings.enterCurrentPin('284615')
     await actions.waitFor(settings.enterYourNewPinTitle)
   })
 })

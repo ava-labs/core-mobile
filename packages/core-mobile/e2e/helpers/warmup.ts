@@ -175,7 +175,7 @@ export async function killAndRestart() {
 
 // Teardown entry point: a failed test can leave the UI on any screen, so start from a cold, unlocked portfolio.
 // Returns the PIN that unlocked; a wrong PIN only clears the input, so candidates can be tried in turn.
-export async function restartAndUnlock(pins = ['000000']): Promise<string> {
+export async function restartAndUnlock(pins = ['193746']): Promise<string> {
   await killAndRestart()
   await onboardingPage.exitMetroAfterLogin()
   for (const [i, pin] of pins.entries()) {
