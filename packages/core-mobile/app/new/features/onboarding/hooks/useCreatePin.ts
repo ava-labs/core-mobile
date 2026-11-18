@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { getWeakPinError } from 'common/utils/weakPin'
 
 export type UseCreatePinProps = {
   onEnterChosenPin: (pinKey: string) => void
@@ -8,6 +9,7 @@ export type UseCreatePinProps = {
   chosenPin: string
   confirmedPin: string
   validPin: string | undefined
+  weakPinError: string | undefined
 }
 
 export function useCreatePin({
@@ -20,6 +22,11 @@ export function useCreatePin({
   const [chosenPinEntered, setChosenPinEntered] = useState(false)
   const [confirmedPinEntered, setConfirmedPinEntered] = useState(false)
   const [validPin, setValidPin] = useState<string | undefined>(undefined)
+  const [weakPinError, setWeakPinError] = useState<string | undefined>(
+    undefined
+  )
+  const onErrorRef = useRef(onError)
+  onErrorRef.current = onError
 
   function resetConfirmPinProcess(): void {
     setValidPin(undefined)
@@ -44,7 +51,25 @@ export function useCreatePin({
   }, [validatePin])
 
   useEffect(() => {
-    setChosenPinEntered(chosenPin.length === 6)
+    if (chosenPin.length !== 6) {
+      setChosenPinEntered(false)
+      return
+    }
+    // WSR-PHYS-002: trivially guessable PINs are rejected on creation/change
+    const error = getWeakPinError(chosenPin)
+    if (error) {
+      setWeakPinError(error)
+      onErrorRef
+        .current()
+        .catch(() => undefined)
+        .finally(() => {
+          // only clear if the user hasn't started typing a new PIN meanwhile
+          setChosenPin(current => (current === chosenPin ? '' : current))
+        })
+      return
+    }
+    setWeakPinError(undefined)
+    setChosenPinEntered(true)
   }, [chosenPin])
 
   useEffect(() => {
@@ -69,6 +94,7 @@ export function useCreatePin({
   const resetPin = useCallback(() => {
     setChosenPin('')
     setConfirmedPin('')
+    setWeakPinError(undefined)
   }, [])
 
   return {
@@ -78,6 +104,7 @@ export function useCreatePin({
     chosenPin,
     confirmedPin,
     validPin,
+    weakPinError,
     resetPin
   }
 }

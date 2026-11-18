@@ -7,6 +7,32 @@ import {
   setLoginAttempt
 } from 'store/security'
 
+/**
+ * Number of failed PIN attempts allowed before the lockout kicks in.
+ * WSR-PHYS-002: rate limiting must apply after the 5th failed attempt.
+ */
+export const MAX_ATTEMPTS_BEFORE_LOCKOUT = 5
+
+/**
+ * Lockout (in seconds) applied after the given failed attempt number.
+ * 1-4 → no lockout, 5 → 1 min, 6 → 5 min, 7 → 15 min, 8+ → 60 min.
+ */
+export function getTimeoutForAttempt(
+  attempt: number
+): 0 | 60 | 300 | 900 | 3600 {
+  if (attempt === MAX_ATTEMPTS_BEFORE_LOCKOUT) {
+    return 60 // 1 minute
+  } else if (attempt === MAX_ATTEMPTS_BEFORE_LOCKOUT + 1) {
+    return 300 // 5 minutes
+  } else if (attempt === MAX_ATTEMPTS_BEFORE_LOCKOUT + 2) {
+    return 900 // 15 min
+  } else if (attempt >= MAX_ATTEMPTS_BEFORE_LOCKOUT + 3) {
+    return 3600 // 60 minutes
+  } else {
+    return 0
+  }
+}
+
 export type RateLimiter = {
   attemptAllowed: boolean
   remainingSeconds: number
@@ -36,7 +62,7 @@ export function useRateLimiter(): RateLimiter {
     dispatch(
       setLoginAttempt({
         count: currentAttempt,
-        countdown: getTimoutForAttempt(currentAttempt)
+        countdown: getTimeoutForAttempt(currentAttempt)
       })
     )
   }, [count, dispatch])
@@ -44,20 +70,6 @@ export function useRateLimiter(): RateLimiter {
   const reset = useCallback(() => {
     dispatch(resetLoginAttempt())
   }, [dispatch])
-
-  function getTimoutForAttempt(attempt: number): 0 | 60 | 300 | 900 | 3600 {
-    if (attempt === 6) {
-      return 60 // 1 minute
-    } else if (attempt === 7) {
-      return 300 // 5 minutes
-    } else if (attempt === 8) {
-      return 900 // 15 min
-    } else if (attempt >= 9) {
-      return 3600 // 60 minutes
-    } else {
-      return 0
-    }
-  }
 
   return {
     attemptAllowed,

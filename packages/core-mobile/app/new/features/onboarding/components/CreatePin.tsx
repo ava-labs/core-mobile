@@ -45,6 +45,7 @@ export const CreatePin = ({
     chosenPin,
     confirmedPin,
     validPin,
+    weakPinError,
     resetPin
   } = useCreatePin({
     onError: async () => {
@@ -115,6 +116,14 @@ export const CreatePin = ({
       {chosenPinEntered ? undefined : (
         <Text variant="subtitle1">{newPinDescription}</Text>
       )}
+      {!chosenPinEntered && weakPinError ? (
+        <Text
+          testID="weak_pin_error"
+          variant="subtitle1"
+          sx={{ color: '$textDanger', marginTop: 8 }}>
+          {weakPinError}
+        </Text>
+      ) : undefined}
 
       <View
         sx={{
