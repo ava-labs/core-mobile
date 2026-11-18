@@ -55,7 +55,8 @@ import {
   shouldNavigateBackAfterApprove,
   withNativeAmountItem,
   isAvalancheSigningData,
-  isAvalancheBaseTx
+  isAvalancheBaseTx,
+  isMessageSigningRequest
 } from './utils'
 
 // Tiny outer gate that hosts the malformed-RECURRING_SWAP short-circuit.
@@ -613,9 +614,9 @@ const ApprovalScreenInner = ({
   return (
     <ActionSheet
       isModal
-      // disabled for now to avoid the issue with the scroll to confirm on approval screen
-      // TODO: enable this once the issue is fixed
-      // requireScrollToConfirm
+      // Messages must be read in full before signing (WSR-VERI-007). Not
+      // applied to transactions, whose previews are structured summaries.
+      requireScrollToConfirm={isMessageSigningRequest(signingData)}
       title={displayData.dAppInfo ? undefined : displayData.title}
       navigationTitle={
         displayData.dAppInfo ? displayData?.dAppInfo?.name : displayData.title

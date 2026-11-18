@@ -223,47 +223,49 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     // `onNestedPreScroll` only hands the sheet a downward drag while the
     // child reports `canScrollVertically(-1) === false`.
 
-    const checkScrolledToEnd = useCallback(
-      (contentOffsetY: number) => {
-        if (!onScrolledToEnd || hasReachedEndRef.current) return
+    // Furthest scroll offset the user has reached. Scroll-to-end is evaluated
+    // against this rather than the current offset so that content which grows
+    // or shrinks *within* the area already seen (fees loading, simulation
+    // results, a spinner swapping for text) does not re-lock the confirm
+    // button. Only content that extends past what the user has seen resets it.
+    const furthestOffsetRef = useRef(0)
 
-        const maxScroll = scrollContentHeight.current - scrollViewHeight.current
-        const isAtEnd =
-          maxScroll <= 0 || contentOffsetY >= maxScroll - SCROLL_END_THRESHOLD
-
-        if (isAtEnd) {
-          hasReachedEndRef.current = true
-          onScrolledToEnd(true)
-        }
-      },
-      [onScrolledToEnd]
-    )
-
-    const checkScrollableAfterLayout = useCallback(() => {
+    const evaluateScrolledToEnd = useCallback(() => {
       if (!onScrolledToEnd) return
 
-      const maxScroll = scrollContentHeight.current - scrollViewHeight.current
-      if (maxScroll <= 0 && scrollContentHeight.current > 0) {
-        // content doesn't require scroll
-        hasReachedEndRef.current = true
-        onScrolledToEnd(true)
+      const reachedEnd = hasSeenAllContent({
+        contentHeight: scrollContentHeight.current,
+        viewportHeight: scrollViewHeight.current,
+        furthestOffset: furthestOffsetRef.current,
+        threshold: SCROLL_END_THRESHOLD
+      })
+
+      if (reachedEnd !== hasReachedEndRef.current) {
+        hasReachedEndRef.current = reachedEnd
+        onScrolledToEnd(reachedEnd)
       }
     }, [onScrolledToEnd])
 
-    const handleContentSizeChange = useCallback(
-      (_w: number, h: number) => {
-        const prevHeight = scrollContentHeight.current
-        scrollContentHeight.current = h
-
+    const checkScrolledToEnd = useCallback(
+      (contentOffsetY: number) => {
         if (!onScrolledToEnd) return
 
-        if (Math.abs(h - prevHeight) > 1) {
-          hasReachedEndRef.current = false
-          onScrolledToEnd(false)
-          checkScrollableAfterLayout()
+        if (contentOffsetY > furthestOffsetRef.current) {
+          furthestOffsetRef.current = contentOffsetY
         }
+        if (hasReachedEndRef.current) return
+
+        evaluateScrolledToEnd()
       },
-      [onScrolledToEnd, checkScrollableAfterLayout]
+      [onScrolledToEnd, evaluateScrolledToEnd]
+    )
+
+    const handleContentSizeChange = useCallback(
+      (_w: number, h: number) => {
+        scrollContentHeight.current = h
+        evaluateScrolledToEnd()
+      },
+      [evaluateScrolledToEnd]
     )
 
     const handleScrollViewLayout = useCallback(
@@ -271,9 +273,9 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
         const { height } = e.nativeEvent.layout
         scrollViewHeight.current = height
         setScrollViewLayoutHeight(prev => (prev === height ? prev : height))
-        checkScrollableAfterLayout()
+        evaluateScrolledToEnd()
       },
-      [checkScrollableAfterLayout]
+      [evaluateScrolledToEnd]
     )
 
     // Run the internal tracking and then forward to any caller-provided
@@ -840,3 +842,25 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
 )
 
 ScrollScreen.displayName = 'ScrollScreen'
+
+/**
+ * Whether the user has seen the whole scroll content: either it fits in the
+ * viewport, or the furthest offset reached is within `threshold` of the max
+ * offset. False until both the content and the viewport have been measured.
+ */
+export const hasSeenAllContent = ({
+  contentHeight,
+  viewportHeight,
+  furthestOffset,
+  threshold
+}: {
+  contentHeight: number
+  viewportHeight: number
+  furthestOffset: number
+  threshold: number
+}): boolean => {
+  if (contentHeight <= 0 || viewportHeight <= 0) return false
+
+  const maxScroll = contentHeight - viewportHeight
+  return maxScroll <= 0 || furthestOffset >= maxScroll - threshold
+}

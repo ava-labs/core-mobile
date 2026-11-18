@@ -77,7 +77,7 @@ jest.mock('./LinearGradientBottomWrapper', () => ({
 }))
 
 import { Platform, View } from 'react-native'
-import { ScrollScreen } from './ScrollScreen'
+import { hasSeenAllContent, ScrollScreen } from './ScrollScreen'
 
 // Mirrors the `useEffectiveHeaderHeight` mock above.
 const HEADER_HEIGHT = 100
@@ -442,5 +442,140 @@ describe('ScrollScreen Android form-sheet swipe-to-dismiss (non-keyboard branch)
 
     expect(getScrollViewStyle(instance).marginTop).toBeUndefined()
     expect(getContentContainerPaddingTop(instance)).toBe(HEADER_HEIGHT)
+  })
+})
+
+describe('hasSeenAllContent', () => {
+  const base = { threshold: 20 }
+
+  it('is false until content and viewport are measured', () => {
+    expect(
+      hasSeenAllContent({
+        ...base,
+        contentHeight: 0,
+        viewportHeight: 640,
+        furthestOffset: 0
+      })
+    ).toBe(false)
+    expect(
+      hasSeenAllContent({
+        ...base,
+        contentHeight: 300,
+        viewportHeight: 0,
+        furthestOffset: 0
+      })
+    ).toBe(false)
+  })
+
+  it('is true when the content fits in the viewport', () => {
+    expect(
+      hasSeenAllContent({
+        ...base,
+        contentHeight: 640,
+        viewportHeight: 640,
+        furthestOffset: 0
+      })
+    ).toBe(true)
+  })
+
+  it('requires the furthest offset to reach the end (within the threshold)', () => {
+    const sizes = { ...base, contentHeight: 2000, viewportHeight: 640 }
+    expect(hasSeenAllContent({ ...sizes, furthestOffset: 1339 })).toBe(false)
+    expect(hasSeenAllContent({ ...sizes, furthestOffset: 1340 })).toBe(true)
+  })
+})
+
+describe('ScrollScreen scroll-to-end tracking', () => {
+  const VIEWPORT = 640
+
+  const fireContentSize = async (
+    instance: ReactTestRenderer,
+    height: number
+  ): Promise<void> => {
+    const scrollView = instance.root.findByType(ScrollView)
+    await act(async () => {
+      scrollView.props.onContentSizeChange(390, height)
+    })
+  }
+
+  const scrollTo = async (
+    instance: ReactTestRenderer,
+    y: number
+  ): Promise<void> => {
+    const scrollView = instance.root.findByType(ScrollView)
+    await act(async () => {
+      scrollView.props.onScroll({ nativeEvent: { contentOffset: { y } } })
+    })
+  }
+
+  const setup = async (): Promise<{
+    instance: ReactTestRenderer
+    onScrolledToEnd: jest.Mock
+  }> => {
+    const onScrolledToEnd = jest.fn()
+    const instance = await render({ onScrolledToEnd })
+    await fireScrollViewLayout(instance, VIEWPORT)
+    return { instance, onScrolledToEnd }
+  }
+
+  it('reports the end immediately when the content fits on screen', async () => {
+    const { instance, onScrolledToEnd } = await setup()
+
+    await fireContentSize(instance, VIEWPORT - 100)
+
+    expect(onScrolledToEnd).toHaveBeenLastCalledWith(true)
+  })
+
+  it('does not report the end for long content until scrolled to the bottom', async () => {
+    const { instance, onScrolledToEnd } = await setup()
+
+    await fireContentSize(instance, 2000)
+    await scrollTo(instance, 600)
+    expect(onScrolledToEnd).not.toHaveBeenCalledWith(true)
+
+    await scrollTo(instance, 2000 - VIEWPORT)
+    expect(onScrolledToEnd).toHaveBeenLastCalledWith(true)
+  })
+
+  it('stays reached when content changes within the area already seen', async () => {
+    const { instance, onScrolledToEnd } = await setup()
+
+    await fireContentSize(instance, 2000)
+    await scrollTo(instance, 2000 - VIEWPORT)
+    expect(onScrolledToEnd).toHaveBeenLastCalledWith(true)
+
+    // e.g. fees / simulation finish loading and the content shrinks, or grows
+    // by less than the furthest point already reached.
+    await fireContentSize(instance, 1900)
+    await fireContentSize(instance, 2010)
+    // and the user scrolls back up
+    await scrollTo(instance, 0)
+
+    expect(onScrolledToEnd).not.toHaveBeenCalledWith(false)
+    expect(onScrolledToEnd).toHaveBeenCalledTimes(1)
+  })
+
+  it('resets when new content extends beyond the furthest point reached', async () => {
+    const { instance, onScrolledToEnd } = await setup()
+
+    await fireContentSize(instance, 2000)
+    await scrollTo(instance, 2000 - VIEWPORT)
+    expect(onScrolledToEnd).toHaveBeenLastCalledWith(true)
+
+    await fireContentSize(instance, 3000)
+    expect(onScrolledToEnd).toHaveBeenLastCalledWith(false)
+
+    await scrollTo(instance, 3000 - VIEWPORT)
+    expect(onScrolledToEnd).toHaveBeenLastCalledWith(true)
+  })
+
+  it('keeps short content enabled when it grows but still fits', async () => {
+    const { instance, onScrolledToEnd } = await setup()
+
+    await fireContentSize(instance, 300)
+    await fireContentSize(instance, VIEWPORT)
+
+    expect(onScrolledToEnd).toHaveBeenCalledTimes(1)
+    expect(onScrolledToEnd).toHaveBeenLastCalledWith(true)
   })
 })

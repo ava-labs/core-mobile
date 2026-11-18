@@ -311,3 +311,19 @@ export const isAvalancheBaseTx = (signingData: SigningData): boolean =>
   (signingData.type === RpcMethod.AVALANCHE_SEND_TRANSACTION ||
     signingData.type === RpcMethod.AVALANCHE_SIGN_TRANSACTION) &&
   Avalanche.isBaseTx(signingData.data)
+
+// Message-signing methods (as opposed to transactions). For these the user must
+// scroll through the whole message before Approve is enabled (WSR-VERI-007).
+const MESSAGE_SIGNING_METHODS: ReadonlySet<RpcMethod> = new Set([
+  RpcMethod.ETH_SIGN,
+  RpcMethod.PERSONAL_SIGN,
+  RpcMethod.SIGN_TYPED_DATA,
+  RpcMethod.SIGN_TYPED_DATA_V1,
+  RpcMethod.SIGN_TYPED_DATA_V3,
+  RpcMethod.SIGN_TYPED_DATA_V4,
+  RpcMethod.AVALANCHE_SIGN_MESSAGE,
+  RpcMethod.SOLANA_SIGN_MESSAGE
+])
+
+export const isMessageSigningRequest = (signingData: SigningData): boolean =>
+  MESSAGE_SIGNING_METHODS.has(signingData.type)

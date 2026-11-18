@@ -1,4 +1,4 @@
-import { SxProp, View } from '@avalabs/k2-alpine'
+import { SxProp, Text, View } from '@avalabs/k2-alpine'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { BackHandler } from 'react-native'
 import { useNavigation } from 'expo-router'
@@ -109,10 +109,36 @@ export const ActionSheet = ({
       const overrideResult = renderFooterOverride()
       if (overrideResult != null) return overrideResult
     }
+    const showScrollHint = requireScrollToConfirm && !hasScrolledToEnd
     return (
-      <ActionButtons confirm={adjustedConfirm} cancel={cancel} alert={alert} />
+      <View>
+        {showScrollHint && (
+          <Text
+            testID="scroll_to_confirm_hint"
+            variant="caption"
+            sx={{
+              color: '$textSecondary',
+              textAlign: 'center',
+              marginBottom: 12
+            }}>
+            {SCROLL_TO_CONFIRM_HINT}
+          </Text>
+        )}
+        <ActionButtons
+          confirm={adjustedConfirm}
+          cancel={cancel}
+          alert={alert}
+        />
+      </View>
     )
-  }, [renderFooterOverride, adjustedConfirm, cancel, alert])
+  }, [
+    renderFooterOverride,
+    adjustedConfirm,
+    cancel,
+    alert,
+    requireScrollToConfirm,
+    hasScrolledToEnd
+  ])
 
   return (
     <ScrollScreen
@@ -127,6 +153,9 @@ export const ActionSheet = ({
       headerCenterOverlay={headerCenterOverlay}
       renderFooter={renderFooter}
       onScrolledToEnd={requireScrollToConfirm ? handleScrolledToEnd : undefined}
+      // The header snap pads short content by the title height, which would
+      // force a scroll even when everything already fits on screen.
+      disableHeaderSnap={requireScrollToConfirm}
       contentContainerStyle={{
         padding: 16,
         paddingTop: 0,
@@ -145,3 +174,6 @@ export const ActionSheet = ({
     </ScrollScreen>
   )
 }
+
+export const SCROLL_TO_CONFIRM_HINT =
+  'Scroll to the end to review the full request'
