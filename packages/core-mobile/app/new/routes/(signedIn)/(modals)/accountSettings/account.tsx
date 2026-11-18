@@ -16,6 +16,7 @@ import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
 import { selectWalletById } from 'store/wallet/slice'
 import { CoreAccountType } from '@avalabs/types'
 import { WalletType } from 'services/wallet/types'
+import { showSecretRevealWarning } from 'features/accountSettings/utils/showSecretRevealWarning'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -72,11 +73,16 @@ const AccountScreen = (): JSX.Element => {
     if (!account) {
       return
     }
-    router.push({
-      pathname: '/accountSettings/verifyPinForPrivateKey',
-      params: {
-        walletId: account.walletId,
-        accountIndex: account.index.toString()
+    showSecretRevealWarning({
+      secretType: 'privateKey',
+      onContinue: () => {
+        router.push({
+          pathname: '/accountSettings/verifyPinForPrivateKey',
+          params: {
+            walletId: account.walletId,
+            accountIndex: account.index.toString()
+          }
+        })
       }
     })
   }
