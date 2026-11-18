@@ -494,6 +494,18 @@ class CommonElsPage {
     }
   }
 
+  async tapContinueAlert() {
+    if (driver.isIOS) {
+      try {
+        await actions.click(selectors.getById(commonEls.continue))
+      } catch (e) {
+        console.log('Appium handled the auto accept alerts')
+      }
+    } else {
+      await actions.click(selectors.getBySmartText(commonEls.continue))
+    }
+  }
+
   async tapRemoveAlert() {
     if (driver.isIOS) {
       try {

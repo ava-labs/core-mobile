@@ -24,6 +24,7 @@ import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { showSecretRevealWarning } from 'features/accountSettings/utils/showSecretRevealWarning'
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -149,11 +150,16 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Show recovery phrase',
         onPress: () => {
-          if (wallet.type === WalletType.SEEDLESS) {
-            navigate('/accountSettings/seedlessExportPhrase')
-            return
-          }
-          navigate('/accountSettings/recoveryPhraseVerifyPin')
+          showSecretRevealWarning({
+            secretType: 'recoveryPhrase',
+            onContinue: () => {
+              if (wallet.type === WalletType.SEEDLESS) {
+                navigate('/accountSettings/seedlessExportPhrase')
+                return
+              }
+              navigate('/accountSettings/recoveryPhraseVerifyPin')
+            }
+          })
         }
       }
     ]

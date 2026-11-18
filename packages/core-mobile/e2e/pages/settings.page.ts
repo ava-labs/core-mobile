@@ -566,6 +566,8 @@ class Settings {
 
   async tapShowRecoveryPhrase() {
     await actions.tap(this.showRecoveryPhrase)
+    // risk warning shown before the recovery phrase flow (WSR-PHYS-003)
+    await common.tapContinueAlert()
   }
 
   async createNthAccount(account = 2, walletName = 'Wallet 1') {
@@ -756,6 +758,8 @@ class Settings {
 
   async tapShowPrivateKey() {
     await actions.tap(common.listItem(settings.showPrivateKey))
+    // risk warning shown before the private key flow (WSR-PHYS-003)
+    await common.tapContinueAlert()
   }
 
   async tapRenameAccount() {
