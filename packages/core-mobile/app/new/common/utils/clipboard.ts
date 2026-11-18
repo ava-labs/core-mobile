@@ -67,8 +67,7 @@ export const copySecretToClipboard = (
   if (!secret) return
 
   cancelPendingSecretClear()
-  Clipboard.setString(secret)
-  showSnackbar(message)
+  copyToClipboard(secret, message)
 
   const expiresAt = Date.now() + SECRET_CLIPBOARD_TTL_MS
   const timer = setTimeout(() => {
