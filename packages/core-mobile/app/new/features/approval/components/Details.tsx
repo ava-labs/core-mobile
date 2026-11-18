@@ -46,17 +46,22 @@ import { FlatList } from 'react-native'
 import { getTransferDetailItems } from '../utils/getTransferDetailItems'
 import { getDetailItemLabel } from '../utils/getDetailItemLabel'
 import { CollapsibleDetailGroup } from './CollapsibleDetailGroup'
+import { ExplorerLinkButton } from './ExplorerLinkButton'
 
 export const Details = ({
   detailSection,
   symbol,
   title,
-  areGroupsOpenByDefault = false
+  areGroupsOpenByDefault = false,
+  explorerUrl
 }: {
   detailSection: DetailSection
   symbol?: string
   title?: string
   areGroupsOpenByDefault?: boolean
+  // Block explorer base URL of the request's network. When set, every address
+  // row gets an explicit "view in explorer" button (WSR-VERI-002).
+  explorerUrl?: string
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -136,24 +141,27 @@ export const Details = ({
 
   const renderAddress = useCallback(
     (address: string): JSX.Element => (
-      <Pressable
-        onPress={() => {
-          copyToClipboard(address, 'Address copied')
-        }}>
-        <Text
-          testID={`address__${address}`}
-          variant="mono"
-          numberOfLines={1}
-          style={{
-            fontSize: 15,
-            lineHeight: 22,
-            color: valueTextColor
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Pressable
+          onPress={() => {
+            copyToClipboard(address, 'Address copied')
           }}>
-          {truncateAddress(address, 8)}
-        </Text>
-      </Pressable>
+          <Text
+            testID={`address__${address}`}
+            variant="mono"
+            numberOfLines={1}
+            style={{
+              fontSize: 15,
+              lineHeight: 22,
+              color: valueTextColor
+            }}>
+            {truncateAddress(address, 8)}
+          </Text>
+        </Pressable>
+        <ExplorerLinkButton address={address} explorerUrl={explorerUrl} />
+      </View>
     ),
-    [valueTextColor]
+    [valueTextColor, explorerUrl]
   )
 
   const renderNodeIDItem = useCallback(
@@ -337,28 +345,35 @@ export const Details = ({
       return (
         <View sx={{ alignItems: 'flex-start' }}>
           {addresses.map((address, index) => (
-            <Pressable
+            <View
               key={index}
-              onPress={() => {
-                copyToClipboard(copyableAddresses, addressCopiedMessage)
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: index < addresses.length - 1 ? 4 : 0
               }}>
-              <Text
-                variant="mono"
-                numberOfLines={1}
-                style={{
-                  fontSize: 15,
-                  lineHeight: 22,
-                  color: valueTextColor,
-                  marginBottom: index < addresses.length - 1 ? 4 : 0
+              <Pressable
+                onPress={() => {
+                  copyToClipboard(copyableAddresses, addressCopiedMessage)
                 }}>
-                {truncateAddress(address, 8)}
-              </Text>
-            </Pressable>
+                <Text
+                  variant="mono"
+                  numberOfLines={1}
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 22,
+                    color: valueTextColor
+                  }}>
+                  {truncateAddress(address, 8)}
+                </Text>
+              </Pressable>
+              <ExplorerLinkButton address={address} explorerUrl={explorerUrl} />
+            </View>
           ))}
         </View>
       )
     },
-    [valueTextColor]
+    [valueTextColor, explorerUrl]
   )
 
   const renderAddressListItem = useCallback(

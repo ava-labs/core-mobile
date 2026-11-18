@@ -17,6 +17,7 @@ export const BatchTxStep = ({
   index,
   signingRequest,
   chainId,
+  explorerUrl,
   disabled,
   initialOverride,
   onOverride
@@ -27,6 +28,8 @@ export const BatchTxStep = ({
   // per-step `displayData.network` is empty simulation metadata, so the L2
   // symbol correction must be sourced from the request, not from displayData.
   chainId?: number
+  // Block explorer base URL of the request's network (WSR-VERI-002).
+  explorerUrl?: string
   disabled?: boolean
   // The override calldata the parent already holds for this step, if any. This
   // step is remounted (keyed by index) on every navigation, so it must be
@@ -117,6 +120,7 @@ export const BatchTxStep = ({
             <SpendLimits
               spendLimits={spendLimits}
               onSelect={canEdit && !disabled ? updateSpendLimit : undefined}
+              explorerUrl={explorerUrl}
             />
           </View>
         )
@@ -126,6 +130,7 @@ export const BatchTxStep = ({
           key={sectionIndex}
           detailSection={detailSection}
           symbol={symbol}
+          explorerUrl={explorerUrl}
         />
       ))}
     </View>

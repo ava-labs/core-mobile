@@ -106,6 +106,9 @@ const ApprovalScreenInner = ({
   const caip2ChainId = request.chainId
   const chainId = getChainIdFromCaip2(caip2ChainId)
   const network = getNetwork(chainId)
+  // Explorer used for the "view in explorer" buttons next to addresses
+  // (to, contract, spender, account) so users can verify them before signing.
+  const explorerUrl = network?.explorerUrl
   const [amountError, setAmountError] = useState<string | undefined>()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
   const activeWallet = useActiveWallet()
@@ -476,7 +479,7 @@ const ApprovalScreenInner = ({
             backgroundColor: '$surfaceSecondary',
             borderRadius: 12
           }}>
-          <Account address={displayAccountAddress} />
+          <Account address={displayAccountAddress} explorerUrl={explorerUrl} />
           <Separator sx={{ marginHorizontal: 16 }} />
           <Network
             logoUri={displayData.network.logoUri}
@@ -500,9 +503,11 @@ const ApprovalScreenInner = ({
     }
 
     if (displayAccountAddress) {
-      return <Account address={displayAccountAddress} />
+      return (
+        <Account address={displayAccountAddress} explorerUrl={explorerUrl} />
+      )
     }
-  }, [displayAccountAddress, displayData.network, symbol, chainId])
+  }, [displayAccountAddress, displayData.network, symbol, chainId, explorerUrl])
 
   const renderDetails = useCallback((): JSX.Element => {
     return (
@@ -521,12 +526,13 @@ const ApprovalScreenInner = ({
               symbol={symbol}
               title={isAvalancheTx ? detailSection.title : undefined}
               areGroupsOpenByDefault={isBaseTx}
+              explorerUrl={explorerUrl}
             />
           </View>
         ))}
       </View>
     )
-  }, [filteredSections, symbol, isAvalancheTx, isBaseTx])
+  }, [filteredSections, symbol, isAvalancheTx, isBaseTx, explorerUrl])
 
   const renderBalanceChange = useCallback((): JSX.Element | null => {
     if (!hasBalanceChange || !balanceChange) return null
@@ -558,6 +564,7 @@ const ApprovalScreenInner = ({
       <SpendLimits
         spendLimits={spendLimits}
         hasBalanceChange={hasBalanceChange}
+        explorerUrl={explorerUrl}
         onSelect={
           canEdit && !submitting && !isLedgerActive
             ? updateSpendLimit

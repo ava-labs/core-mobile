@@ -11,6 +11,7 @@ import { Pressable } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { ExplorerLinkButton } from '../ExplorerLinkButton'
 import { SpendLimitOptions } from './SpendLimitOptions'
 import { MenuId } from './types'
 import { getDefaultSpendLimitValue, getSpendLimitAmounts } from './utils'
@@ -18,11 +19,14 @@ import { getDefaultSpendLimitValue, getSpendLimitAmounts } from './utils'
 export const SpendLimits = ({
   spendLimits,
   onSelect,
-  hasBalanceChange
+  hasBalanceChange,
+  explorerUrl
 }: {
   spendLimits: SpendLimit[]
   hasBalanceChange?: boolean
   onSelect?: (spendLimit: SpendLimit) => void
+  // Block explorer base URL of the request's network (WSR-VERI-002).
+  explorerUrl?: string
 }): JSX.Element | null => {
   if (spendLimits.length === 0) return null
 
@@ -38,6 +42,7 @@ export const SpendLimits = ({
           spendLimit={spendLimit}
           showAmountCard={showAmountCard}
           onSelect={onSelect}
+          explorerUrl={explorerUrl}
         />
       ))}
     </View>
@@ -47,11 +52,13 @@ export const SpendLimits = ({
 const SpendLimitItem = ({
   spendLimit,
   showAmountCard,
-  onSelect
+  onSelect,
+  explorerUrl
 }: {
   spendLimit: SpendLimit
   showAmountCard: boolean
   onSelect?: (spendLimit: SpendLimit) => void
+  explorerUrl?: string
 }): JSX.Element => {
   const { formatTokenInCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -118,20 +125,32 @@ const SpendLimitItem = ({
       items.push({
         title: 'Spender',
         value: (
-          <Pressable onPress={handleCopySpenderAddress}>
-            <Text
-              variant="mono"
-              numberOfLines={1}
-              sx={{ fontSize: 15, lineHeight: 22, color: '$textSecondary' }}>
-              {truncateAddress(spenderAddress, 8)}
-            </Text>
-          </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={handleCopySpenderAddress}>
+              <Text
+                variant="mono"
+                numberOfLines={1}
+                sx={{ fontSize: 15, lineHeight: 22, color: '$textSecondary' }}>
+                {truncateAddress(spenderAddress, 8)}
+              </Text>
+            </Pressable>
+            <ExplorerLinkButton
+              address={spenderAddress}
+              explorerUrl={explorerUrl}
+            />
+          </View>
         )
       })
     }
 
     return items
-  }, [spendLimit, onSelect, spenderAddress, handleCopySpenderAddress])
+  }, [
+    spendLimit,
+    onSelect,
+    spenderAddress,
+    handleCopySpenderAddress,
+    explorerUrl
+  ])
 
   const tokenValue = spendLimit?.value?.bn
   const tokenDecimals =
