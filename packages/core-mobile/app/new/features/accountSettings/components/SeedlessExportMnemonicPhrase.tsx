@@ -9,6 +9,7 @@ import {
 import { MnemonicText } from 'common/components/MnemonicText'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { Space } from 'common/components/Space'
+import { ScreenshotWarning } from 'common/components/ScreenshotWarning'
 import React, { useCallback } from 'react'
 import { StyleSheet } from 'react-native'
 import { SHOW_RECOVERY_PHRASE } from '../consts'
@@ -111,6 +112,7 @@ export const SeedlessExportMnemonicPhrase = ({
           {'Losing this phrase will result in lost funds'}
         </Text>
       </View>
+      <ScreenshotWarning sx={{ marginTop: 12 }} />
       <Space y={17} />
       <View
         sx={{

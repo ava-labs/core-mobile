@@ -2,7 +2,8 @@ import React, { useCallback, useRef } from 'react'
 import { Icons, Text, useTheme, Button, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { showSnackbar } from 'new/common/utils/toast'
-import Clipboard from '@react-native-clipboard/clipboard'
+import { copySecretToClipboard } from 'common/utils/clipboard'
+import { ScreenshotWarning } from 'common/components/ScreenshotWarning'
 import { useSecureScreen } from 'hooks/useSecureScreen'
 import { sensitiveDataStore } from 'utils/sensitiveDataStore'
 
@@ -17,8 +18,10 @@ const ViewPrivateKeyScreen = (): JSX.Element => {
 
   const handleCopyKey = useCallback(async (): Promise<void> => {
     try {
-      Clipboard.setString(privateKey)
-      showSnackbar('Private key copied to clipboard')
+      copySecretToClipboard(
+        privateKey,
+        'Private key copied. Clipboard will be cleared in 60 seconds'
+      )
     } catch (error) {
       showSnackbar('Failed to copy private key')
     }
@@ -63,6 +66,8 @@ const ViewPrivateKeyScreen = (): JSX.Element => {
             with it
           </Text>
         </View>
+
+        <ScreenshotWarning secretLabel="private key" />
 
         <View
           sx={{

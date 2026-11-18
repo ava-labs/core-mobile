@@ -5,7 +5,8 @@ import { Icons, showAlert, useTheme, View } from '@avalabs/k2-alpine'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import BackBarButton from 'common/components/BackBarButton'
-import { copyToClipboard } from 'common/utils/clipboard'
+import { copySecretToClipboard } from 'common/utils/clipboard'
+import { useSecureScreen } from 'hooks/useSecureScreen'
 import {
   getConfirmCloseDelayText,
   useSeedlessMnemonicExportContext
@@ -15,6 +16,7 @@ import { SeedlessExportMnemonicPhrase } from 'features/accountSettings/component
 import NavigationBarButton from 'common/components/NavigationBarButton'
 
 const SeedlessExportReadyScreen = (): JSX.Element => {
+  useSecureScreen()
   const { back, canGoBack } = useRouter()
   const { deleteExport, completeExport, mnemonic } =
     useSeedlessMnemonicExportContext()
@@ -61,7 +63,7 @@ const SeedlessExportReadyScreen = (): JSX.Element => {
 
   const handleCopyPhrase = useCallback((): void => {
     AnalyticsService.capture('SeedlessExportPhraseCopied')
-    copyToClipboard(mnemonic, 'Phrase Copied!')
+    copySecretToClipboard(mnemonic)
   }, [mnemonic])
 
   useEffect(() => {

@@ -6,7 +6,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { copyToClipboard } from 'common/utils/clipboard'
+import { copySecretToClipboard } from 'common/utils/clipboard'
 import { StyleSheet } from 'react-native'
 import { MnemonicText } from 'common/components/MnemonicText'
 
@@ -57,7 +57,7 @@ export default function MnemonicPhrase({
   }, [mnemonic])
 
   const handleCopyPhrase = (): void => {
-    onCopyPhrase ? onCopyPhrase(mnemonic) : copyToClipboard(mnemonic)
+    onCopyPhrase ? onCopyPhrase(mnemonic) : copySecretToClipboard(mnemonic)
   }
 
   return (

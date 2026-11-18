@@ -9,6 +9,8 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
 import React, { useCallback } from 'react'
+import { useSecureScreen } from 'hooks/useSecureScreen'
+import { ScreenshotWarning } from 'common/components/ScreenshotWarning'
 
 export const RecoveryPhrase = ({
   onNext,
@@ -19,6 +21,7 @@ export const RecoveryPhrase = ({
   mnemonic: string
   isLoading: boolean
 }): React.JSX.Element => {
+  useSecureScreen()
   const { theme } = useTheme()
 
   const handleNext = useCallback(() => {
@@ -62,6 +65,7 @@ export const RecoveryPhrase = ({
             Losing this phrase will result in lost funds
           </Text>
         </View>
+        <ScreenshotWarning />
         <MnemonicScreen isLoading={isLoading} mnemonic={mnemonic} />
       </View>
     </ScrollScreen>

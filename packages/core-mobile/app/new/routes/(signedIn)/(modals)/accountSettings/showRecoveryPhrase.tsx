@@ -2,6 +2,7 @@ import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
 import { useSecureScreen } from 'hooks/useSecureScreen'
+import { ScreenshotWarning } from 'common/components/ScreenshotWarning'
 import React, { useRef } from 'react'
 import { sensitiveDataStore } from 'utils/sensitiveDataStore'
 
@@ -30,6 +31,7 @@ const ShowRecoveryPhraseScreen = (): JSX.Element => {
             Losing this phrase will result in lost funds
           </Text>
         </View>
+        <ScreenshotWarning />
 
         <MnemonicScreen mnemonic={mnemonic} />
       </View>

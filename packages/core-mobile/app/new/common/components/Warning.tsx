@@ -3,10 +3,12 @@ import { View, Text, useTheme, Icons, SxProp } from '@avalabs/k2-alpine'
 
 export const Warning = ({
   message,
-  sx
+  sx,
+  testID
 }: {
   message: string
   sx?: SxProp
+  testID?: string
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -14,6 +16,7 @@ export const Warning = ({
 
   return (
     <View
+      testID={testID}
       sx={{
         borderRadius: 8,
         flexDirection: 'row',
