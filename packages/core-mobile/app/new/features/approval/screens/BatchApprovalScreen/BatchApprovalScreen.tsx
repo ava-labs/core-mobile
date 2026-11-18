@@ -330,6 +330,7 @@ const BatchApprovalScreenInner = ({
           index={index}
           signingRequest={signingRequest}
           chainId={numericChainId}
+          explorerUrl={network?.explorerUrl}
           disabled={submitting}
           initialOverride={overrides[index]}
           onOverride={setOverride}
