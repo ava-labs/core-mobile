@@ -73,3 +73,4 @@ spec:
     - resource:default/merkl
     - resource:default/branch
     - resource:default/coinbase-pay
+    - resource:default/revoke-cash

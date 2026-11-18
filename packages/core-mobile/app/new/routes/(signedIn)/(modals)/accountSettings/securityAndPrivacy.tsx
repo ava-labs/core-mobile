@@ -10,6 +10,10 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { Space } from 'common/components/Space'
 import { useRouter } from 'expo-router'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
+import { getTokenApprovalsUrl } from 'features/accountSettings/utils/getTokenApprovalsUrl'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
+import { selectActiveAccount } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import React, { useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -33,6 +37,9 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const lockWalletWithPIN = useSelector(selectLockWalletWithPIN)
   const { allApprovedDapps } = useConnectedDapps()
+  const activeAccount = useSelector(selectActiveAccount)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { openUrl } = useInAppBrowser()
   const wallet = useActiveWallet()
   const {
     biometricType,
@@ -81,7 +88,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   )
 
   const connectedSitesData = useMemo(() => {
-    return [
+    const data: GroupListItem[] = [
       {
         title: 'Connected sites',
         onPress: () => {
@@ -90,7 +97,29 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         value: allApprovedDapps.length.toString()
       }
     ]
-  }, [allApprovedDapps.length, navigate])
+
+    // WSR-PERM-005: review & revoke token approvals via a third-party tool
+    const evmAddress = activeAccount?.addressC
+    if (evmAddress) {
+      data.push({
+        title: 'Token approvals',
+        subtitle:
+          'Review and revoke token approvals on revoke.cash, a third-party tool',
+        onPress: () => {
+          openUrl(
+            getTokenApprovalsUrl({ address: evmAddress, isDeveloperMode })
+          ).catch(Logger.error)
+        }
+      })
+    }
+    return data
+  }, [
+    activeAccount?.addressC,
+    allApprovedDapps.length,
+    isDeveloperMode,
+    navigate,
+    openUrl
+  ])
 
   const pinAndBiometricData = useMemo(() => {
     const data: GroupListItem[] = [
@@ -214,6 +243,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
           fontFamily: 'Inter-Regular'
         }}
         valueSx={{ fontSize: 16, lineHeight: 22 }}
+        separatorMarginRight={16}
       />
       <Space y={24} />
 

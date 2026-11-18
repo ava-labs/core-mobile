@@ -50,6 +50,7 @@ flowchart LR
         MERKL["Merkl"]
         BR["Branch"]
         CB["Coinbase Pay"]
+        RC["revoke.cash"]
     end
 
     APP -->|"balances"| BAL
@@ -73,6 +74,7 @@ flowchart LR
     APP -->|"rewards"| MERKL
     APP -->|"deep links"| BR
     APP -.->|"buy"| CB
+    APP -->|"token approvals link"| RC
 ```
 
 Dotted edges are behind feature flags. Some SDKs call endpoints that are not listed here, such as `@avalabs/fusion-sdk` for swaps and bridges.
@@ -111,6 +113,7 @@ The App Check token is sent as `X-Firebase-AppCheck`. The generated API clients 
 | Merkl                        | User rewards.                                                                          |
 | Branch                       | Deep links through `react-native-branch`.                                              |
 | Coinbase Pay                 | On-ramp URL generation for the buy flow. Flag `buy-feature-coinbase`.                 |
+| revoke.cash                  | Reviewing and revoking token approvals. Settings → Security & privacy → Token approvals opens `https://revoke.cash/address/<C-Chain address>` in the in-app browser. The app makes no API calls to it. |
 
 Ledger devices connect over Bluetooth LE through `@ledgerhq/device-management-kit`. NFT media resolves through IPFS.
 
