@@ -23,6 +23,7 @@ import {
   withNativeAmountItem,
   isAvalancheSigningData,
   isAvalancheBaseTx,
+  isMessageSigningRequest,
   shouldNavigateBackAfterApprove
 } from './utils'
 
@@ -737,5 +738,35 @@ describe('shouldNavigateBackAfterApprove', () => {
 
   it('does not navigate back for Ledger', () => {
     expect(shouldNavigateBackAfterApprove(true, true)).toBe(false)
+  })
+})
+
+describe('isMessageSigningRequest', () => {
+  it.each([
+    RpcMethod.ETH_SIGN,
+    RpcMethod.PERSONAL_SIGN,
+    RpcMethod.SIGN_TYPED_DATA,
+    RpcMethod.SIGN_TYPED_DATA_V1,
+    RpcMethod.SIGN_TYPED_DATA_V3,
+    RpcMethod.SIGN_TYPED_DATA_V4,
+    RpcMethod.AVALANCHE_SIGN_MESSAGE,
+    RpcMethod.SOLANA_SIGN_MESSAGE
+  ])('requires scroll-to-confirm for %s', type => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(isMessageSigningRequest({ type } as any)).toBe(true)
+  })
+
+  it.each([
+    RpcMethod.ETH_SEND_TRANSACTION,
+    RpcMethod.AVALANCHE_SEND_TRANSACTION,
+    RpcMethod.AVALANCHE_SIGN_TRANSACTION,
+    RpcMethod.BITCOIN_SEND_TRANSACTION,
+    RpcMethod.BITCOIN_SIGN_TRANSACTION,
+    RpcMethod.SOLANA_SIGN_TRANSACTION,
+    RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION,
+    RpcMethod.HVM_SIGN_TRANSACTION
+  ])('does not require scroll-to-confirm for transaction %s', type => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(isMessageSigningRequest({ type } as any)).toBe(false)
   })
 })

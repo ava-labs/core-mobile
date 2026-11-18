@@ -16,6 +16,7 @@ import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { Account } from 'store/account/types'
+import { MessageSigningRequest } from 'services/wallet/types'
 import {
   selectAccountByAddressAndWalletId,
   selectAccountByIndex,
@@ -311,3 +312,26 @@ export const isAvalancheBaseTx = (signingData: SigningData): boolean =>
   (signingData.type === RpcMethod.AVALANCHE_SEND_TRANSACTION ||
     signingData.type === RpcMethod.AVALANCHE_SIGN_TRANSACTION) &&
   Avalanche.isBaseTx(signingData.data)
+
+// Message-signing methods (as opposed to transactions), keyed by the existing
+// `MessageSigningRequest` type so the list cannot drift from it. For these the
+// user must scroll through the whole message before Approve is enabled
+// (WSR-VERI-007).
+const MESSAGE_SIGNING_METHODS: Record<MessageSigningRequest['type'], true> = {
+  [RpcMethod.ETH_SIGN]: true,
+  [RpcMethod.PERSONAL_SIGN]: true,
+  [RpcMethod.SIGN_TYPED_DATA]: true,
+  [RpcMethod.SIGN_TYPED_DATA_V1]: true,
+  [RpcMethod.SIGN_TYPED_DATA_V3]: true,
+  [RpcMethod.SIGN_TYPED_DATA_V4]: true,
+  [RpcMethod.AVALANCHE_SIGN_MESSAGE]: true,
+  [RpcMethod.SOLANA_SIGN_MESSAGE]: true
+}
+
+export const isMessageSigningRequest = (
+  signingData: SigningData
+): signingData is MessageSigningRequest =>
+  Object.prototype.hasOwnProperty.call(
+    MESSAGE_SIGNING_METHODS,
+    signingData.type
+  )
