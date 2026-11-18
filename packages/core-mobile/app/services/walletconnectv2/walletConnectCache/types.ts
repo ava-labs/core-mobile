@@ -18,6 +18,7 @@ import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/contact/avalan
 import { Contact } from 'store/addressBook/types'
 import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { WalletWatchAssetRpcRequest } from 'store/rpc/handlers/chain/wallet_watchAsset/wallet_watchAsset'
+import { WalletSwitchEthereumChainRpcRequest } from 'store/rpc/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
 import { Account } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 
@@ -99,6 +100,11 @@ export type EditContactParams = {
 
 export type AddEthereumChainParams = {
   request: WalletAddEthereumChainRpcRequest
+  network: Network
+}
+
+export type SwitchEthereumChainParams = {
+  request: WalletSwitchEthereumChainRpcRequest
   network: Network
 }
 

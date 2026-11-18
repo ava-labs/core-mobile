@@ -168,9 +168,8 @@ export function buildEvmProviderShim({
   // Idempotent chain re-assertion used by the native per-commit hook to correct a
   // fresh document whose baked chainId is stale (full reload / cross-origin nav /
   // pull-to-refresh). Deduped against the live _chainId: a same-origin SPA
-  // navigation that did NOT change chains — or a re-assert that races a still
-  // pending wallet_switchEthereumChain — is a no-op, so listeners never churn and
-  // we never fight the optimistic emit (React #185). Kept distinct from
+  // navigation that did NOT change chains is a no-op, so listeners never churn
+  // (React #185). Kept distinct from
   // __coreProviderEmit so the CP-13671 disconnect->same-chain recovery path, which
   // legitimately re-emits the current chainId to flip _connected back on, is
   // unaffected by this dedupe.
@@ -226,31 +225,14 @@ export function buildEvmProviderShim({
       // is consulted (wallet_getPermissions, wallet_revokePermissions). The shim
       // keeps _accounts in sync via __coreProviderEmit on 'accountsChanged'.
 
-      // wallet_switchEthereumChain: optimistically update local chain state
-      // SYNCHRONOUSLY before the bridge round-trip.  This fires chainChanged
-      // before wagmi sets status:'pending', so ConnectKit re-renders already
-      // see the target chainId and don't call switchChain again — preventing
-      // the React error #185 infinite-loop that occurs over an async bridge.
+      // wallet_switchEthereumChain: forwarded to native, which asks the user to
+      // confirm before switching (WSR-PERM-009). Local chain state is NOT
+      // updated optimistically: native emits chainChanged (via
+      // __coreProviderEmit) only after the user approves, so a rejected or
+      // cancelled switch never changes eth_chainId or fires chainChanged.
       if (method === 'wallet_switchEthereumChain') {
         if (_pendingInteractive['wallet_switchEthereumChain']) {
           return Promise.reject({ code: ${JSON_RPC_RESOURCE_UNAVAILABLE_CODE}, message: 'wallet_switchEthereumChain already pending' });
-        }
-        var swTargetChainId = (params[0] && params[0].chainId) || null;
-        // Normalize to canonical lowercase hex ('0x'+n.toString(16)) so eth_chainId
-        // and chainChanged never expose a dApp-supplied non-canonical form ('1',
-        // '0x01', '0xA86A'). This also keeps the per-commit __coreProviderReassertChain
-        // dedupe (numeric) consistent: without it a malformed _chainId could never
-        // be corrected to canonical, and an uppercase target would spuriously
-        // re-emit chainChanged for the same chain. CP-14615.
-        if (swTargetChainId) {
-          var swParsed = parseInt(swTargetChainId, 16);
-          if (!isNaN(swParsed)) { swTargetChainId = '0x' + swParsed.toString(16); }
-        }
-        if (swTargetChainId && swTargetChainId !== _chainId) {
-          _chainId = swTargetChainId;
-          provider.chainId = swTargetChainId;
-          provider.networkVersion = String(parseInt(swTargetChainId, 16));
-          emit('chainChanged', swTargetChainId);
         }
         _pendingInteractive['wallet_switchEthereumChain'] = true;
         var swId = ++_requestId;
@@ -262,12 +244,6 @@ export function buildEvmProviderShim({
             },
             reject: function(e) {
               delete _pendingInteractive['wallet_switchEthereumChain'];
-              // Do NOT roll back _chainId on rejection. Rolling back fires
-              // chainChanged(original), which ConnectKit's "ensure correct chain"
-              // useEffect sees as a mismatch and re-calls switchChain — producing
-              // React error #185 (infinite update loop). wagmi enters status:'error'
-              // from the EIP-1193 user-rejected rejection; keeping _chainId at target prevents the
-              // re-trigger. The dApp receives that rejection and shows its rejection UX.
               reject(e);
             }
           };
@@ -281,6 +257,7 @@ export function buildEvmProviderShim({
               })
             }));
           } catch(swErr) {
+            delete _callbacks[swId];
             delete _pendingInteractive['wallet_switchEthereumChain'];
             reject({ code: ${JSON_RPC_INTERNAL_ERROR_CODE}, message: ${JSON.stringify(
     BRIDGE_UNAVAILABLE_MESSAGE

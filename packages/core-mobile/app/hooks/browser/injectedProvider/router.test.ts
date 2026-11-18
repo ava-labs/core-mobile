@@ -186,6 +186,8 @@ const MAIN_FRAME: MessageFrameInfo = {
   }
 }
 
+const flush = (): Promise<void> => new Promise(r => setImmediate(r))
+
 function send(
   router: ReturnType<typeof createInjectedProviderRouter>,
   method: string,
@@ -1044,11 +1046,73 @@ describe('createInjectedProviderRouter', () => {
       expect(sendResponse).toHaveBeenCalledWith(1, null, null)
     })
 
-    it('updates browser network and dispatches setTabChainId on known chain switch', () => {
-      const { deps, sendResponse, dispatch, setBrowserNetworkSpy } = makeDeps()
+    it('no-ops when already on the requested chain, without prompting', async () => {
+      const {
+        deps,
+        sendResponse,
+        requestSigning,
+        emitEventForOrigin,
+        dispatch
+      } = makeDeps()
       const router = createInjectedProviderRouter(deps)
 
-      send(router, 'wallet_switchEthereumChain', [{ chainId: '0x1' }]) // 1
+      // non-canonical form of the active chain (43114)
+      send(router, 'wallet_switchEthereumChain', [{ chainId: '0xA86A' }])
+      await flush()
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(emitEventForOrigin).not.toHaveBeenCalled()
+      expect(dispatch).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(1, null, null)
+    })
+
+    it('asks the user to confirm before switching to a known chain', async () => {
+      const { deps, requestSigning, sendResponse, setBrowserNetworkSpy } =
+        makeDeps()
+      let approve!: () => void
+      requestSigning.mockReturnValueOnce(
+        new Promise<string>(resolve => {
+          approve = () => resolve('')
+        })
+      )
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'wallet_switchEthereumChain', [{ chainId: '0x1' }])
+      await flush()
+
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x1' }],
+          chainId: 'eip155:43114',
+          peerMeta: expect.objectContaining({ url: 'https://example.com' }),
+          signal: expect.any(AbortSignal)
+        })
+      )
+      // nothing switches while the prompt is open
+      expect(setBrowserNetworkSpy).not.toHaveBeenCalled()
+      expect(sendResponse).not.toHaveBeenCalled()
+
+      approve()
+      await flush()
+
+      expect(setBrowserNetworkSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('on approval, switches the tab chain, emits chainChanged and responds null', async () => {
+      const {
+        deps,
+        sendResponse,
+        dispatch,
+        setBrowserNetworkSpy,
+        emitEventForOrigin,
+        requestSigning
+      } = makeDeps()
+      requestSigning.mockResolvedValueOnce('')
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'wallet_switchEthereumChain', [{ chainId: '0x01' }]) // 1
+      await flush()
 
       expect(dispatch).toHaveBeenCalledWith(
         setTabChainId({ tabId: 'tab-1', chainId: 1 })
@@ -1057,12 +1121,61 @@ describe('createInjectedProviderRouter', () => {
         chainId: 1,
         rpcUrl: 'https://eth.llamarpc.com'
       })
+      expect(emitEventForOrigin).toHaveBeenCalledWith(
+        'chainChanged',
+        '0x1',
+        'https://example.com'
+      )
       expect(sendResponse).toHaveBeenCalledWith(1, null, null)
+    })
+
+    it('on rejection, responds 4001 and does not switch or emit chainChanged', async () => {
+      const {
+        deps,
+        sendResponse,
+        dispatch,
+        setBrowserNetworkSpy,
+        emitEventForOrigin,
+        requestSigning,
+        currentNetwork
+      } = makeDeps()
+      const rejection = {
+        code: EIP1193_USER_REJECTED_CODE,
+        message: USER_REJECTED_REQUEST_MESSAGE
+      }
+      requestSigning.mockRejectedValueOnce(rejection)
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'wallet_switchEthereumChain', [{ chainId: '0x1' }])
+      await flush()
+
+      expect(sendResponse).toHaveBeenCalledWith(1, rejection, undefined)
+      expect(dispatch).not.toHaveBeenCalled()
+      expect(setBrowserNetworkSpy).not.toHaveBeenCalled()
+      expect(emitEventForOrigin).not.toHaveBeenCalled()
+      expect(currentNetwork.value.chainId).toBe(43114)
+    })
+
+    it('rejects a pending switch prompt when the page navigates cross-origin', async () => {
+      const { deps, requestSigning, setBrowserNetworkSpy } = makeDeps()
+      let signal: AbortSignal | undefined
+      requestSigning.mockImplementationOnce((args: { signal: AbortSignal }) => {
+        signal = args.signal
+        return new Promise(() => undefined)
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'wallet_switchEthereumChain', [{ chainId: '0x1' }])
+      await flush()
+      router.cancelByOrigin('https://other.example')
+
+      expect(signal?.aborted).toBe(true)
+      expect(setBrowserNetworkSpy).not.toHaveBeenCalled()
     })
   })
 
   describe('wallet_addEthereumChain', () => {
-    it('on approval, updates browser network, dispatches setTabChainId, emits chainChanged', async () => {
+    it('for a new chain, on approval, updates browser network, dispatches setTabChainId, emits chainChanged', async () => {
       const {
         deps,
         sendResponse,
@@ -1079,20 +1192,92 @@ describe('createInjectedProviderRouter', () => {
           id: 1,
           request: {
             method: 'wallet_addEthereumChain',
-            params: [{ chainId: '0x1', rpcUrls: ['https://eth.llamarpc.com'] }]
+            params: [{ chainId: '0x2a', rpcUrls: ['https://rpc.example.org'] }]
           }
         }),
         MAIN_FRAME
       )
-      await new Promise(r => setImmediate(r))
+      await flush()
 
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'wallet_addEthereumChain' })
+      )
+      expect(setBrowserNetworkSpy).toHaveBeenCalledWith({
+        chainId: 42,
+        rpcUrl: 'https://rpc.example.org'
+      })
+      expect(dispatch).toHaveBeenCalledWith(
+        setTabChainId({ tabId: 'tab-1', chainId: 42 })
+      )
+      expect(emitEventForOrigin).toHaveBeenCalledWith(
+        'chainChanged',
+        '0x2a',
+        'https://example.com'
+      )
+      expect(sendResponse).toHaveBeenCalledWith(1, null, null)
+    })
+
+    it('for a new chain, on rejection, propagates the error', async () => {
+      const { deps, sendResponse, requestSigning, setBrowserNetworkSpy } =
+        makeDeps()
+      const rejection = {
+        code: EIP1193_USER_REJECTED_CODE,
+        message: USER_REJECTED_REQUEST_MESSAGE
+      }
+      requestSigning.mockRejectedValueOnce(rejection)
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          request: {
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0x2a', rpcUrls: ['https://rpc.example.org'] }]
+          }
+        }),
+        MAIN_FRAME
+      )
+      await flush()
+
+      expect(sendResponse).toHaveBeenCalledWith(1, rejection, undefined)
+      expect(setBrowserNetworkSpy).not.toHaveBeenCalled()
+    })
+
+    it('for a chain Core already knows, prompts a switch confirmation instead of switching silently', async () => {
+      const {
+        deps,
+        sendResponse,
+        setBrowserNetworkSpy,
+        emitEventForOrigin,
+        requestSigning
+      } = makeDeps()
+      requestSigning.mockResolvedValueOnce('')
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          request: {
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0x1', rpcUrls: ['https://attacker.example'] }]
+          }
+        }),
+        MAIN_FRAME
+      )
+      await flush()
+
+      expect(requestSigning).toHaveBeenCalledTimes(1)
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x1' }]
+        })
+      )
+      // keeps the trusted RPC of the known chain, not the dApp-supplied one
       expect(setBrowserNetworkSpy).toHaveBeenCalledWith({
         chainId: 1,
         rpcUrl: 'https://eth.llamarpc.com'
       })
-      expect(dispatch).toHaveBeenCalledWith(
-        setTabChainId({ tabId: 'tab-1', chainId: 1 })
-      )
       expect(emitEventForOrigin).toHaveBeenCalledWith(
         'chainChanged',
         '0x1',
@@ -1101,8 +1286,15 @@ describe('createInjectedProviderRouter', () => {
       expect(sendResponse).toHaveBeenCalledWith(1, null, null)
     })
 
-    it('on rejection, propagates the error', async () => {
-      const { deps, sendResponse, requestSigning } = makeDeps()
+    it('for a chain Core already knows, rejection responds 4001 and does not switch', async () => {
+      const {
+        deps,
+        sendResponse,
+        setBrowserNetworkSpy,
+        emitEventForOrigin,
+        dispatch,
+        requestSigning
+      } = makeDeps()
       const rejection = {
         code: EIP1193_USER_REJECTED_CODE,
         message: USER_REJECTED_REQUEST_MESSAGE
@@ -1120,9 +1312,34 @@ describe('createInjectedProviderRouter', () => {
         }),
         MAIN_FRAME
       )
-      await new Promise(r => setImmediate(r))
+      await flush()
 
       expect(sendResponse).toHaveBeenCalledWith(1, rejection, undefined)
+      expect(setBrowserNetworkSpy).not.toHaveBeenCalled()
+      expect(emitEventForOrigin).not.toHaveBeenCalled()
+      expect(dispatch).not.toHaveBeenCalled()
+    })
+
+    it('for the already-active chain, responds null without prompting', async () => {
+      const { deps, sendResponse, requestSigning, setBrowserNetworkSpy } =
+        makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          request: {
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0xa86a' }]
+          }
+        }),
+        MAIN_FRAME
+      )
+      await flush()
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(setBrowserNetworkSpy).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(1, null, null)
     })
   })
 

@@ -6,6 +6,7 @@ import {
   SessionProposalParams,
   EditContactParams,
   AddEthereumChainParams,
+  SwitchEthereumChainParams,
   WatchAssetParams
 } from './types'
 
@@ -21,5 +22,8 @@ export const walletConnectCache = {
   editContactParams: createCache<EditContactParams>('edit contact'),
   addEthereumChainParams:
     createCache<AddEthereumChainParams>('add ethereum chain'),
+  switchEthereumChainParams: createCache<SwitchEthereumChainParams>(
+    'switch ethereum chain'
+  ),
   watchAssetParams: createCache<WatchAssetParams>('watch asset')
 }
