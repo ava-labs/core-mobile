@@ -10,9 +10,11 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { Space } from 'common/components/Space'
 import { useRouter } from 'expo-router'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
-import { getTokenApprovalsUrl } from 'features/accountSettings/utils/getTokenApprovalsUrl'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
-import { selectActiveAccount } from 'store/account'
+import {
+  REVOKE_ACCESS_TESTNET_URL,
+  REVOKE_ACCESS_URL
+} from 'common/consts/urls'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import React, { useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -37,7 +39,6 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const lockWalletWithPIN = useSelector(selectLockWalletWithPIN)
   const { allApprovedDapps } = useConnectedDapps()
-  const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { openUrl } = useInAppBrowser()
   const wallet = useActiveWallet()
@@ -88,38 +89,26 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   )
 
   const connectedSitesData = useMemo(() => {
-    const data: GroupListItem[] = [
+    return [
       {
         title: 'Connected sites',
         onPress: () => {
           navigate('/accountSettings/connectedSites')
         },
         value: allApprovedDapps.length.toString()
-      }
-    ]
-
-    // WSR-PERM-005: review & revoke token approvals via a third-party tool
-    const evmAddress = activeAccount?.addressC
-    if (evmAddress) {
-      data.push({
+      },
+      {
+        // WSR-PERM-005: review & revoke token approvals with Core's own tool
         title: 'Token approvals',
-        subtitle:
-          'Review and revoke token approvals on revoke.cash, a third-party tool',
+        subtitle: 'Review and revoke token approvals in Core Web',
         onPress: () => {
           openUrl(
-            getTokenApprovalsUrl({ address: evmAddress, isDeveloperMode })
+            isDeveloperMode ? REVOKE_ACCESS_TESTNET_URL : REVOKE_ACCESS_URL
           ).catch(Logger.error)
         }
-      })
-    }
-    return data
-  }, [
-    activeAccount?.addressC,
-    allApprovedDapps.length,
-    isDeveloperMode,
-    navigate,
-    openUrl
-  ])
+      }
+    ]
+  }, [allApprovedDapps.length, isDeveloperMode, navigate, openUrl])
 
   const pinAndBiometricData = useMemo(() => {
     const data: GroupListItem[] = [

@@ -1,6 +1,6 @@
 /**
  * WSR-PERM-005: Security & privacy exposes a "Token approvals" row that opens
- * revoke.cash for the active account's EVM (C-Chain) address.
+ * Core's own revoke-access tool (test.core.app in developer mode).
  */
 import React from 'react'
 import renderer, { act } from 'react-test-renderer'
@@ -50,17 +50,11 @@ jest.mock('common/hooks/useStoredBiometrics', () => ({
 }))
 
 const mockState = {
-  activeAccount: { addressC: '0xActiveAccountAddress' } as
-    | { addressC?: string }
-    | undefined,
   isDeveloperMode: false
 }
 jest.mock('react-redux', () => ({
   useDispatch: () => jest.fn(),
   useSelector: (selector: (s: unknown) => unknown) => selector({})
-}))
-jest.mock('store/account', () => ({
-  selectActiveAccount: () => mockState.activeAccount
 }))
 jest.mock('store/settings/advanced', () => ({
   selectIsDeveloperMode: () => mockState.isDeveloperMode
@@ -87,40 +81,33 @@ const findRow = (title: string): Item | undefined =>
   mockGroupLists.flat().find(item => item.title === title)
 
 beforeEach(() => {
-  mockState.activeAccount = { addressC: '0xActiveAccountAddress' }
+  jest.clearAllMocks()
   mockState.isDeveloperMode = false
 })
 
 describe('Security & privacy → Token approvals', () => {
-  it('renders the row with a third-party subtitle', () => {
+  it('renders the row with a first-party subtitle', () => {
     renderScreen()
     const row = findRow('Token approvals')
     expect(row).toBeDefined()
-    expect(row?.subtitle).toMatch(/revoke\.cash/)
-    expect(row?.subtitle).toMatch(/third-party/)
+    expect(row?.subtitle).toBe('Review and revoke token approvals in Core Web')
+    expect(findRow('Connected sites')).toBeDefined()
   })
 
-  it('opens revoke.cash for the active account address', () => {
+  it("opens Core's revoke-access tool", () => {
     renderScreen()
     act(() => findRow('Token approvals')?.onPress?.())
     expect(mockOpenUrl).toHaveBeenCalledWith(
-      'https://revoke.cash/address/0xActiveAccountAddress?chainId=43114'
+      'https://core.app/tools/revoke-access'
     )
   })
 
-  it('uses the testnet chain in developer mode', () => {
+  it('uses test.core.app in developer mode', () => {
     mockState.isDeveloperMode = true
     renderScreen()
     act(() => findRow('Token approvals')?.onPress?.())
     expect(mockOpenUrl).toHaveBeenCalledWith(
-      'https://revoke.cash/address/0xActiveAccountAddress?chainId=43113'
+      'https://test.core.app/tools/revoke-access'
     )
-  })
-
-  it('is hidden when the active account has no EVM address', () => {
-    mockState.activeAccount = { addressC: '' }
-    renderScreen()
-    expect(findRow('Token approvals')).toBeUndefined()
-    expect(findRow('Connected sites')).toBeDefined()
   })
 })
