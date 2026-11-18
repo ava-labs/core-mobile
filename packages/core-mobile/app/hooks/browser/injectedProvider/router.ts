@@ -523,7 +523,57 @@ export function createInjectedProviderRouter(
     }
   }
 
-  const handleSwitchEthereumChain = (id: number, params: unknown[]): void => {
+  // Point this tab at `chainId` (persisted per tab, survives eviction/remount)
+  // and tell the page. The browser network routes all subsequent RPC calls in
+  // this session to the new chain. Emitted only AFTER the user approved — the
+  // shim does not update its chain optimistically (WSR-PERM-009).
+  const applyTabChainSwitch = (
+    chainId: number,
+    rpcUrl: string,
+    origin: string
+  ): void => {
+    dispatch(setTabChainId({ tabId, chainId }))
+    setBrowserNetwork({ chainId, rpcUrl })
+    emitEventForOrigin('chainChanged', `0x${chainId.toString(16)}`, origin)
+  }
+
+  // Ask the user to confirm switching this tab to a chain Core already knows,
+  // naming the dApp origin and the target network (WSR-PERM-009). On approval
+  // switch and respond null; on rejection (EIP-1193 4001) or a cross-origin
+  // abort, respond with the error and leave the chain untouched.
+  const confirmAndSwitchChain = async (
+    id: number,
+    chainId: number
+  ): Promise<void> => {
+    const origin = getNativeOrigin()
+    // gated upstream; never register a synthetic '' origin.
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
+    try {
+      await requestSigning({
+        method: 'wallet_switchEthereumChain' as unknown as RpcMethod,
+        params: [{ chainId: `0x${chainId.toString(16)}` }],
+        chainId: getEvmCaip2ChainId(getBrowserNetwork().chainId),
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
+      })
+      applyTabChainSwitch(
+        chainId,
+        getAllNetworks()[chainId]?.rpcUrl ?? '',
+        origin
+      )
+      sendResponse(id, null, null)
+    } catch (e) {
+      sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
+    }
+  }
+
+  const handleSwitchEthereumChain = async (
+    id: number,
+    params: unknown[]
+  ): Promise<void> => {
     const param = params[0] as { chainId?: string } | undefined
     const hexChainId = param?.chainId
     if (!hexChainId) {
@@ -539,13 +589,9 @@ export function createInjectedProviderRouter(
       sendResponse(id, rpcErrors.invalidParams('Invalid chainId'), undefined)
       return
     }
-    const allNetworks = getAllNetworks()
-    if (!(String(requestedChainId) in allNetworks)) {
+    if (!(String(requestedChainId) in getAllNetworks())) {
       // Return 4902 (unrecognized chain) so ConnectKit/wagmi can trigger the
-      // wallet_addEthereumChain flow instead. The shim already fired
-      // chainChanged(target) optimistically and will not roll it back, so
-      // wagmi's chain state stays at target — preventing ConnectKit from
-      // re-triggering switchChain in a loop (React error #185).
+      // wallet_addEthereumChain flow instead.
       sendResponse(
         id,
         {
@@ -556,22 +602,12 @@ export function createInjectedProviderRouter(
       )
       return
     }
+    // Already on the requested chain: nothing to confirm.
     if (requestedChainId === getBrowserNetwork().chainId) {
       sendResponse(id, null, null)
       return
     }
-    // Persist the chain switch for this tab only (survives tab eviction/remount).
-    // The browser network ensures all subsequent RPC calls in this session are
-    // routed to the correct chain. The shim already fired chainChanged
-    // synchronously before the round-trip (prevents React #185 loop), so we
-    // do NOT re-emit it here.
-    const switchedNetwork = allNetworks[requestedChainId]
-    dispatch(setTabChainId({ tabId, chainId: requestedChainId }))
-    setBrowserNetwork({
-      chainId: requestedChainId,
-      rpcUrl: switchedNetwork?.rpcUrl ?? ''
-    })
-    sendResponse(id, null, null)
+    await confirmAndSwitchChain(id, requestedChainId)
   }
 
   const handleAddEthereumChain = async (
@@ -583,12 +619,30 @@ export function createInjectedProviderRouter(
       | undefined
     const addHexChainId = addParam?.chainId
     const addRpcUrl = addParam?.rpcUrls?.[0]
+
+    // A chain Core already knows is not added again (the handler keeps its
+    // trusted config), so this request is effectively a chain switch: no-op
+    // when it is already active, otherwise ask the user to confirm the switch
+    // exactly like wallet_switchEthereumChain (WSR-PERM-009).
+    const existingChainId =
+      addHexChainId !== undefined ? parseInt(addHexChainId, 16) : NaN
+    if (!isNaN(existingChainId) && existingChainId in getAllNetworks()) {
+      if (existingChainId === getBrowserNetwork().chainId) {
+        sendResponse(id, null, null)
+        return
+      }
+      await confirmAndSwitchChain(id, existingChainId)
+      return
+    }
+
     const origin = getNativeOrigin()
     // gated by handleProviderMessage (rejects 4100 when absent); never register
     // a synthetic '' so cancelByOrigin comparisons stay meaningful.
     if (!origin) return
     const controller = registerInFlight(id, origin)
     try {
+      // The add-network approval screen is the confirmation for adding AND
+      // switching to the new chain.
       await requestSigning({
         method: 'wallet_addEthereumChain' as unknown as RpcMethod,
         params,
@@ -601,12 +655,11 @@ export function createInjectedProviderRouter(
         const newChainId = parseInt(addHexChainId, 16)
         if (!isNaN(newChainId)) {
           const addedNetwork = getAllNetworks()[newChainId]
-          setBrowserNetwork({
-            chainId: newChainId,
-            rpcUrl: addedNetwork?.rpcUrl ?? addRpcUrl ?? ''
-          })
-          dispatch(setTabChainId({ tabId, chainId: newChainId }))
-          emitEventForOrigin('chainChanged', addHexChainId, origin)
+          applyTabChainSwitch(
+            newChainId,
+            addedNetwork?.rpcUrl ?? addRpcUrl ?? '',
+            origin
+          )
         }
       }
       sendResponse(id, null, null)

@@ -114,12 +114,18 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain("window.__coreProviderEmit('chainChanged', data)")
     })
 
-    it('normalizes the optimistic wallet_switchEthereumChain chainId to canonical hex', () => {
-      // A dApp may send a non-canonical chainId ('1' / '0x01' / '0xA86A'); the shim
-      // must store canonical '0x'+n.toString(16) so eth_chainId is well-formed and
-      // the numeric re-assert dedupe stays consistent. CP-14615.
+    it('does not update the chain optimistically on wallet_switchEthereumChain (WSR-PERM-009)', () => {
+      // The switch needs user confirmation in native; the shim must only change
+      // _chainId / fire chainChanged when native emits it after approval, so a
+      // rejected switch leaves the dApp on its current chain.
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain("swTargetChainId = '0x' + swParsed.toString(16)")
+      const start = shim.indexOf("if (method === 'wallet_switchEthereumChain')")
+      const end = shim.indexOf('if (INTERACTIVE_METHODS[method]', start)
+      const switchBranch = shim.slice(start, end)
+      expect(start).toBeGreaterThan(-1)
+      expect(switchBranch).not.toContain('_chainId =')
+      expect(switchBranch).not.toContain("emit('chainChanged'")
+      expect(switchBranch).toContain("method: 'provider_request'")
     })
   })
 

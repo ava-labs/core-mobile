@@ -270,6 +270,7 @@ class ApprovalController implements VmModuleApprovalController {
       currentRoute?.endsWith('ledgerReviewTransaction') ||
       (!options?.excludeApproval && currentRoute?.endsWith('approval')) ||
       currentRoute?.endsWith('addEthereumChain') ||
+      currentRoute?.endsWith('switchEthereumChain') ||
       currentRoute?.endsWith('authorizeInjectedDapp') ||
       currentRoute?.endsWith('authorizeDapp') ||
       currentRoute?.endsWith('watchAsset')

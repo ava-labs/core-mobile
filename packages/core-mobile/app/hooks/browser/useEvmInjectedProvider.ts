@@ -275,8 +275,8 @@ export function useEvmInjectedProvider(
   // chainIdHex) rebuilt the shim and dropped the switch's OWN response injection,
   // leaving the dApp's switchChain promise — and the swap awaiting it — hung
   // forever (CP-14615). The baked chainId only seeds the first document load; the
-  // live chain is kept current at runtime via the shim's optimistic `_chainId`
-  // update on switch, the unpinned sync effect's chainChanged emit, and the
+  // live chain is kept current at runtime via the chainChanged the router emits
+  // once a switch is approved, the unpinned sync effect's chainChanged emit, and the
   // per-document-load re-assert in handleCommittedUrl. So bake the initial value
   // once and never change the prop.
   const initialChainIdHexRef = useRef(chainIdHex)

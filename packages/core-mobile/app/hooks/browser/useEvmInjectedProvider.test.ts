@@ -356,7 +356,9 @@ describe('useEvmInjectedProvider', () => {
     })
 
     describe('wallet_switchEthereumChain', () => {
-      it('auto-approves, dispatches setTabChainId for the tab, and responds null', async () => {
+      it('switches only after the user confirms, then emits chainChanged and responds null', async () => {
+        const mockRequest = jest.fn().mockResolvedValue(null)
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
         const { result } = renderProvider()
 
         act(() => {
@@ -376,15 +378,57 @@ describe('useEvmInjectedProvider', () => {
           )
         })
 
+        expect(mockRequest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x1' }]
+          })
+        )
         expect(mockDispatch).toHaveBeenCalledWith(
           setTabChainId({ tabId: 'test-tab-id', chainId: 1 })
         )
-        // chainChanged is emitted by the shim, not by native
-        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
-          expect.stringContaining("__coreProviderEmit('chainChanged'")
+        // The shim no longer updates optimistically; native emits after approval.
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderEmit("chainChanged", "0x1")')
         )
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining('__coreProviderRespond(1, null, null)')
+        )
+      })
+
+      it('does not switch or emit chainChanged when the user rejects', async () => {
+        const mockRequest = jest.fn().mockRejectedValue({
+          code: 4001,
+          message: 'User rejected the request.'
+        })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+        const { result } = renderProvider()
+
+        act(() => {
+          commitUrl(result.current.handleCommittedUrl, 'https://example.com')
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 1,
+              request: {
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x1' }]
+              }
+            }),
+            MAIN_FRAME
+          )
+        })
+
+        expect(mockDispatch).not.toHaveBeenCalledWith(
+          setTabChainId({ tabId: 'test-tab-id', chainId: 1 })
+        )
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining('chainChanged", "0x1"')
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(1, {"code":4001')
         )
       })
 
@@ -400,7 +444,7 @@ describe('useEvmInjectedProvider', () => {
           commitUrl(result.current.handleCommittedUrl, 'https://example.com')
         })
 
-        // Switch browser to chain 1 (auto-approved)
+        // Switch browser to chain 1 (approved: mockSignFn resolves the prompt)
         await act(async () => {
           result.current.handleProviderMessage(
             JSON.stringify({
@@ -450,7 +494,7 @@ describe('useEvmInjectedProvider', () => {
 
         const { result } = renderProvider()
 
-        // Switch browser to chain 1 (auto-approved)
+        // Switch browser to chain 1 (approved: mockSignFn resolves the prompt)
         await act(async () => {
           result.current.handleProviderMessage(
             JSON.stringify({
