@@ -70,7 +70,7 @@ export const NETWORK_P = {
   networkToken: {
     ...AVALANCHE_XP_NETWORK.networkToken,
     logoUri:
-      'https://glacier-api.avax.network/proxy/chain-assets/cb14a1f/chains/43114/token-logo.png'
+      'https://images.ctfassets.net/gcj8jwzm6086/5VHupNKwnDYJvqMENeV7iJ/3e4b8ff10b69bfa31e70080a4b142cd0/avalanche-avax-logo.svg'
   },
   explorerUrl: 'https://build.avax.network/explorer/mainnet/p-chain'
 } as Network
@@ -86,7 +86,7 @@ export const NETWORK_P_TEST = {
   networkToken: {
     ...AVALANCHE_XP_TEST_NETWORK.networkToken,
     logoUri:
-      'https://glacier-api.avax.network/proxy/chain-assets/cb14a1f/chains/43114/token-logo.png'
+      'https://images.ctfassets.net/gcj8jwzm6086/5VHupNKwnDYJvqMENeV7iJ/3e4b8ff10b69bfa31e70080a4b142cd0/avalanche-avax-logo.svg'
   },
   explorerUrl: 'https://build.avax.network/explorer/fuji/p-chain'
 } as Network
